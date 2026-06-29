@@ -80,7 +80,13 @@
         <div class="card board-card">
             <div class="board-head">
                 <div><h2 class="section-title">방송국 새 글</h2></div>
-                <a class="section-more" href="live/?tab=posts">전체 보기</a>
+                <div class="section-actions">
+                    <div class="scroll-controls" aria-label="방송국 새 글 이동">
+                        <button class="scroll-btn" type="button" data-scroll-target="boardPosts" data-scroll-dir="-1" aria-label="이전 게시글">‹</button>
+                        <button class="scroll-btn" type="button" data-scroll-target="boardPosts" data-scroll-dir="1" aria-label="다음 게시글">›</button>
+                    </div>
+                    <a class="section-more" href="live/?tab=posts">전체 보기</a>
+                </div>
             </div>
             <div class="post-strip" id="boardPosts"><div class="post-empty">불러오는 중…</div></div>
         </div>
@@ -89,6 +95,10 @@
     <section id="shorts" hidden>
         <div class="section-head">
             <h2 class="section-title">쇼츠</h2>
+            <div class="scroll-controls" aria-label="쇼츠 이동">
+                <button class="scroll-btn" type="button" data-scroll-target="shortsGrid" data-scroll-dir="-1" aria-label="이전 쇼츠">‹</button>
+                <button class="scroll-btn" type="button" data-scroll-target="shortsGrid" data-scroll-dir="1" aria-label="다음 쇼츠">›</button>
+            </div>
         </div>
         <div class="shorts-grid" id="shortsGrid"></div>
     </section>
@@ -275,6 +285,7 @@
         if (!list.length) { section.hidden = true; return; }
         shortsGrid.innerHTML = list.map(renderShort).join("");
         section.hidden = false;
+        refreshScrollButtons();
       } catch (e) { section.hidden = true; }
     }
     async function loadBoardPosts() {
@@ -294,6 +305,7 @@
         }
         const d = await r.json(); const posts = (Array.isArray(d) ? d : (Array.isArray(d.data) ? d.data : [])).slice(0, 10);
         boardPosts.innerHTML = posts.length ? posts.map(renderBoardPost).join("") : `<div class="post-empty">표시할 새 글이 없습니다.</div>`;
+        refreshScrollButtons();
       } catch (e) { boardPosts.innerHTML = `<div class="post-empty">새 글을 불러오지 못했습니다.</div>`; }
     }
     async function loadRankingPreview() {
@@ -328,9 +340,34 @@
       window.addEventListener("pointerup", () => { if (!down) return; down = false; dragArea.classList.remove("is-dragging"); if (moved) { let sp = -vel * 22; (function glide() { if (Math.abs(sp) < .08) { raf = null; return; } const nx = clamp(scrollTarget.scrollLeft + sp); sp *= (nx === 0 || nx === maxL()) ? .35 : .93; scrollTarget.scrollLeft = nx; raf = requestAnimationFrame(glide); })(); block = true; setTimeout(() => block = false, 160); } });
       dragArea.addEventListener("click", e => { if (block) { e.preventDefault(); e.stopPropagation(); } }, true);
     }
+    function setupScrollButtons() {
+      document.querySelectorAll(".scroll-btn").forEach(btn => {
+        const target = document.getElementById(btn.dataset.scrollTarget || "");
+        if (!target) return;
+        btn.addEventListener("click", () => {
+          const dir = Number(btn.dataset.scrollDir || 1);
+          const amount = Math.max(target.clientWidth * 0.78, 260);
+          target.scrollBy({ left: amount * dir, behavior: "smooth" });
+          setTimeout(refreshScrollButtons, 260);
+        });
+        target.addEventListener("scroll", refreshScrollButtons, { passive: true });
+        window.addEventListener("resize", refreshScrollButtons);
+      });
+      setTimeout(refreshScrollButtons, 400);
+    }
+    function refreshScrollButtons() {
+      document.querySelectorAll(".scroll-btn").forEach(btn => {
+        const target = document.getElementById(btn.dataset.scrollTarget || "");
+        if (!target) return;
+        const dir = Number(btn.dataset.scrollDir || 1);
+        const max = Math.max(0, target.scrollWidth - target.clientWidth);
+        btn.disabled = max <= 2 || (dir < 0 ? target.scrollLeft <= 2 : target.scrollLeft >= max - 2);
+      });
+    }
     enableDragScroll(document.getElementById("live"), liveGrid);
     enableDragScroll(document.getElementById("shorts"), shortsGrid);
     enableDragScroll(document.querySelector(".board-card"), boardPosts);
+    setupScrollButtons();
 
     loadLiveMembers(); loadShorts(); loadBoardPosts();
     setInterval(loadLiveMembers, 60000);

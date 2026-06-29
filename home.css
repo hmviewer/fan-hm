@@ -453,6 +453,18 @@ section { margin-top: 28px; }
   display: flex; align-items: center; justify-content: space-between;
   gap: 16px; margin-bottom: 16px;
 }
+.section-actions { display: inline-flex; align-items: center; gap: 12px; flex: none; }
+.scroll-controls { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.scroll-btn {
+  width: 34px; height: 34px; display: grid; place-items: center;
+  border-radius: 9px; border: 1px solid rgba(97, 92, 82, 0.45);
+  background: rgba(255, 252, 245, 0.86); color: #8d6a1f;
+  font-size: 22px; line-height: 1; font-weight: 950;
+  box-shadow: 0 8px 18px rgba(64, 54, 28, 0.10);
+  transition: transform .12s ease, opacity .12s ease, background .12s ease;
+}
+.scroll-btn:hover:not(:disabled) { transform: translateY(-1px); background: #fff8df; }
+.scroll-btn:disabled { opacity: .32; cursor: default; box-shadow: none; }
 
 .post-strip {
   display: flex; gap: 14px;
@@ -678,6 +690,9 @@ section { margin-top: 28px; }
   /* 방송국 새 글 — 모바일: 폭/높이/썸네일 축소, 요약 1줄 */
   .board-card { padding: 15px 13px 13px; }
   .board-head { margin-bottom: 11px; }
+  .section-actions { gap: 8px; }
+  .scroll-controls { gap: 5px; }
+  .scroll-btn { width: 32px; height: 32px; border-radius: 8px; font-size: 20px; }
   .post-strip { gap: 10px; padding: 4px 0 6px; }
   .post-item { flex: 0 0 72vw; height: 104px; padding: 10px 11px; gap: 10px; }
   .post-thumb { width: 62px; height: 62px; flex-basis: 62px; }
