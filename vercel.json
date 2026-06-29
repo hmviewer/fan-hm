@@ -24,7 +24,7 @@
     },
     {
       "source": "/api/shorts.php",
-      "destination": "/static-api/shorts.json"
+      "destination": "/api/shorts"
     },
     {
       "source": "/api/board.php",

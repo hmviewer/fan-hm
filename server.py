@@ -13,6 +13,9 @@ import time
 ROOT = Path(__file__).resolve().parent
 SOOP_LIVE_URL = "https://live.sooplive.co.kr/afreeca/player_live_api.php"
 SOOP_CHANNEL_API = "https://api-channel.sooplive.com/v1.1/channel"
+YOUTUBE_SHORTS_FEED_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCUh7tcH-bz8Xj5WaSO_TWLQ"
+YOUTUBE_SHORTS_CHANNEL = "HM엑셀부"
+YOUTUBE_SHORTS_CHANNEL_URL = "https://www.youtube.com/@HM%EC%97%91%EC%85%80%EB%B6%80"
 SSL_CONTEXT = ssl._create_unverified_context()
 DATA_TARGETS = {
     "members": ROOT / "static-api" / "members.json",
@@ -97,6 +100,9 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
 
         if path == "/api/live.php":
             return self._send_live_status()
+
+        if path == "/api/shorts.php":
+            return self._send_shorts()
 
         if path == "/api/board.php":
             return self._send_board_posts()
@@ -232,6 +238,106 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
         except Exception:
             payload = {"members": [], "liveCount": 0, "total": 0, "updatedAt": int(time.time()), "error": "LIVE 정보를 불러오지 못했습니다."}
         self._send_json(payload)
+
+    def _decode_xml_text(self, value):
+        return (
+            str(value or "")
+            .replace("&amp;", "&")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&quot;", '"')
+            .replace("&#39;", "'")
+            .replace("&apos;", "'")
+        )
+
+    def _xml_first(self, source, start, end):
+        left = source.find(start)
+        if left < 0:
+            return ""
+        left += len(start)
+        right = source.find(end, left)
+        if right < 0:
+            return ""
+        return self._decode_xml_text(source[left:right].strip())
+
+    def _xml_attr(self, source, key):
+        needle = f'{key}="'
+        left = source.find(needle)
+        if left < 0:
+            return ""
+        left += len(needle)
+        right = source.find('"', left)
+        if right < 0:
+            return ""
+        return self._decode_xml_text(source[left:right].strip())
+
+    def _clean_short_title(self, title):
+        title = str(title or "").strip()
+        for prefix in ("[HM엑셀부]", "HM엑셀부"):
+            if title.startswith(prefix):
+                title = title[len(prefix):].strip()
+        hash_index = title.find(" #")
+        if hash_index >= 0:
+            title = title[:hash_index].strip()
+        return " ".join(title.split()) or "THE HM Shorts"
+
+    def _parse_shorts_feed(self, xml):
+        entries = []
+        cursor = 0
+        while len(entries) < 12:
+            start = xml.find("<entry>", cursor)
+            if start < 0:
+                break
+            end = xml.find("</entry>", start)
+            if end < 0:
+                break
+            entry = xml[start + len("<entry>"):end]
+            cursor = end + len("</entry>")
+            video_id = self._xml_first(entry, "<yt:videoId>", "</yt:videoId>")
+            if not video_id:
+                continue
+            title = self._xml_first(entry, "<title>", "</title>")
+            thumb_part_start = entry.find("<media:thumbnail")
+            thumb_part_end = entry.find("/>", thumb_part_start)
+            thumb_part = entry[thumb_part_start:thumb_part_end] if thumb_part_start >= 0 and thumb_part_end >= 0 else ""
+            stats_start = entry.find("<media:statistics")
+            stats_end = entry.find("/>", stats_start)
+            stats_part = entry[stats_start:stats_end] if stats_start >= 0 and stats_end >= 0 else ""
+            entries.append({
+                "videoId": video_id,
+                "title": self._clean_short_title(title),
+                "thumb": self._xml_attr(thumb_part, "url") or f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg",
+                "url": f"https://www.youtube.com/shorts/{video_id}",
+                "channel": YOUTUBE_SHORTS_CHANNEL,
+                "published": self._xml_first(entry, "<published>", "</published>"),
+                "views": int(self._xml_attr(stats_part, "views") or 0),
+            })
+        return entries
+
+    def _send_shorts(self):
+        try:
+            request = Request(
+                YOUTUBE_SHORTS_FEED_URL,
+                headers={
+                    "Accept": "application/atom+xml, application/xml, text/xml",
+                    "User-Agent": "Mozilla/5.0",
+                },
+            )
+            with urlopen(request, timeout=5, context=SSL_CONTEXT) as response:
+                xml = response.read().decode("utf-8")
+            shorts = self._parse_shorts_feed(xml)
+        except Exception:
+            try:
+                fallback = json.loads((ROOT / "static-api" / "shorts.json").read_text(encoding="utf-8"))
+                shorts = fallback.get("shorts") if isinstance(fallback, dict) else []
+            except Exception:
+                shorts = []
+        self._send_json({
+            "shorts": shorts if isinstance(shorts, list) else [],
+            "channel": YOUTUBE_SHORTS_CHANNEL,
+            "channelUrl": YOUTUBE_SHORTS_CHANNEL_URL,
+            "updatedAt": int(time.time()),
+        })
 
     def _fetch_json_url(self, url):
         request = Request(
