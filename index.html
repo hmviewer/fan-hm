@@ -138,6 +138,7 @@
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     const LIVE_API_URL = "api/live.php";    // 사이트 서버사이드 SOOP 조회 (워커·Access 불필요)
+    const MEMBERS_API_URL = "api/members.php";
     const BOARD_API_URL = "api/board.php";  // 사이트 서버사이드 SOOP 조회 (워커·Access 불필요)
     const SHORTS_API_URL = "api/shorts.php"; // 크루(공식) 채널 쇼츠만 (API 키 필요, 키 없으면 빈 배열→섹션 숨김)
     const RANK_API_URL = "api/rank.php?ym=all";        // 후원액(별풍선) 랭킹 (데이터 탭 업로드 자동 변환)
@@ -152,6 +153,7 @@
     const boardPosts = document.getElementById("boardPosts");
     const rankingPreview = document.getElementById("rankingPreview");
     const noticePreview = document.getElementById("noticePreview");
+    let memberLookup = new Map();
 
     const esc = (v) => String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
     const numberFormat = (v) => Number(v || 0).toLocaleString("ko-KR");
@@ -224,8 +226,13 @@
       return `<a class="short-card" href="${url}" target="_blank" rel="noopener" draggable="false"><div class="short-thumb${th ? "" : " no-image"}">${thumb}<span class="short-badge">▶ Shorts</span></div><div class="short-info"><div class="short-title">${title}</div>${ch ? `<div class="short-channel">${ch}</div>` : ""}</div></a>`;
     }
     function renderBoardPost(p) {
-      const name = esc(p.bjName || p.writer || "멤버"), title = esc(p.title || "제목 없음"), summary = esc(p.summary || ""), url = esc(p.url || "#"), date = esc(formatPostDate(p.regDate)), c = Number(p.commentCount || 0), r = numberFormat(p.readCount || 0), th = esc(p.thumbnail || ""), has = Boolean(th);
-      return `<a class="post-item ${has ? "has-image" : "text-only"}" href="${url}" target="_blank" rel="noopener" draggable="false"><div class="post-body"><div class="post-category">${name}${p.isNotice ? " · 공지" : ""}</div><div class="post-title">${title}</div>${summary ? `<div class="post-summary">${summary}</div>` : ""}<div class="post-meta">${date} · 댓글 ${c} · 조회 ${r}</div></div>${has ? `<div class="post-thumb"><img src="${th}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" draggable="false"></div>` : ""}</a>`;
+      const rawName = String(p.bjName || p.writer || "멤버");
+      const member = memberLookup.get(String(p.soopId || "").toLowerCase()) || memberLookup.get(rawName);
+      const name = esc(rawName), rank = esc(member?.rank || member?.group || "");
+      const title = esc(p.title || "제목 없음"), summary = esc(p.summary || ""), url = esc(p.url || "#"), date = esc(formatPostDate(p.regDate)), c = Number(p.commentCount || 0), r = numberFormat(p.readCount || 0), th = esc(p.thumbnail || ""), has = Boolean(th);
+      const rankTag = rank ? `<span class="post-rank">${rank}</span>` : "";
+      const noticeTag = p.isNotice ? `<span class="post-notice">공지</span>` : "";
+      return `<a class="post-item ${has ? "has-image" : "text-only"}" href="${url}" target="_blank" rel="noopener" draggable="false"><div class="post-body"><div class="post-category"><span class="post-author">${name}</span>${rankTag}${noticeTag}</div><div class="post-title">${title}</div>${summary ? `<div class="post-summary">${summary}</div>` : ""}<div class="post-meta">${date} · 댓글 ${c} · 조회 ${r}</div></div>${has ? `<div class="post-thumb"><img src="${th}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" draggable="false"></div>` : ""}</a>`;
     }
     function renderRankingPreview(supportRows, chatRows) {
       const sup = Array.isArray(supportRows) ? supportRows : [], chat = Array.isArray(chatRows) ? chatRows : [];
@@ -272,7 +279,19 @@
     }
     async function loadBoardPosts() {
       try {
-        const r = await fetch(BOARD_API_URL, { cache: "no-store" }); if (!r.ok) throw 0;
+        const [r, m] = await Promise.all([
+          fetch(BOARD_API_URL, { cache: "no-store" }),
+          fetch(MEMBERS_API_URL, { cache: "no-store" })
+        ]);
+        if (!r.ok) throw 0;
+        if (m.ok) {
+          const members = await m.json();
+          memberLookup = new Map();
+          (Array.isArray(members) ? members : []).forEach(member => {
+            if (member?.soopId) memberLookup.set(String(member.soopId).toLowerCase(), member);
+            if (member?.name) memberLookup.set(String(member.name), member);
+          });
+        }
         const d = await r.json(); const posts = (Array.isArray(d) ? d : (Array.isArray(d.data) ? d.data : [])).slice(0, 10);
         boardPosts.innerHTML = posts.length ? posts.map(renderBoardPost).join("") : `<div class="post-empty">표시할 새 글이 없습니다.</div>`;
       } catch (e) { boardPosts.innerHTML = `<div class="post-empty">새 글을 불러오지 못했습니다.</div>`; }
