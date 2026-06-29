@@ -56,9 +56,15 @@
 <main>
     <section class="hero" aria-label="메인 배너">
         <div class="hero-track" id="heroTrack">
-                        <article class="hero-slide hero-promo-slide hero-has-image" style="background-image:url('assets/hero/hero_6d51fe2b4a0b.jpg'); --hero-ov:0; --hero-ov-top:0">
+                        <article class="hero-slide hero-promo-slide hm-brand-hero">
                                 <div class="hero-content">
-                                        <h1 class="hero-title"></h1>
+                                        <div class="hero-kicker">THE HM OFFICIAL</div>
+                                        <h1 class="hero-title">THE HM</h1>
+                                        <p class="hero-sub">LIVE STATUS · MEMBER ROSTER · SIGNATURE FINDER</p>
+                                        <div class="hero-actions">
+                                            <a class="hero-primary" href="live/">LIVE 보기</a>
+                                            <a class="hero-secondary" href="members/">멤버 보기</a>
+                                        </div>
                                     </div>
             </article>
                     </div>
@@ -190,7 +196,7 @@
     function renderLiveCard(m) {
       const name = esc(m.name || m.soopId || "멤버"), title = esc(m.title || "방송 중"), viewer = numberFormat(m.viewer || 0), started = esc(m.startedAt || ""), url = liveOpenUrl(m);
       const thumb = m.thumbnail ? `<img src="${esc(m.thumbnail)}" alt="${name}" loading="lazy" referrerpolicy="no-referrer">` : name;
-      return `<a class="card live-card" href="${esc(url)}" target="_blank" rel="noopener"><div class="live-thumb${m.thumbnail ? "" : " no-image"}">${thumb}<span class="live-badge">LIVE</span></div><div class="live-info"><div class="live-name">${name}</div><div class="live-desc">${title}</div><div class="live-meta"><span>👀 ${viewer}</span>${started ? `<span>· ${started}</span>` : ""}</div></div></a>`;
+      return `<a class="card live-card" href="${esc(url)}" target="_blank" rel="noopener"><div class="live-thumb${m.thumbnail ? "" : " no-image"}">${thumb}<span class="live-badge">LIVE</span></div><div class="live-info"><div class="live-name">${name}</div><div class="live-desc">${title}</div><div class="live-meta"><span>VIEW ${viewer}</span>${started ? `<span>· ${started}</span>` : ""}</div></div></a>`;
     }
     function renderShort(s) {
       const title = esc(s.title || "쇼츠"), ch = esc(s.channel || ""), url = esc(s.url || "#"), th = esc(s.thumb || "");
