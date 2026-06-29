@@ -120,16 +120,44 @@
   .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 620px) {
-  .member-hero { position: relative; min-height: 164px; padding: 20px 16px; border-radius: 14px; }
-  .member-hero-content { min-height: 124px; display: grid; grid-template-columns: 1fr; gap: 12px; align-items: end; text-align: left; }
-  .member-hero .hero-kicker { font-size: 10px; letter-spacing: .16em; margin-bottom: 6px; }
-  .member-hero .hero-title { font-size: 38px; letter-spacing: .02em; line-height: 1; }
-  .member-hero .hero-sub { margin-top: 8px; font-size: 12px; line-height: 1.35; max-width: 240px; }
-  .hero-stat-card { position: static; width: 100%; min-width: 0; padding: 8px 10px; border-radius: 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; background: rgba(255,255,255,0.72); box-shadow: 0 8px 18px rgba(64, 54, 28,0.08); }
-  .stat-row { gap: 8px; padding: 0 10px 0 0; border-bottom: 0; border-right: 1px solid rgba(97, 92, 82, 0.38); }
+  .member-hero { position: relative; min-height: 0; padding: 18px 16px 16px; border-radius: 14px; }
+  .member-hero-content { min-height: 0; display: grid; grid-template-columns: 1fr; gap: 13px; align-items: stretch; text-align: left; }
+  .member-hero .hero-kicker { font-size: 10px; letter-spacing: .18em; margin-bottom: 7px; }
+  .member-hero .hero-title { font-size: 42px; letter-spacing: .01em; line-height: .95; }
+  .member-hero .hero-sub {
+    width: 100%;
+    max-width: none;
+    margin-top: 9px;
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.35;
+    color: #4f4b43;
+    word-break: keep-all;
+  }
+  .hero-stat-card {
+    position: static;
+    width: 100%;
+    min-width: 0;
+    padding: 5px;
+    border-radius: 11px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    background: rgba(255,255,255,0.74);
+    box-shadow: 0 10px 20px rgba(64, 54, 28,0.09);
+  }
+  .stat-row {
+    min-height: 38px;
+    gap: 8px;
+    padding: 0 10px;
+    border-bottom: 0;
+    border-right: 0;
+    border-radius: 8px;
+    background: rgba(255, 252, 244, 0.78);
+  }
   .stat-row:last-child { padding-right: 0; border-right: 0; }
-  .stat-label { font-size: 9px; line-height: 1; }
-  .stat-value { font-size: 16px; line-height: 1; }
+  .stat-label { font-size: 10px; line-height: 1; }
+  .stat-value { font-size: 17px; line-height: 1; }
   .member-section { margin-top: 14px; padding: 12px; border-radius: 15px; }
   .member-section:first-of-type { margin-top: 16px; }
   .group-head { margin-bottom: 10px; }
