@@ -5,7 +5,7 @@ Static THE HM site prepared for local preview, GitHub, and Vercel.
 ## Run
 
 ```bash
-cd fantaj-local
+cd the-hm
 python3 server.py
 ```
 
@@ -19,7 +19,7 @@ http://127.0.0.1:4173/
 
 - Signature search/playback is linked to `https://hmsigfinder.vercel.app/`.
 - Music files are intentionally not integrated or deployed here.
-- `api/`, `image/`, and `music/` are ignored for Git and Vercel to keep the deploy small and avoid publishing signature/music paths.
+- `image/` and `music/` are not included in this project.
 - Public pages and small JSON API snapshots are stored locally.
 - `server.py` maps the original query-based API routes such as `/api/rank.php?months=1`.
 - Vercel rewrites `/api/*.php` requests to `static-api/*.json`.

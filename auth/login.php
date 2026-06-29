@@ -70,7 +70,7 @@
     const themeLbl  = document.getElementById('themeLabel');
 
     (function() {
-        const saved = localStorage.getItem('fantaj_sig_theme') || 'light';
+        const saved = localStorage.getItem('the_hm_theme') || 'light';
         applyTheme(saved);
     })();
 
@@ -78,7 +78,7 @@
         html.setAttribute('data-theme', t);
         themeIcon.textContent = t === 'dark' ? '☀️' : '🌙';
         themeLbl.textContent  = t === 'dark' ? '라이트' : '다크';
-        localStorage.setItem('fantaj_sig_theme', t);
+        localStorage.setItem('the_hm_theme', t);
     }
     themeBtn.addEventListener('click', () => {
         applyTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');

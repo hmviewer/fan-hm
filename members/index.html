@@ -106,7 +106,7 @@
 
     function escapeHtml(v) { return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
     function getMemberId(m) { return String(m.soopId || m.id || m.userId || "").trim(); }
-    function getProfileImage(userId) { const id = String(userId || "").trim(); return id ? `https://fantaj.kr/img.php?id=${encodeURIComponent(id)}` : DEFAULT_PROFILE_IMAGE; }
+    function getProfileImage(userId) { const id = String(userId || "").trim(); return id ? `https://profile.img.sooplive.co.kr/LOGO/${encodeURIComponent(id.slice(0, 2))}/${encodeURIComponent(id)}/${encodeURIComponent(id)}.jpg` : DEFAULT_PROFILE_IMAGE; }
     function fallbackAvatar(img) { img.onerror = null; img.src = DEFAULT_PROFILE_IMAGE; }
     function getStationUrl(id) { return `https://www.sooplive.com/station/${encodeURIComponent(id)}`; }
     function isMobileDevice() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }

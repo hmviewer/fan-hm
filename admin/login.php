@@ -38,7 +38,7 @@
 
 <script>
 (function(){
-    const t = localStorage.getItem('fantaj_sig_theme') || 'light';
+    const t = localStorage.getItem('the_hm_theme') || 'light';
     document.documentElement.setAttribute('data-theme', t);
     document.getElementById('themeIcon').textContent = t === 'dark' ? '☀️' : '🌙';
 })();
@@ -47,7 +47,7 @@ document.getElementById('themeBtn').addEventListener('click', () => {
     const next = cur === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     document.getElementById('themeIcon').textContent = next === 'dark' ? '☀️' : '🌙';
-    localStorage.setItem('fantaj_sig_theme', next);
+    localStorage.setItem('the_hm_theme', next);
 });
 </script>
 </body>

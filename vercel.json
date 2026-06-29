@@ -16,7 +16,7 @@
   "rewrites": [
     {
       "source": "/api/live.php",
-      "destination": "/static-api/live.json"
+      "destination": "/api/live"
     },
     {
       "source": "/api/members.php",

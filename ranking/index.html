@@ -136,7 +136,7 @@
       } catch (e) { console.warn("months", e); }
       sel.innerHTML = `<option value="all">전체</option>${months.map(m => `<option value="${m}">${formatMonthLabel(m)}</option>`).join("")}`;
     }
-    function getProfileImage(userId) { const id = String(userId || "").trim(); return id ? `https://fantaj.kr/img.php?id=${encodeURIComponent(id)}` : DEFAULT_PROFILE_IMAGE; }
+    function getProfileImage(userId) { const id = String(userId || "").trim(); return id ? `https://profile.img.sooplive.co.kr/LOGO/${encodeURIComponent(id.slice(0, 2))}/${encodeURIComponent(id)}/${encodeURIComponent(id)}.jpg` : DEFAULT_PROFILE_IMAGE; }
     function fallbackAvatar(img) { img.onerror = null; img.src = DEFAULT_PROFILE_IMAGE; }
     // 후원등급 — 후원액(별풍선 누적) 기준 10단계. 임계값은 별풍선(개) 규모 기준이며 이 표만 고치면 됨.
     function getSupportTier(amount) {

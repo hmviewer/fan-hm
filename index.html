@@ -151,7 +151,11 @@
 
     const esc = (v) => String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
     const numberFormat = (v) => Number(v || 0).toLocaleString("ko-KR");
-    const getProfileImage = (id) => { id = String(id || "").trim(); return id ? `https://fantaj.kr/img.php?id=${encodeURIComponent(id)}` : DEFAULT_PROFILE_IMAGE; };
+    const getProfileImage = (id) => {
+      id = String(id || "").trim();
+      if (!id) return DEFAULT_PROFILE_IMAGE;
+      return `https://profile.img.sooplive.co.kr/LOGO/${encodeURIComponent(id.slice(0, 2))}/${encodeURIComponent(id)}/${encodeURIComponent(id)}.jpg`;
+    };
     function fallbackAvatar(img) { img.onerror = null; img.src = DEFAULT_PROFILE_IMAGE; }
 
     // 후원등급 — 후원액(별풍선 누적) 기준 10단계. 임계값은 ranking/index.php 의 getSupportTier 와 동일하게 유지.

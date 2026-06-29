@@ -130,11 +130,10 @@
     }
     function formatNumber(v) { return Number(v || 0).toLocaleString("ko-KR"); }
 
-    // Vercel 배포에서는 로컬 Python 프록시 없이 공개 프로필 프록시를 직접 사용한다.
     function getProfileImage(userId) {
       const id = String(userId || "").trim();
       if (!id) return DEFAULT_PROFILE_IMAGE;
-      return `https://fantaj.kr/img.php?id=${encodeURIComponent(id)}`;
+      return `https://profile.img.sooplive.co.kr/LOGO/${encodeURIComponent(id.slice(0, 2))}/${encodeURIComponent(id)}/${encodeURIComponent(id)}.jpg`;
     }
     function fallbackAvatar(img) { img.onerror = null; img.src = DEFAULT_PROFILE_IMAGE; }
 

@@ -1,23 +1,35 @@
 #!/usr/bin/env python3
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, quote, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.request import Request, urlopen
 import json
 import os
 import shutil
+import ssl
 import time
 
 
 ROOT = Path(__file__).resolve().parent
+SOOP_LIVE_URL = "https://live.sooplive.co.kr/afreeca/player_live_api.php"
+SSL_CONTEXT = ssl._create_unverified_context()
 DATA_TARGETS = {
-    "signatures": ROOT / "api" / "data.php",
-    "members": ROOT / "api" / "members.php",
-    "notices": ROOT / "api" / "notices.php",
-    "rank": ROOT / "api" / "rank.php",
-    "chatrank": ROOT / "api" / "chatrank.php",
-    "shorts": ROOT / "api" / "shorts.php",
-    "live": ROOT / "api" / "live.php",
-    "board": ROOT / "api" / "board.php",
+    "members": ROOT / "static-api" / "members.json",
+    "notices": ROOT / "static-api" / "notices.json",
+    "rank": ROOT / "static-api" / "rank.json",
+    "chatrank": ROOT / "static-api" / "chatrank.json",
+    "shorts": ROOT / "static-api" / "shorts.json",
+    "live": ROOT / "static-api" / "live.json",
+    "board": ROOT / "static-api" / "board.json",
+}
+API_ROUTES = {
+    "/api/members.php": ROOT / "static-api" / "members.json",
+    "/api/notices.php": ROOT / "static-api" / "notices.json",
+    "/api/rank.php": ROOT / "static-api" / "rank.json",
+    "/api/chatrank.php": ROOT / "static-api" / "chatrank.json",
+    "/api/shorts.php": ROOT / "static-api" / "shorts.json",
+    "/api/live.php": ROOT / "static-api" / "live.json",
+    "/api/board.php": ROOT / "static-api" / "board.json",
 }
 
 
@@ -60,22 +72,17 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
             self.end_headers()
             return
 
-        if path == "/img.php":
-            user_id = (query.get("id") or [""])[0]
-            self.send_response(302)
-            self.send_header("Location", f"https://fantaj.kr/img.php?id={quote(user_id)}")
-            self.end_headers()
-            return
-
         if path == "/api/rank.php":
-            if query.get("months") == ["1"]:
-                return self._send_file(ROOT / "api" / "rank-months.json", "application/json; charset=utf-8")
-            return self._send_file(ROOT / "api" / "rank.php", "application/json; charset=utf-8")
+            return self._send_file(API_ROUTES[path], "application/json; charset=utf-8")
 
         if path == "/api/chatrank.php":
-            if query.get("rounds") == ["all"]:
-                return self._send_file(ROOT / "api" / "chatrank-rounds.json", "application/json; charset=utf-8")
-            return self._send_file(ROOT / "api" / "chatrank.php", "application/json; charset=utf-8")
+            return self._send_file(API_ROUTES[path], "application/json; charset=utf-8")
+
+        if path == "/api/live.php":
+            return self._send_live_status()
+
+        if path in API_ROUTES:
+            return self._send_file(API_ROUTES[path], "application/json; charset=utf-8")
 
         if path == "/local-admin/meta":
             return self._send_admin_meta()
@@ -127,6 +134,72 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
                 payload[name] = {"path": str(path.relative_to(ROOT)), "count": count}
             except Exception as exc:
                 payload[name] = {"path": str(path.relative_to(ROOT)), "error": str(exc)}
+        self._send_json(payload)
+
+    def _fetch_member_live_state(self, member):
+        soop_id = str(member.get("soopId") or member.get("id") or "").strip()
+        if not soop_id:
+            return {**member, "isLive": False}
+        body = urlencode({"bid": soop_id, "type": "live", "player_type": "html5"}).encode("utf-8")
+        request = Request(
+            SOOP_LIVE_URL,
+            data=body,
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "Origin": "https://play.sooplive.com",
+                "Referer": f"https://play.sooplive.com/{soop_id}",
+                "User-Agent": "Mozilla/5.0",
+            },
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=4, context=SSL_CONTEXT) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            channel = payload.get("CHANNEL") or {}
+            is_live = int(channel.get("RESULT") or 0) == 1
+            broad_no = str(channel.get("BNO") or channel.get("BROAD_NO") or "").strip()
+            title = str(channel.get("TITLE") or channel.get("BROAD_TITLE") or "").strip()
+            viewer = int(channel.get("VIEW_CNT") or channel.get("TOTAL_VIEW_CNT") or channel.get("PC_VIEW_CNT") or 0)
+            thumbnail = str(channel.get("BROAD_IMG") or channel.get("THUMBNAIL") or "").strip()
+            started_at = str(channel.get("BROAD_START") or channel.get("START_TIME") or "").strip()
+            return {
+                **member,
+                "soopId": soop_id,
+                "isLive": is_live,
+                "viewer": viewer if is_live else 0,
+                "title": title if is_live else "",
+                "startedAt": started_at if is_live else "",
+                "thumbnail": thumbnail if is_live else "",
+                "broadNo": broad_no if is_live else "",
+                "url": f"https://play.sooplive.co.kr/{soop_id}/{broad_no}" if is_live and broad_no else f"https://play.sooplive.co.kr/{soop_id}",
+            }
+        except Exception:
+            return {
+                **member,
+                "soopId": soop_id,
+                "isLive": False,
+                "viewer": 0,
+                "title": "",
+                "startedAt": "",
+                "thumbnail": "",
+                "broadNo": "",
+                "url": f"https://play.sooplive.co.kr/{soop_id}",
+            }
+
+    def _send_live_status(self):
+        try:
+            members = json.loads((ROOT / "static-api" / "members.json").read_text(encoding="utf-8"))
+            if not isinstance(members, list):
+                members = []
+            live_members = [self._fetch_member_live_state(member) for member in members]
+            payload = {
+                "members": live_members,
+                "liveCount": sum(1 for member in live_members if member.get("isLive")),
+                "total": len(live_members),
+                "updatedAt": int(time.time()),
+            }
+        except Exception:
+            payload = {"members": [], "liveCount": 0, "total": 0, "updatedAt": int(time.time()), "error": "LIVE 정보를 불러오지 못했습니다."}
         self._send_json(payload)
 
     def _send_json(self, payload):
