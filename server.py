@@ -33,6 +33,22 @@ API_ROUTES = {
 }
 
 
+def live_thumbnail_candidates(broad_no, direct=""):
+    broad_no = str(broad_no or "").strip()
+    direct = str(direct or "").strip()
+    candidates = []
+    if direct:
+        candidates.append(direct)
+    if broad_no:
+        candidates.extend([
+            f"https://liveimg.sooplive.co.kr/m/{broad_no}",
+            f"https://liveimg.afreecatv.com/m/{broad_no}",
+            f"https://liveimg.sooplive.co.kr/h/{broad_no}",
+            f"https://liveimg.afreecatv.com/h/{broad_no}",
+        ])
+    return list(dict.fromkeys(candidates))
+
+
 class TheHMLocalHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -169,6 +185,7 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
                 or channel.get("TITLE_IMG")
                 or ""
             ).strip()
+            thumbnail_candidates = live_thumbnail_candidates(broad_no, thumbnail)
             started_at = str(channel.get("BROAD_START") or channel.get("START_TIME") or "").strip()
             return {
                 **member,
@@ -177,7 +194,8 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
                 "viewer": viewer if is_live else 0,
                 "title": title if is_live else "",
                 "startedAt": started_at if is_live else "",
-                "thumbnail": thumbnail if is_live else "",
+                "thumbnail": thumbnail_candidates[0] if is_live and thumbnail_candidates else "",
+                "thumbnailCandidates": thumbnail_candidates if is_live else [],
                 "broadNo": broad_no if is_live else "",
                 "url": f"https://play.sooplive.co.kr/{soop_id}/{broad_no}" if is_live and broad_no else f"https://play.sooplive.co.kr/{soop_id}",
             }
@@ -190,6 +208,7 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
                 "title": "",
                 "startedAt": "",
                 "thumbnail": "",
+                "thumbnailCandidates": [],
                 "broadNo": "",
                 "url": f"https://play.sooplive.co.kr/{soop_id}",
             }

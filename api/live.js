@@ -4,13 +4,26 @@ import path from "node:path";
 const MEMBERS_PATH = path.join(process.cwd(), "static-api", "members.json");
 const SOOP_LIVE_URL = "https://live.sooplive.co.kr/afreeca/player_live_api.php";
 
+function liveThumbnailCandidates(broadNo, direct = "") {
+  const id = String(broadNo || "").trim();
+  const first = String(direct || "").trim();
+  return [
+    first,
+    id ? `https://liveimg.sooplive.co.kr/m/${encodeURIComponent(id)}` : "",
+    id ? `https://liveimg.afreecatv.com/m/${encodeURIComponent(id)}` : "",
+    id ? `https://liveimg.sooplive.co.kr/h/${encodeURIComponent(id)}` : "",
+    id ? `https://liveimg.afreecatv.com/h/${encodeURIComponent(id)}` : ""
+  ].filter(Boolean).filter((url, index, arr) => arr.indexOf(url) === index);
+}
+
 function normalizeChannel(member, channel) {
   const result = Number(channel?.RESULT || 0);
   const isLive = result === 1;
   const broadNo = String(channel?.BNO || channel?.BROAD_NO || channel?.broad_no || "").trim();
   const title = String(channel?.TITLE || channel?.BROAD_TITLE || "").trim();
   const viewer = Number(channel?.VIEW_CNT || channel?.TOTAL_VIEW_CNT || channel?.PC_VIEW_CNT || 0);
-  const thumbnail = String(channel?.BROAD_IMG || channel?.THUMBNAIL || "").trim();
+  const thumbnail = String(channel?.BROAD_IMG || channel?.BROAD_THUMB || channel?.BROAD_THUMBNAIL || channel?.THUMBNAIL || channel?.THUMB || channel?.TITLE_IMG || "").trim();
+  const thumbnailCandidates = liveThumbnailCandidates(broadNo, thumbnail);
   const startedAt = String(channel?.BROAD_START || channel?.START_TIME || "").trim();
   const soopId = String(member.soopId || member.id || "").trim();
 
@@ -21,7 +34,8 @@ function normalizeChannel(member, channel) {
     viewer: isLive ? viewer : 0,
     title: isLive ? title : "",
     startedAt: isLive ? startedAt : "",
-    thumbnail: isLive ? thumbnail : "",
+    thumbnail: isLive ? (thumbnailCandidates[0] || "") : "",
+    thumbnailCandidates: isLive ? thumbnailCandidates : [],
     broadNo: isLive ? broadNo : "",
     url: isLive && broadNo
       ? `https://play.sooplive.co.kr/${encodeURIComponent(soopId)}/${encodeURIComponent(broadNo)}`
@@ -84,6 +98,7 @@ export default async function handler(req, res) {
         title: "",
         startedAt: "",
         thumbnail: "",
+        thumbnailCandidates: [],
         broadNo: "",
         url: soopId ? `https://play.sooplive.co.kr/${encodeURIComponent(soopId)}` : "#"
       };

@@ -190,11 +190,33 @@
     const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     function liveBroadNo(m) { const dir = m.broadNo || m.broad_no || m.broadno || m.broadcastNo; if (dir) return String(dir).trim(); const x = String(m.url || "").match(/\/(\d+)(?:[?#].*)?$/); return x ? x[1] : ""; }
     function liveOpenUrl(m) { const id = String(m.soopId || m.id || "").trim(), bno = liveBroadNo(m); if (isMobile() && id && bno) return `sooplive://player/live?user_id=${encodeURIComponent(id)}&broad_no=${encodeURIComponent(bno)}`; return m.url || "#"; }
+    function liveThumbCandidates(m) {
+      const bno = liveBroadNo(m), id = String(m.soopId || m.id || "").trim();
+      const profile = id ? getProfileImage(id) : DEFAULT_PROFILE_IMAGE;
+      return [
+        String(m.thumbnail || "").trim(),
+        ...(Array.isArray(m.thumbnailCandidates) ? m.thumbnailCandidates : []),
+        bno ? `https://liveimg.sooplive.co.kr/m/${encodeURIComponent(bno)}` : "",
+        bno ? `https://liveimg.afreecatv.com/m/${encodeURIComponent(bno)}` : "",
+        bno ? `https://liveimg.sooplive.co.kr/h/${encodeURIComponent(bno)}` : "",
+        bno ? `https://liveimg.afreecatv.com/h/${encodeURIComponent(bno)}` : "",
+        profile
+      ].filter(Boolean).filter((url, index, arr) => arr.indexOf(url) === index);
+    }
+    function swapLiveThumb(img) {
+      const candidates = String(img.dataset.candidates || "").split("|").filter(Boolean);
+      const nextIndex = Number(img.dataset.candidateIndex || 0) + 1;
+      const next = candidates[nextIndex];
+      if (!next) return;
+      img.dataset.candidateIndex = String(nextIndex);
+      img.onerror = function () { swapLiveThumb(img); };
+      img.src = next;
+    }
 
     function renderLiveCard(m) {
       const name = esc(m.name || m.soopId || "멤버"), title = esc(m.title || "방송 중"), viewer = numberFormat(m.viewer || 0), started = esc(m.startedAt || ""), url = liveOpenUrl(m);
-      const thumb = m.thumbnail ? `<img src="${esc(m.thumbnail)}" alt="${name}" loading="lazy" referrerpolicy="no-referrer">` : name;
-      return `<a class="card live-card" href="${esc(url)}" target="_blank" rel="noopener"><div class="live-thumb${m.thumbnail ? "" : " no-image"}">${thumb}<span class="live-badge">LIVE</span></div><div class="live-info"><div class="live-name">${name}</div><div class="live-desc">${title}</div><div class="live-meta"><span>VIEW ${viewer}</span>${started ? `<span>· ${started}</span>` : ""}</div></div></a>`;
+      const candidates = liveThumbCandidates(m), thumb = candidates[0] || DEFAULT_PROFILE_IMAGE;
+      return `<a class="card live-card" href="${esc(url)}" target="_blank" rel="noopener"><div class="live-thumb"><img src="${esc(thumb)}" data-candidates="${esc(candidates.join("|"))}" data-candidate-index="0" alt="${name}" loading="lazy" referrerpolicy="no-referrer" onerror="swapLiveThumb(this)"><span class="live-badge">LIVE</span></div><div class="live-info"><div class="live-name">${name}</div><div class="live-desc">${title}</div><div class="live-meta"><span>VIEW ${viewer}</span>${started ? `<span>· ${started}</span>` : ""}</div></div></a>`;
     }
     function renderShort(s) {
       const title = esc(s.title || "쇼츠"), ch = esc(s.channel || ""), url = esc(s.url || "#"), th = esc(s.thumb || "");

@@ -135,8 +135,30 @@
     }
     function fallbackAvatar(img) { img.onerror = null; img.src = DEFAULT_PROFILE_IMAGE; }
     function getDisplayThumbnail(member) {
-      const image = String(member.thumbnail || member.broadImg || member.profileImage || "").trim();
-      return image || getProfileImage(member.soopId || member.id);
+      return getLiveThumbnailCandidates(member)[0] || getProfileImage(member.soopId || member.id);
+    }
+    function getLiveThumbnailCandidates(member) {
+      const broadNo = getLiveBroadNo(member);
+      const direct = String(member.thumbnail || member.broadImg || member.profileImage || "").trim();
+      const list = Array.isArray(member.thumbnailCandidates) ? member.thumbnailCandidates : [];
+      return [direct, ...list,
+        broadNo ? `https://liveimg.sooplive.co.kr/m/${encodeURIComponent(broadNo)}` : "",
+        broadNo ? `https://liveimg.afreecatv.com/m/${encodeURIComponent(broadNo)}` : "",
+        broadNo ? `https://liveimg.sooplive.co.kr/h/${encodeURIComponent(broadNo)}` : "",
+        broadNo ? `https://liveimg.afreecatv.com/h/${encodeURIComponent(broadNo)}` : "",
+        getProfileImage(member.soopId || member.id)
+      ].filter(Boolean).filter((url, index, arr) => arr.indexOf(url) === index);
+    }
+    function swapLiveThumbnail(img) {
+      const candidates = String(img.dataset.candidates || "").split("|").filter(Boolean);
+      const nextIndex = Number(img.dataset.candidateIndex || 0) + 1;
+      const next = candidates[nextIndex];
+      if (!next) return;
+      img.dataset.candidateIndex = String(nextIndex);
+      img.onerror = function () { swapLiveThumbnail(img); };
+      img.src = next;
+      const bg = img.parentElement?.querySelector(".live-thumb-bg");
+      if (bg) bg.src = next;
     }
 
     function isMobileDevice() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }
@@ -217,8 +239,10 @@
       const viewer = formatNumber(m.viewer || 0);
       const startedAt = escapeHtml(m.startedAt || "");
       const rank = escapeHtml(m.rank || m.group || m.role || "멤버");
-      const thumbnail = escapeHtml(getDisplayThumbnail(m));
-      const thumbHtml = `<img class="live-thumb-bg" src="${thumbnail}" alt="" aria-hidden="true" loading="lazy" referrerpolicy="no-referrer"><img class="live-thumb-img" src="${thumbnail}" alt="${name} 방송 썸네일" loading="lazy" referrerpolicy="no-referrer" onerror="fallbackAvatar(this)">`;
+      const candidates = getLiveThumbnailCandidates(m);
+      const thumbnail = escapeHtml(candidates[0] || getProfileImage(m.soopId || m.id));
+      const candidateAttr = escapeHtml(candidates.join("|"));
+      const thumbHtml = `<img class="live-thumb-bg" src="${thumbnail}" alt="" aria-hidden="true" loading="lazy" referrerpolicy="no-referrer"><img class="live-thumb-img" src="${thumbnail}" data-candidates="${candidateAttr}" data-candidate-index="0" alt="${name} 방송 썸네일" loading="lazy" referrerpolicy="no-referrer" onerror="swapLiveThumbnail(this)">`;
       return `
         <article class="broadcast-card">
           <div class="live-thumb">${thumbHtml}<span class="live-badge">LIVE</span><span class="viewer-badge">VIEW ${viewer}</span></div>
