@@ -498,7 +498,7 @@ section { margin-top: 28px; }
 }
 .post-title {
   font-size: 14px; font-weight: 950; line-height: 1.35; color: #24211c;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .post-summary {
   margin-top: 6px; font-size: 12px; line-height: 1.38; color: #706b62;
