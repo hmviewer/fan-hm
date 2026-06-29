@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- THE HM 로고 및 공유 이미지 -->
+    <link rel="icon" type="image/png" href="/assets/logo/the-hm-favicon.png">
+    <link rel="icon" type="image/png" href="/assets/logo/the-hm-logo.png">
+    <link rel="apple-touch-icon" href="/assets/logo/the-hm-logo.png">
+    <!-- 링크 공유 미리보기 (Open Graph · 카카오톡 · 트위터/X) -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="THE HM">
+    <meta property="og:title" content="THE HM">
+    <meta property="og:description" content="THE HM">
+    <meta property="og:image" content="/assets/logo/the-hm-logo.png">
+    <meta property="og:image:width" content="296">
+    <meta property="og:image:height" content="298">
+    <meta property="og:url" content="/ranking/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="THE HM">
+    <meta name="twitter:description" content="THE HM">
+    <meta name="twitter:image" content="/assets/logo/the-hm-logo.png">
+<title>THE HM · RANKING</title>
+<meta name="theme-color" content="#caa64a">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="../css/common.css?v=1781540178">
+<link rel="stylesheet" href="../css/ranking.css?v=1781540178">
+</head>
+<body><header class="navbar">
+    <div class="nav-inner">
+        <a class="logo" href="../">THE HM</a>
+        <nav class="nav-menu" aria-label="상단 메뉴">
+                            <a href="../live/">LIVE</a>
+                            <a href="../members/">MEMBER</a>
+                            <a href="../notice/">NOTICE</a>
+                            <a href="../ranking/" class="active">RANKING</a>
+                            <a href="https://hmsigfinder.vercel.app/" target="_blank" rel="noopener">SIGNATURE</a>
+                    </nav>
+        <a class="nav-live" id="onAirButton" href="../live/">ON AIR</a>
+    </div>
+</header>
+<script>
+(function () {
+    var b = document.getElementById('onAirButton');
+    if (!b) return;
+    fetch('../api/live.php', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var n = (Array.isArray(d.members) ? d.members : []).filter(function (m) { return m && m.isLive; }).length;
+            b.textContent = n > 0 ? 'ON AIR ' + n : 'ON AIR';
+        }).catch(function () {});
+})();
+</script>
+<main class="page">
+    <section class="hero" aria-label="랭킹 배너">
+        <div class="hero-content">
+            <div class="hero-kicker">THE HM OFFICIAL PORTAL</div>
+            <h1 class="hero-title">RANKING</h1>
+            <p class="hero-sub">SUPPORT · CHAT · TOP 100</p>
+        </div>
+    </section>
+
+    <section class="ranking-card">
+        <div class="topbar">
+            <div class="tabs">
+                <button class="tab-btn active" type="button" data-type="balloon">👑 후원 랭킹 TOP 100</button>
+                <button class="tab-btn" type="button" data-type="chat">💬 채팅 랭킹 TOP 100</button>
+            </div>
+            <div class="period-box">
+                <select class="month-select" id="monthSelect"><option value="all">전체</option></select>
+                <select class="month-select round-select" id="roundSelect" style="display:none"><option value="all">전체 회차</option></select>
+            </div>
+        </div>
+
+        <div class="summary">
+            <div class="summary-box"><div class="summary-label">TOTAL SUPPORT</div><div class="summary-value" id="totalBalloon">0</div></div>
+            <div class="summary-box"><div class="summary-label">TOTAL SUPPORTERS</div><div class="summary-value" id="totalSupporters">0</div></div>
+            <div class="summary-box"><div class="summary-label">TOTAL CHAT</div><div class="summary-value" id="totalChat">0</div></div>
+        </div>
+
+        <div class="podium" id="podium"></div>
+
+        <div class="table-wrap" id="tableWrap">
+            <table>
+                <thead><tr><th>순위</th><th>닉네임</th><th id="scoreHeader">후원 등급</th><th id="extraHeader">후원액</th></tr></thead>
+                <tbody id="rankingBody"><tr><td colspan="4" class="loading">데이터 불러오는 중...</td></tr></tbody>
+            </table>
+        </div>
+
+        <div class="prep-state" id="prepState" style="display:none">
+            <div class="prep-icon">💬</div>
+            <div class="prep-title">준비 중</div>
+            <div class="prep-desc">채팅 랭킹은 현재 준비 중입니다.<br>조금만 기다려 주세요!</div>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-brand">
+        <span style="font-size:15px;color:rgba(202, 166, 74, .9)"></span>
+        <span>THE HM</span>
+    </div>
+    <div class="footer-links">
+        <a href="../policy/#terms">서비스 이용약관</a>
+        <a href="../policy/#privacy">개인정보 처리방침</a>
+        <a href="../policy/#youth">청소년 보호정책</a>
+    </div>
+    <div class="footer-info">회사명: THE HM · 문의: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8cffe5e1fce0e9b4b9becce2edfae9fea2efe3e1">[email&#160;protected]</a> · © 2026 THE HM. All rights reserved.</div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    const API_BASE = "../api/";   // 후원/채팅 랭킹 API — [데이터] 탭 업로드에서 자동 생성
+    const DEFAULT_PROFILE_IMAGE = "https://profile.img.sooplive.co.kr/LOGO/sy/sysdemian/sysdemian.jpg";
+
+    const DONATION_UNIT = "\uac1c";   // 후원액 단위 라벨(개/원)
+    const LOADING_ROW = `<tr><td colspan="4" class="loading">데이터 불러오는 중...</td></tr>`;
+    // currentYm = 후원 탭의 선택 월 / currentRound = 채팅 탭의 선택 회차(년월·회차)
+    let supportData = [], chatData = [], currentType = "balloon", currentYm = "all", currentRound = "all", chatRounds = [];
+    const $  = (s) => document.querySelector(s);
+    const $$ = (s) => document.querySelectorAll(s);
+
+    function escapeHtml(v) { return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
+    function formatNumber(v) { return Number(v || 0).toLocaleString("ko-KR"); }
+    function bust(url) { const sep = url.includes("?") ? "&" : "?"; return `${url}${sep}v=${Date.now()}`; }
+    function formatMonthLabel(m) { const x = String(m || "").match(/^(\d{4})-(\d{2})$/); return x ? `${x[1]}년 ${Number(x[2])}월` : String(m || ""); }
+    function normalizeMonthList(v) {
+      return (Array.isArray(v) ? v : []).map(it => typeof it === "string" ? it.trim() : (it && typeof it === "object" ? String(it.month || it.value || "").trim() : ""))
+        .filter(m => /^\d{4}-\d{2}$/.test(m)).filter((m, i, a) => a.indexOf(m) === i).sort((a, b) => b.localeCompare(a));
+    }
+    // 월 드롭다운 = 후원 탭 전용(후원 월). 채팅은 별도의 "년월·회차" 드롭다운을 사용한다.
+    async function loadMonthOptions() {
+      const sel = $("#monthSelect"); let months = [];
+      try {
+        const r = await fetch(bust(`${API_BASE}rank.php?months=1`), { cache: "no-store" });
+        if (r.ok) months = normalizeMonthList(await r.json());
+      } catch (e) { console.warn("months", e); }
+      sel.innerHTML = `<option value="all">전체</option>${months.map(m => `<option value="${m}">${formatMonthLabel(m)}</option>`).join("")}`;
+    }
+    function getProfileImage(userId) { const id = String(userId || "").trim(); return id ? `https://fantaj.kr/img.php?id=${encodeURIComponent(id)}` : DEFAULT_PROFILE_IMAGE; }
+    function fallbackAvatar(img) { img.onerror = null; img.src = DEFAULT_PROFILE_IMAGE; }
+    // 후원등급 — 후원액(별풍선 누적) 기준 10단계. 임계값은 별풍선(개) 규모 기준이며 이 표만 고치면 됨.
+    function getSupportTier(amount) {
+      const v = Number(amount || 0);
+      if (v <= 0)      return { icon: "🥔", label: "STONE" };
+      if (v >= 300000) return { icon: "🌌", label: "ETERNAL" };    // 300,000+
+      if (v >= 150000) return { icon: "✨", label: "MYTHIC" };     // 150,000~
+      if (v >= 70000)  return { icon: "👑", label: "LEGEND" };     // 70,000~
+      if (v >= 30000)  return { icon: "💎", label: "MASTER" };     // 30,000~
+      if (v >= 15000)  return { icon: "🟣", label: "DIAMOND" };    // 15,000~
+      if (v >= 7000)   return { icon: "🔵", label: "PLATINUM" };   // 7,000~
+      if (v >= 3000)   return { icon: "🟡", label: "GOLD" };       // 3,000~
+      if (v >= 1000)   return { icon: "⚪", label: "SILVER" };     // 1,000~
+      return { icon: "🥉", label: "BRONZE" };                       // 1~999
+    }
+    // 채팅 등급 — 채팅 횟수 기준 10단계(보수적). 최상위 ETERNAL = 40,000회 이상.
+    // 임계값을 바꾸려면 이 표만 수정하면 됨(아이콘은 후원 등급과 동일 패밀리 + BRONZE/MYTHIC).
+    function getChatTier(count) {
+      const v = Number(count || 0);
+      if (v >= 40000) return { icon: "🌌", label: "ETERNAL" };     // 40,000+
+      if (v >= 25000) return { icon: "✨", label: "MYTHIC" };      // 25,000~39,999
+      if (v >= 14000) return { icon: "👑", label: "LEGEND" };      // 14,000~24,999
+      if (v >= 7000)  return { icon: "💎", label: "MASTER" };      // 7,000~13,999
+      if (v >= 3500)  return { icon: "🟣", label: "DIAMOND" };     // 3,500~6,999
+      if (v >= 1500)  return { icon: "🔵", label: "PLATINUM" };    // 1,500~3,499
+      if (v >= 600)   return { icon: "🟡", label: "GOLD" };        // 600~1,499
+      if (v >= 200)   return { icon: "⚪", label: "SILVER" };      // 200~599
+      if (v >= 50)    return { icon: "🥉", label: "BRONZE" };      // 50~199
+      return { icon: "🥔", label: "STONE" };                       // 0~49
+    }
+    function getSortedData() {
+      const src = currentType === "chat" ? chatData : supportData;
+      const key = currentType === "chat" ? "chat" : "balloon";   // 후원 랭킹 = 후원액(별풍선) 기준
+      return [...src].sort((a, b) => Number(b[key] || 0) - Number(a[key] || 0)).slice(0, 100);
+    }
+    function renderSummary() {
+      $("#totalBalloon").textContent = formatNumber(supportData.reduce((s, u) => s + Number(u.balloon || 0), 0));
+      $("#totalSupporters").textContent = formatNumber(supportData.filter(u => Number(u.balloon || 0) > 0).length);
+      $("#totalChat").textContent = formatNumber(chatData.reduce((s, u) => s + Number(u.chat || 0), 0));
+    }
+    function renderPodium(data) {
+      const isChat = currentType === "chat";
+      const top3 = data.slice(0, 3), order = [1, 0, 2], crowns = ["🥇", "🥈", "🥉"];
+      $("#podium").innerHTML = order.filter(i => top3[i]).map(i => {
+        const u = top3[i], rank = i + 1;
+        // 채팅 탭: 채팅 등급 + 채팅 횟수. 후원 탭: 후원 등급 + 후원액.
+        const tier = isChat ? getChatTier(u.chat) : getSupportTier(u.balloon);
+        const sub  = isChat ? `채팅 ${formatNumber(u.chat)}회` : `후원 ${formatNumber(u.balloon)}${DONATION_UNIT}`;
+        return `<div class="winner rank-${rank}"><div class="crown">${crowns[i]}</div><img class="avatar" src="${getProfileImage(u.id)}" onerror="fallbackAvatar(this)" alt="${escapeHtml(u.nickname)}" loading="lazy"><div class="winner-name">${escapeHtml(u.nickname)}</div><div class="winner-tier"><span class="tier-badge">${tier.icon} ${tier.label}</span></div><div class="winner-sub">${sub}</div></div>`;
+      }).join("");
+    }
+    function renderTable(data) {
+      const isChat = currentType === "chat";
+      $("#scoreHeader").textContent = isChat ? "등급" : "후원 등급";
+      $("#extraHeader").textContent = isChat ? "채팅 수" : "후원액";
+      if (!data.length) {
+        $("#podium").innerHTML = "";
+        const emptyMsg = isChat
+          ? (currentRound === "all" ? "채팅 랭킹은 준비 중입니다." : "선택한 회차에 채팅 데이터가 없습니다.")
+          : "후원 데이터가 없습니다. 관리자 [데이터] 탭에서 후원 기록을 업로드하세요.";
+        $("#rankingBody").innerHTML = `<tr><td colspan="4" class="loading">${emptyMsg}</td></tr>`;
+        return;
+      }
+      $("#rankingBody").innerHTML = data.map((u, i) => {
+        const tier  = isChat ? getChatTier(u.chat) : getSupportTier(u.balloon);
+        const score = `<span class="tier-badge">${tier.icon} ${tier.label}</span>`;
+        const extra = isChat
+          ? `<div class="sub-score">${formatNumber(u.chat)}회</div>`
+          : `<div class="sub-score">${formatNumber(u.balloon)}${DONATION_UNIT}</div>`;
+        return `<tr><td class="rank-num">${i + 1}</td><td><div class="user-cell"><img class="mini-avatar" src="${getProfileImage(u.id)}" onerror="fallbackAvatar(this)" alt="${escapeHtml(u.nickname)}" loading="lazy"><div><div class="nickname">${escapeHtml(u.nickname)}</div></div></div></td><td>${score}</td><td>${extra}</td></tr>`;
+      }).join("");
+    }
+    function render() {
+      renderSummary();
+      const sorted = getSortedData();
+      // 채팅 데이터가 전혀 없을 때(전체 회차)만 "준비 중". 특정 회차가 비면 표 안내문으로 구분.
+      const showPrep = currentType === "chat" && chatData.length === 0 && currentRound === "all";
+      $("#prepState").style.display = showPrep ? "flex" : "none";
+      $("#tableWrap").style.display = showPrep ? "none" : "";
+      $("#podium").style.display = showPrep ? "none" : "";
+      if (showPrep) return;
+      renderPodium(sorted);
+      renderTable(sorted);
+    }
+    async function fetchRank(kind, ym, round = "all") {   // kind: 'rank' | 'chatrank'
+      try {
+        const q = `ym=${encodeURIComponent(ym)}` + (kind === "chatrank" ? `&round=${encodeURIComponent(round)}` : "");
+        const r = await fetch(bust(`${API_BASE}${kind}.php?${q}`), { cache: "no-store" });
+        if (!r.ok) return [];
+        const d = await r.json(); return Array.isArray(d) ? d : [];
+      } catch (e) { console.warn(kind, e); return []; }
+    }
+    // 채팅 "회차" 드롭다운 라벨 — 년월·회차만 ("2026년 6월 · 1회차")
+    function chatRoundLabel(r) {
+      const mon = r.ym ? `${formatMonthLabel(r.ym)} · ` : "";
+      return `${mon}${r.label || "회차"}`;
+    }
+    function updateSelectorVisibility() {
+      // 후원 탭 → 월 드롭다운만, 채팅 탭 → 회차(년월·회차) 드롭다운만
+      const isChat = currentType === "chat";
+      $("#monthSelect").style.display = isChat ? "none" : "";
+      $("#roundSelect").style.display = (isChat && chatRounds.length > 0) ? "" : "none";
+    }
+    // 채팅 회차 목록(전체 월) → "회차" 드롭다운. 값 = 회차 id, 라벨 = 년월·회차
+    async function loadChatRounds() {
+      chatRounds = [];
+      try {
+        const r = await fetch(bust(`${API_BASE}chatrank.php?rounds=all`), { cache: "no-store" });
+        if (r.ok) { const d = await r.json(); if (Array.isArray(d)) chatRounds = d; }
+      } catch (e) { console.warn("rounds", e); }
+      const sel = $("#roundSelect");
+      const keep = chatRounds.some(r => r.id === currentRound) ? currentRound : "all";
+      sel.innerHTML = `<option value="all">전체 회차</option>` +
+        chatRounds.map(r => `<option value="${escapeHtml(r.id)}">${escapeHtml(chatRoundLabel(r))}</option>`).join("");
+      sel.value = keep; currentRound = keep;
+    }
+    let supSeq = 0, chatSeq = 0;     // 최신 요청만 반영 — 늦게 도착한 응답은 폐기(빠른 연속 변경 경합 방지)
+    async function loadSupport() {   // 후원 탭: 선택 월의 후원 랭킹 재조회
+      const my = ++supSeq;
+      const data = await fetchRank("rank", currentYm);
+      if (my !== supSeq) return;     // 더 새 요청이 떴으면 stale 응답 폐기
+      supportData = data;
+      if (currentType !== "chat") render();   // 보고 있는 탭일 때만 즉시 렌더(불필요한 재렌더/깜빡임 방지)
+    }
+    async function loadChat() {      // 채팅 탭: 선택 회차(또는 전체)의 채팅 랭킹 재조회 (회차 id가 월을 포함하므로 ym='all')
+      const my = ++chatSeq;
+      const data = await fetchRank("chatrank", "all", currentRound);
+      if (my !== chatSeq) return;
+      chatData = data;
+      if (currentType === "chat") render();
+    }
+    $$(".tab-btn").forEach(b => b.addEventListener("click", () => {
+      $$(".tab-btn").forEach(x => x.classList.remove("active")); b.classList.add("active");
+      currentType = b.dataset.type; updateSelectorVisibility(); render();
+    }));
+    $("#monthSelect").addEventListener("change", e => { currentYm = e.target.value; $("#rankingBody").innerHTML = LOADING_ROW; loadSupport(); });
+    $("#roundSelect").addEventListener("change", e => { currentRound = e.target.value; $("#rankingBody").innerHTML = LOADING_ROW; loadChat(); });
+    (async function init() {
+      await Promise.all([loadMonthOptions(), loadChatRounds()]);
+      currentYm = $("#monthSelect").value || "all";
+      $("#rankingBody").innerHTML = LOADING_ROW;
+      [supportData, chatData] = await Promise.all([
+        fetchRank("rank", currentYm),
+        fetchRank("chatrank", "all", "all"),
+      ]);
+      updateSelectorVisibility();
+      render();
+    })();
+</script>
+</body>
+</html>

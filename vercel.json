@@ -1,0 +1,46 @@
+{
+  "cleanUrls": false,
+  "trailingSlash": true,
+  "redirects": [
+    {
+      "source": "/signature",
+      "destination": "https://hmsigfinder.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/signature/",
+      "destination": "https://hmsigfinder.vercel.app/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/live.php",
+      "destination": "/static-api/live.json"
+    },
+    {
+      "source": "/api/members.php",
+      "destination": "/static-api/members.json"
+    },
+    {
+      "source": "/api/notices.php",
+      "destination": "/static-api/notices.json"
+    },
+    {
+      "source": "/api/rank.php",
+      "destination": "/static-api/rank.json"
+    },
+    {
+      "source": "/api/chatrank.php",
+      "destination": "/static-api/chatrank.json"
+    },
+    {
+      "source": "/api/shorts.php",
+      "destination": "/static-api/shorts.json"
+    },
+    {
+      "source": "/api/board.php",
+      "destination": "/static-api/board.json"
+    }
+  ]
+}

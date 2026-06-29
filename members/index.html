@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- THE HM 로고 및 공유 이미지 -->
+    <link rel="icon" type="image/png" href="/assets/logo/the-hm-favicon.png">
+    <link rel="icon" type="image/png" href="/assets/logo/the-hm-logo.png">
+    <link rel="apple-touch-icon" href="/assets/logo/the-hm-logo.png">
+    <!-- 링크 공유 미리보기 (Open Graph · 카카오톡 · 트위터/X) -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="THE HM">
+    <meta property="og:title" content="THE HM">
+    <meta property="og:description" content="THE HM">
+    <meta property="og:image" content="/assets/logo/the-hm-logo.png">
+    <meta property="og:image:width" content="296">
+    <meta property="og:image:height" content="298">
+    <meta property="og:url" content="/members/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="THE HM">
+    <meta name="twitter:description" content="THE HM">
+    <meta name="twitter:image" content="/assets/logo/the-hm-logo.png">
+<title>THE HM · MEMBER</title>
+<meta name="theme-color" content="#caa64a">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="../css/common.css?v=1781540178">
+<link rel="stylesheet" href="../css/members.css?v=1781540178">
+</head>
+<body><header class="navbar">
+    <div class="nav-inner">
+        <a class="logo" href="../">THE HM</a>
+        <nav class="nav-menu" aria-label="상단 메뉴">
+                            <a href="../live/">LIVE</a>
+                            <a href="../members/" class="active">MEMBER</a>
+                            <a href="../notice/">NOTICE</a>
+                            <a href="../ranking/">RANKING</a>
+                            <a href="https://hmsigfinder.vercel.app/" target="_blank" rel="noopener">SIGNATURE</a>
+                    </nav>
+        <a class="nav-live" id="onAirButton" href="../live/">ON AIR</a>
+    </div>
+</header>
+<script>
+(function () {
+    var b = document.getElementById('onAirButton');
+    if (!b) return;
+    fetch('../api/live.php', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var n = (Array.isArray(d.members) ? d.members : []).filter(function (m) { return m && m.isLive; }).length;
+            b.textContent = n > 0 ? 'ON AIR ' + n : 'ON AIR';
+        }).catch(function () {});
+})();
+</script>
+<main class="page">
+    <section class="member-hero" aria-label="멤버 페이지 안내">
+        <div class="member-hero-content">
+            <div>
+                <div class="hero-kicker">THE HM</div>
+                <h1 class="hero-title">MEMBERS</h1>
+                <p class="hero-sub">멤버와 현재 LIVE 상태를 한눈에 확인할 수 있습니다.</p>
+            </div>
+            <div class="hero-stat-card" aria-label="멤버 요약">
+                <div class="stat-row"><span class="stat-label">TOTAL</span><span class="stat-value" id="totalCount">-</span></div>
+                <div class="stat-row"><span class="stat-label">LIVE</span><span class="stat-value live" id="liveCount">-</span></div>
+            </div>
+        </div>
+    </section>
+
+    <div id="memberContent">
+        <section class="member-section"><div class="member-grid"><div class="empty-card">멤버 정보를 불러오는 중…</div></div></section>
+    </div>
+
+    <section class="rank-guide" aria-label="직급 순서">
+        <div class="rank-guide-title">직급</div>
+        <div class="rank-list" id="rankList"></div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-brand">
+        <span style="font-size:15px;color:rgba(202, 166, 74, .9)"></span>
+        <span>THE HM</span>
+    </div>
+    <div class="footer-links">
+        <a href="../policy/#terms">서비스 이용약관</a>
+        <a href="../policy/#privacy">개인정보 처리방침</a>
+        <a href="../policy/#youth">청소년 보호정책</a>
+    </div>
+    <div class="footer-info">회사명: THE HM · 문의: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e6958f8b968a83ded3d4a68887908394c885898b">[email&#160;protected]</a> · © 2026 THE HM. All rights reserved.</div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    const MEMBERS_JSON_URL = "../api/members.php";  // 관리자 데이터 자동연동(없으면 시드 폴백)
+    const LIVE_API_URL = "../api/live.php";   // 사이트 서버사이드 SOOP 조회 (워커·Access 불필요)
+    const DEFAULT_PROFILE_IMAGE = "https://profile.img.sooplive.co.kr/LOGO/sy/sysdemian/sysdemian.jpg";
+    const RANK_ORDER = ["공동 대표", "부장", "차장", "과장", "팀장", "대리", "주임", "선임사원", "감찰", "웨이터"];
+    const GROUP_ORDER = ["대표", "멤버", "감찰", "웨이터"];
+    const GROUP_CLASS = { "대표": "leader", "멤버": "member", "감찰": "inspector", "웨이터": "waiter" };
+
+    const memberContent = document.getElementById("memberContent");
+    const totalCount = document.getElementById("totalCount");
+    const liveCount = document.getElementById("liveCount");
+    const rankList = document.getElementById("rankList");
+
+    let allMembers = [], liveMap = new Map();
+
+    function escapeHtml(v) { return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
+    function getMemberId(m) { return String(m.soopId || m.id || m.userId || "").trim(); }
+    function getProfileImage(userId) { const id = String(userId || "").trim(); return id ? `https://fantaj.kr/img.php?id=${encodeURIComponent(id)}` : DEFAULT_PROFILE_IMAGE; }
+    function fallbackAvatar(img) { img.onerror = null; img.src = DEFAULT_PROFILE_IMAGE; }
+    function getStationUrl(id) { return `https://www.sooplive.com/station/${encodeURIComponent(id)}`; }
+    function isMobileDevice() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }
+    function getLiveBroadNo(live) {
+      const d = live?.broadNo || live?.broad_no || live?.broadNumber;
+      if (d) return String(d).trim();
+      const m = String(live?.url || "").match(/\/(\d+)(?:[?#].*)?$/);
+      return m ? m[1] : "";
+    }
+    function getLiveLink(member, live) {
+      const webUrl = String(live?.url || "").trim() || `https://play.sooplive.com/${encodeURIComponent(member.id)}/${getLiveBroadNo(live)}`;
+      const broadNo = getLiveBroadNo(live);
+      if (isMobileDevice() && member.id && broadNo) return `sooplive://player/live?user_id=${encodeURIComponent(member.id)}&broad_no=${encodeURIComponent(broadNo)}`;
+      return webUrl;
+    }
+    function normalizeGroup(g) { const v = String(g || "멤버").trim(); return GROUP_ORDER.includes(v) ? v : "멤버"; }
+    function normalizeMember(m, index) {
+      const id = getMemberId(m);
+      return { index, name: String(m.name || m.nickname || id || "멤버").trim(), id, group: normalizeGroup(m.group || m.role), rank: String(m.rank || m.group || m.role || "멤버").trim() };
+    }
+    function normalizeLiveData(data) {
+      const list = Array.isArray(data?.members) ? data.members : (Array.isArray(data) ? data : []);
+      liveMap = new Map();
+      list.forEach(it => { const id = String(it.soopId || it.id || "").trim(); if (id && it.isLive) liveMap.set(id.toLowerCase(), it); });
+    }
+    function renderRankGuide() { rankList.innerHTML = RANK_ORDER.map(r => `<span class="rank-item">${escapeHtml(r)}</span>`).join(""); }
+
+    function renderMemberCard(member) {
+      const live = liveMap.get(member.id.toLowerCase());
+      const isLive = Boolean(live);
+      const name = escapeHtml(member.name), id = escapeHtml(member.id);
+      const title = escapeHtml(live?.title || "");
+      const href = isLive ? getLiveLink(member, live) : getStationUrl(member.id);
+      const linkText = isLive ? "방송 보기" : "방송국";
+      const groupClass = GROUP_CLASS[member.group] || "member";
+      return `
+        <a class="member-card ${groupClass} ${isLive ? "is-live" : ""}" href="${escapeHtml(href)}" target="_blank" rel="noopener">
+          <div class="member-cover"><span class="live-badge">LIVE</span></div>
+          <div class="member-photo-wrap"><img class="member-photo" src="${getProfileImage(member.id)}" onerror="fallbackAvatar(this)" alt="${name}" loading="lazy"></div>
+          <div class="member-info">
+            <div class="member-name">${name}</div>
+            <div class="member-id">${id}</div>
+            <div class="member-role-row"><span class="role-chip">${escapeHtml(member.rank || "멤버")}</span><span class="link-chip">${linkText}</span></div>
+            ${isLive && title ? `<div class="live-title">${title}</div>` : ""}
+          </div>
+        </a>`;
+    }
+    function renderGroupSection(groupName, members) {
+      const sc = GROUP_CLASS[groupName] || "member", title = escapeHtml(groupName);
+      return `
+        <section class="member-section group-section-${sc}" aria-label="${title}">
+          <div class="group-head"><h2 class="group-title"><span class="group-dot"></span>${title}</h2></div>
+          <div class="member-grid">${members.map(renderMemberCard).join("")}</div>
+        </section>`;
+    }
+    function renderMembers() {
+      totalCount.textContent = allMembers.length;
+      liveCount.textContent = liveMap.size;
+      const b = document.getElementById("onAirButton");
+      if (b) b.textContent = liveMap.size > 0 ? `ON AIR ${liveMap.size}` : "ON AIR";
+      if (!allMembers.length) { memberContent.innerHTML = `<section class="member-section"><div class="member-grid"><div class="empty-card">표시할 멤버가 없습니다.</div></div></section>`; return; }
+      const html = GROUP_ORDER.map(g => {
+        const gm = allMembers.filter(m => m.group === g).sort((a, b) => a.index - b.index);
+        return gm.length ? renderGroupSection(g, gm) : "";
+      }).join("");
+      memberContent.innerHTML = html || `<section class="member-section"><div class="member-grid"><div class="empty-card">표시할 멤버가 없습니다.</div></div></section>`;
+    }
+    async function loadMembers() {
+      try {
+        const [mr, lr] = await Promise.allSettled([fetch(MEMBERS_JSON_URL, { cache: "no-store" }), fetch(LIVE_API_URL, { cache: "no-store" })]);
+        if (mr.status !== "fulfilled" || !mr.value.ok) throw new Error("members.json");
+        const md = await mr.value.json();
+        const raw = Array.isArray(md) ? md : (Array.isArray(md.members) ? md.members : []);
+        allMembers = raw.map(normalizeMember).filter(m => m.id);
+        if (lr.status === "fulfilled" && lr.value.ok) normalizeLiveData(await lr.value.json());
+        renderMembers();
+      } catch (e) {
+        console.error(e);
+        totalCount.textContent = "-"; liveCount.textContent = "-";
+        memberContent.innerHTML = `<section class="member-section"><div class="member-grid"><div class="empty-card">멤버 정보를 불러오지 못했습니다.</div></div></section>`;
+      }
+    }
+    renderRankGuide();
+    loadMembers();
+</script>
+</body>
+</html>

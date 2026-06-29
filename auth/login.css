@@ -1,0 +1,123 @@
+/* =========================================
+   auth/login.css — 멤버 로그인 (THE HM 골드·실버 컨셉)
+   common.css 를 직접 로드하지 않는 단독 페이지라 팔레트를 자체 정의.
+========================================= */
+:root{
+  --bg-1:#f7f5ef; --bg-2:#ece8dc; --bg-3:#fffaf0;
+  --gold:#caa64a; --gold-2:#8d6a1f; --silver:#8f8f8a; --deep:#1f2424;
+  --card:rgba(255,252,245,.88); --line:rgba(97,92,82,.24);
+  --t1:#24211c; --t2:#5e5a52; --t3:#8b857a; --field:rgba(255,252,245,.92);
+  --err-bg:#fbf0e7; --err-bd:#e2bf90; --err-tx:#9a4f20;
+  --shadow:0 30px 72px rgba(64,54,28,.18);
+}
+[data-theme="dark"]{
+  --bg-1:#12100d; --bg-2:#171510; --bg-3:#211d15;
+  --card:rgba(31,29,24,.92); --line:rgba(202,166,74,.20);
+  --t1:#f5efe3; --t2:#d4c8af; --t3:#a69d8c; --field:rgba(255,255,255,.05);
+  --err-bg:rgba(154,79,32,.14); --err-bd:rgba(202,166,74,.28); --err-tx:#f0c77a;
+  --shadow:0 30px 72px rgba(0,0,0,.55);
+}
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family:'DM Sans','Noto Sans KR',system-ui,-apple-system,sans-serif;
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  padding:24px; color:var(--t1); position:relative; overflow:hidden;
+  background:
+    radial-gradient(circle at 12% 6%, rgba(202,166,74,.28), transparent 30%),
+    radial-gradient(circle at 86% 14%, rgba(143,143,138,.24), transparent 32%),
+    linear-gradient(180deg,var(--bg-1) 0%,var(--bg-2) 48%,var(--bg-3) 100%);
+}
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 50% at 18% 90%, rgba(202,166,74,.14), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 88% 92%, rgba(111,119,118,.14), transparent 60%);
+}
+
+/* 테마 토글 */
+.theme-btn{
+  position:fixed; top:18px; right:18px; z-index:10;
+  display:flex; align-items:center; gap:6px; cursor:pointer; font-family:inherit;
+  background:var(--card); border:1px solid var(--line); border-radius:100px;
+  padding:8px 14px; font-size:.76rem; font-weight:700; color:var(--t2);
+  backdrop-filter:blur(12px); transition:all .2s;
+}
+.theme-btn:hover{ border-color:var(--gold); color:var(--gold-2); }
+
+/* 카드 */
+.card{
+  position:relative; z-index:1; width:100%; max-width:412px;
+  background:var(--card); border:1px solid var(--line); border-radius:22px;
+  padding:46px 42px 34px; box-shadow:var(--shadow); overflow:hidden;
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  animation:cardUp .5s cubic-bezier(.22,1,.36,1) both;
+}
+.card::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:5px;
+  background:linear-gradient(90deg,var(--deep),var(--silver),var(--gold));
+}
+@keyframes cardUp{ from{ opacity:0; transform:translateY(22px); } to{ opacity:1; transform:translateY(0); } }
+
+/* 로고 */
+.logo{ text-align:center; margin-bottom:32px; }
+.logo-mark{
+  display:block; font-family:'Cormorant Garamond',serif;
+  font-size:2.7rem; font-weight:700; letter-spacing:.14em; line-height:1.05; margin-bottom:6px;
+  background:linear-gradient(115deg,#f8f7f2 0%,#cfd2cf 22%,#f3e2a4 48%,#b9953e 68%,#f6f1df 100%);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  text-shadow:0 1px 0 rgba(255,255,255,.42), 0 8px 22px rgba(202,166,74,.14);
+}
+.logo-sub{ font-size:.68rem; font-weight:800; letter-spacing:.3em; text-transform:uppercase; color:var(--t3); }
+.logo-divider{ width:46px; height:2px; margin:15px auto 0; border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+
+/* 필드 */
+.field{ margin-bottom:15px; }
+.field label{ display:block; font-size:.7rem; font-weight:800; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--t3); margin-bottom:7px; }
+.field input{
+  width:100%; padding:13px 16px; border-radius:12px; font-size:.96rem; font-family:inherit;
+  background:var(--field); border:1px solid var(--line); color:var(--t1); outline:none;
+  transition:border-color .18s, box-shadow .18s, background .2s;
+}
+.field input::placeholder{ color:var(--t3); }
+.field input:focus{ border-color:var(--gold); background:rgba(255,255,255,.96);
+  box-shadow:0 0 0 4px rgba(202,166,74,.18); }
+[data-theme="dark"] .field input:focus{ background:rgba(255,255,255,.08); }
+.field input.err{ border-color:var(--err-tx); box-shadow:0 0 0 4px rgba(192,57,94,.14); }
+
+/* 에러 */
+.error-box{ display:none; margin-bottom:14px; padding:11px 14px; border-radius:10px;
+  background:var(--err-bg); border:1px solid var(--err-bd); color:var(--err-tx);
+  font-size:.84rem; font-weight:700; text-align:center; }
+.error-box.show{ display:block; }
+
+/* 로그인 버튼 */
+.login-btn{
+  width:100%; margin-top:8px; padding:14px; border:0; border-radius:12px; cursor:pointer;
+  font-family:inherit; font-size:.95rem; font-weight:800; letter-spacing:.05em; color:#fff;
+  background:linear-gradient(135deg,var(--deep),var(--silver) 48%,var(--gold)); box-shadow:0 12px 26px rgba(64,54,28,.24);
+  transition:transform .18s, box-shadow .18s, opacity .18s;
+}
+.login-btn:hover:not(:disabled){ transform:translateY(-2px); box-shadow:0 16px 32px rgba(64,54,28,.32); }
+.login-btn:active:not(:disabled){ transform:translateY(0); }
+.login-btn:disabled{ opacity:.6; cursor:default; }
+
+/* 힌트 */
+.hint{ text-align:center; margin-top:18px; font-size:.78rem; color:var(--t3); letter-spacing:.02em; }
+
+/* 하단 링크 (커뮤니티 / 관리자) */
+.admin-link{ display:flex; align-items:center; justify-content:center; gap:18px;
+  margin-top:20px; padding-top:18px; border-top:1px solid var(--line); }
+.admin-link a{ font-size:.78rem; font-weight:800; color:var(--gold-2); letter-spacing:.02em; transition:opacity .18s; }
+.admin-link a:hover{ opacity:.65; }
+
+/* 쉐이크 */
+@keyframes shake{ 0%,100%{ transform:translateX(0); } 20%,60%{ transform:translateX(-5px); } 40%,80%{ transform:translateX(5px); } }
+.shake{ animation:shake .38s ease; }
+
+@media (max-width:460px){
+  .card{ padding:38px 26px 30px; border-radius:18px; }
+  .logo-mark{ font-size:2.3rem; }
+}

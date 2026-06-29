@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- THE HM 로고 및 공유 이미지 -->
+    <link rel="icon" type="image/png" href="/assets/logo/the-hm-favicon.png">
+    <link rel="icon" type="image/png" href="/assets/logo/the-hm-logo.png">
+    <link rel="apple-touch-icon" href="/assets/logo/the-hm-logo.png">
+    <!-- 링크 공유 미리보기 (Open Graph · 카카오톡 · 트위터/X) -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="THE HM">
+    <meta property="og:title" content="THE HM">
+    <meta property="og:description" content="THE HM">
+    <meta property="og:image" content="/assets/logo/the-hm-logo.png">
+    <meta property="og:image:width" content="296">
+    <meta property="og:image:height" content="298">
+    <meta property="og:url" content="/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="THE HM">
+    <meta name="twitter:description" content="THE HM">
+    <meta name="twitter:image" content="/assets/logo/the-hm-logo.png">
+<title>THE HM</title>
+<meta name="theme-color" content="#caa64a">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="home.css">
+</head>
+<body>
+<header class="navbar">
+    <div class="nav-inner">
+        <a class="logo" href="./">THE HM</a>
+        <nav class="nav-menu" aria-label="상단 메뉴">
+                            <a href="live/">LIVE</a>
+                            <a href="members/">MEMBER</a>
+                            <a href="notice/">NOTICE</a>
+                            <a href="ranking/">RANKING</a>
+                            <a href="https://hmsigfinder.vercel.app/" target="_blank" rel="noopener">SIGNATURE</a>
+                    </nav>
+        <a class="nav-live" id="onAirButton" href="live/">ON AIR</a>
+    </div>
+</header>
+<script>
+(function () {
+    var b = document.getElementById('onAirButton');
+    if (!b) return;
+    fetch('api/live.php', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var n = (Array.isArray(d.members) ? d.members : []).filter(function (m) { return m && m.isLive; }).length;
+            b.textContent = n > 0 ? 'ON AIR ' + n : 'ON AIR';
+        }).catch(function () {});
+})();
+</script>
+
+<main>
+    <section class="hero" aria-label="메인 배너">
+        <div class="hero-track" id="heroTrack">
+                        <article class="hero-slide hero-promo-slide hero-has-image" style="background-image:url('assets/hero/hero_6d51fe2b4a0b.jpg'); --hero-ov:0; --hero-ov-top:0">
+                                <div class="hero-content">
+                                        <h1 class="hero-title"></h1>
+                                    </div>
+            </article>
+                    </div>
+            </section>
+
+    <section id="live">
+        <div class="section-head">
+            <h2 class="section-title">LIVE 방송국</h2>
+            <a class="section-more" href="live/">전체 보기</a>
+        </div>
+        <div class="live-grid" id="liveGrid"><div class="live-empty">LIVE 정보를 불러오는 중…</div></div>
+    </section>
+
+    <section id="board" class="board-section">
+        <div class="card board-card">
+            <div class="board-head">
+                <div><h2 class="section-title">방송국 새 글</h2></div>
+                <a class="section-more" href="live/?tab=posts">전체 보기</a>
+            </div>
+            <div class="post-strip" id="boardPosts"><div class="post-empty">불러오는 중…</div></div>
+        </div>
+    </section>
+
+    <section id="shorts" hidden>
+        <div class="section-head">
+            <h2 class="section-title">쇼츠</h2>
+        </div>
+        <div class="shorts-grid" id="shortsGrid"></div>
+    </section>
+
+    <section class="content-grid">
+        <div class="left-column">
+            <div id="notice">
+                <div class="section-head"><h2 class="section-title">공지사항</h2><a class="section-more" href="notice/">더보기</a></div>
+                <div class="card notice-list" id="noticePreview"></div>
+            </div>
+            <div id="signature">
+                <div class="section-head"><h2 class="section-title">시그니처</h2><a class="section-more" href="https://hmsigfinder.vercel.app/" target="_blank" rel="noopener">시그 찾기</a></div>
+                <a class="card signature-link-card" href="https://hmsigfinder.vercel.app/" target="_blank" rel="noopener">
+                    <span class="signature-link-kicker">HM SIG FINDER</span>
+                    <strong>시그니처 검색은 전용 페이지에서 연결됩니다.</strong>
+                    <span>노래 파일은 이 사이트 배포에 포함하지 않습니다.</span>
+                </a>
+            </div>
+        </div>
+
+        <aside id="ranking" class="card ranking-card">
+            <div class="section-head" style="padding:22px 22px 0; margin-bottom:0;">
+                <h2 class="section-title">랭킹</h2>
+                <a class="section-more" href="ranking/">전체 랭킹</a>
+            </div>
+            <div class="ranking-summary">
+                <div class="ranking-mini-box"><div class="ranking-mini-label">TOTAL SUPPORT</div><div class="ranking-mini-value" id="rankTotalSupport">—</div></div>
+                <div class="ranking-mini-box"><div class="ranking-mini-label">TOTAL CHAT</div><div class="ranking-mini-value" id="rankTotalChat">—</div></div>
+            </div>
+            <div class="ranking-list" id="rankingPreview"></div>
+        </aside>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-brand">
+        <span style="font-size:15px;color:rgba(202, 166, 74, .9)"></span>
+        <span>THE HM</span>
+    </div>
+    <div class="footer-links">
+        <a href="policy/#terms">서비스 이용약관</a>
+        <a href="policy/#privacy">개인정보 처리방침</a>
+        <a href="policy/#youth">청소년 보호정책</a>
+    </div>
+    <div class="footer-info">회사명: THE HM · 문의: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7e0d17130e121b464b4c3e101f081b0c501d1113">[email&#160;protected]</a> · © 2026 THE HM. All rights reserved.</div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    const LIVE_API_URL = "api/live.php";    // 사이트 서버사이드 SOOP 조회 (워커·Access 불필요)
+    const BOARD_API_URL = "api/board.php";  // 사이트 서버사이드 SOOP 조회 (워커·Access 불필요)
+    const SHORTS_API_URL = "api/shorts.php"; // 크루(공식) 채널 쇼츠만 (API 키 필요, 키 없으면 빈 배열→섹션 숨김)
+    const RANK_API_URL = "api/rank.php?ym=all";        // 후원액(별풍선) 랭킹 (데이터 탭 업로드 자동 변환)
+    const CHAT_RANK_API_URL = "api/chatrank.php?ym=all"; // 채팅 랭킹 (보류 → 빈 배열)
+    const REL_BASE = "";   // 사이트 루트까지 상대 접두 (자산 경로용)
+    const NOTICE_API_URL = "api/notices.php";
+    const DEFAULT_PROFILE_IMAGE = "https://profile.img.sooplive.co.kr/LOGO/sy/sysdemian/sysdemian.jpg";
+    const DONATION_UNIT = "\uac1c";   // 후원액 단위 라벨(개/원)
+
+    const liveGrid = document.getElementById("liveGrid");
+    const shortsGrid = document.getElementById("shortsGrid");
+    const boardPosts = document.getElementById("boardPosts");
+    const rankingPreview = document.getElementById("rankingPreview");
+    const noticePreview = document.getElementById("noticePreview");
+
+    const esc = (v) => String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+    const numberFormat = (v) => Number(v || 0).toLocaleString("ko-KR");
+    const getProfileImage = (id) => { id = String(id || "").trim(); return id ? `https://fantaj.kr/img.php?id=${encodeURIComponent(id)}` : DEFAULT_PROFILE_IMAGE; };
+    function fallbackAvatar(img) { img.onerror = null; img.src = DEFAULT_PROFILE_IMAGE; }
+
+    // 후원등급 — 후원액(별풍선 누적) 기준 10단계. 임계값은 ranking/index.php 의 getSupportTier 와 동일하게 유지.
+    function getSupportTier(amount) {
+      const v = Number(amount || 0);
+      if (v <= 0)      return { icon: "🥔", label: "STONE" };
+      if (v >= 300000) return { icon: "🌌", label: "ETERNAL" };
+      if (v >= 150000) return { icon: "✨", label: "MYTHIC" };
+      if (v >= 70000)  return { icon: "👑", label: "LEGEND" };
+      if (v >= 30000)  return { icon: "💎", label: "MASTER" };
+      if (v >= 15000)  return { icon: "🟣", label: "DIAMOND" };
+      if (v >= 7000)   return { icon: "🔵", label: "PLATINUM" };
+      if (v >= 3000)   return { icon: "🟡", label: "GOLD" };
+      if (v >= 1000)   return { icon: "⚪", label: "SILVER" };
+      return { icon: "🥉", label: "BRONZE" };
+    }
+    function formatPostDate(t) {
+      if (!t) return "";
+      const d = new Date(String(t).replace(" ", "T"));
+      if (Number.isNaN(d.getTime())) return String(t).slice(5, 10);
+      const diff = Date.now() - d.getTime(), min = Math.floor(diff / 60000), hour = Math.floor(min / 60), day = Math.floor(hour / 24);
+      if (min < 1) return "방금 전";
+      if (min < 60) return `${min}분 전`;
+      if (hour < 24) return `${hour}시간 전`;
+      if (day < 7) return `${day}일 전`;
+      return `${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+    }
+    const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    function liveBroadNo(m) { const dir = m.broadNo || m.broad_no || m.broadno || m.broadcastNo; if (dir) return String(dir).trim(); const x = String(m.url || "").match(/\/(\d+)(?:[?#].*)?$/); return x ? x[1] : ""; }
+    function liveOpenUrl(m) { const id = String(m.soopId || m.id || "").trim(), bno = liveBroadNo(m); if (isMobile() && id && bno) return `sooplive://player/live?user_id=${encodeURIComponent(id)}&broad_no=${encodeURIComponent(bno)}`; return m.url || "#"; }
+
+    function renderLiveCard(m) {
+      const name = esc(m.name || m.soopId || "멤버"), title = esc(m.title || "방송 중"), viewer = numberFormat(m.viewer || 0), started = esc(m.startedAt || ""), url = liveOpenUrl(m);
+      const thumb = m.thumbnail ? `<img src="${esc(m.thumbnail)}" alt="${name}" loading="lazy" referrerpolicy="no-referrer">` : name;
+      return `<a class="card live-card" href="${esc(url)}" target="_blank" rel="noopener"><div class="live-thumb${m.thumbnail ? "" : " no-image"}">${thumb}<span class="live-badge">LIVE</span></div><div class="live-info"><div class="live-name">${name}</div><div class="live-desc">${title}</div><div class="live-meta"><span>👀 ${viewer}</span>${started ? `<span>· ${started}</span>` : ""}</div></div></a>`;
+    }
+    function renderShort(s) {
+      const title = esc(s.title || "쇼츠"), ch = esc(s.channel || ""), url = esc(s.url || "#"), th = esc(s.thumb || "");
+      const thumb = th ? `<img src="${th}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" draggable="false">` : title;
+      return `<a class="short-card" href="${url}" target="_blank" rel="noopener" draggable="false"><div class="short-thumb${th ? "" : " no-image"}">${thumb}<span class="short-badge">▶ Shorts</span></div><div class="short-info"><div class="short-title">${title}</div>${ch ? `<div class="short-channel">${ch}</div>` : ""}</div></a>`;
+    }
+    function renderBoardPost(p) {
+      const name = esc(p.bjName || p.writer || "멤버"), title = esc(p.title || "제목 없음"), summary = esc(p.summary || ""), url = esc(p.url || "#"), date = esc(formatPostDate(p.regDate)), c = Number(p.commentCount || 0), r = numberFormat(p.readCount || 0), th = esc(p.thumbnail || ""), has = Boolean(th);
+      return `<a class="post-item ${has ? "has-image" : "text-only"}" href="${url}" target="_blank" rel="noopener" draggable="false"><div class="post-body"><div class="post-category">${name}${p.isNotice ? " · 공지" : ""}</div><div class="post-title">${title}</div>${summary ? `<div class="post-summary">${summary}</div>` : ""}<div class="post-meta">${date} · 댓글 ${c} · 조회 ${r}</div></div>${has ? `<div class="post-thumb"><img src="${th}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" draggable="false"></div>` : ""}</a>`;
+    }
+    function renderRankingPreview(supportRows, chatRows) {
+      const sup = Array.isArray(supportRows) ? supportRows : [], chat = Array.isArray(chatRows) ? chatRows : [];
+      const top = [...sup].sort((a, b) => Number(b.balloon || 0) - Number(a.balloon || 0)).slice(0, 8);
+      document.getElementById("rankTotalSupport").textContent = sup.length ? numberFormat(sup.reduce((s, i) => s + Number(i.balloon || 0), 0)) + DONATION_UNIT : "—";
+      document.getElementById("rankTotalChat").textContent = chat.length ? numberFormat(chat.reduce((s, i) => s + Number(i.chat || 0), 0)) : "—";
+      if (!top.length) { rankingPreview.innerHTML = `<div class="empty-row">랭킹 데이터가 없습니다.</div>`; return; }
+      rankingPreview.innerHTML = top.map((it, i) => {
+        const tier = getSupportTier(it.balloon), nick = esc(it.nickname || it.id || "닉네임");
+        return `<div class="rank-item"><div class="rank-left"><span class="rank-num">${i + 1}</span><span class="rank-avatar" style="overflow:hidden"><img src="${getProfileImage(it.id)}" onerror="fallbackAvatar(this)" alt="${nick}" loading="lazy" style="width:100%;height:100%;object-fit:cover"></span><span class="rank-user"><span class="rank-name">${nick}</span></span></div><span class="rank-tier">${tier.icon} ${tier.label}</span></div>`;
+      }).join("");
+    }
+    window.fallbackAvatar = fallbackAvatar;
+    function noticeBool(v) { if (v === true) return true; const t = String(v || "").trim().toLowerCase(); return ["true", "1", "yes", "y", "공개", "표시", "고정"].includes(t); }
+    function noticeDate(v) { const t = String(v || "").trim().match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/); return t ? `${t[2].padStart(2, "0")}.${t[3].padStart(2, "0")}` : (t ? "" : "-"); }
+    function renderNoticePreview(rows) {
+      const data = (Array.isArray(rows) ? rows : []).filter(i => i && noticeBool(i.visible)).sort((a, b) => {
+        const pa = noticeBool(a.pinned) ? 1 : 0, pb = noticeBool(b.pinned) ? 1 : 0; if (pa !== pb) return pb - pa;
+        return String(b.date || "").localeCompare(String(a.date || ""));
+      }).slice(0, 3);
+      if (!data.length) { noticePreview.innerHTML = `<div class="notice-item"><span class="notice-title">공지가 없습니다.</span><span class="notice-date">-</span></div>`; return; }
+      noticePreview.innerHTML = data.map(it => { const cat = it.category ? `[${esc(it.category)}] ` : ""; return `<a class="notice-item" href="notice/?id=${encodeURIComponent(it.id || "")}"><span class="notice-title">${cat}${esc(it.title || "제목 없음")}</span><span class="notice-date">${esc(noticeDate(it.date))}</span></a>`; }).join("");
+    }
+
+    async function loadLiveMembers() {
+      try {
+        const r = await fetch(LIVE_API_URL, { cache: "no-store" }); if (!r.ok) throw 0;
+        const d = await r.json(); const members = (Array.isArray(d.members) ? d.members : []).filter(m => m.isLive).sort((a, b) => Number(b.viewer || 0) - Number(a.viewer || 0)).slice(0, 10);
+        const n = members.length;
+        const ht = document.getElementById("heroLiveTitle"), hs = document.getElementById("heroLiveSub");
+        if (n > 0 && ht) { ht.textContent = "ON AIR"; hs.textContent = `${n}명의 멤버가 지금 방송 중입니다`; }
+        liveGrid.innerHTML = n ? members.map(renderLiveCard).join("") : `<div class="card live-empty">현재 진행 중인 LIVE 방송이 없습니다.</div>`;
+      } catch (e) { liveGrid.innerHTML = `<div class="card live-empty">LIVE 정보를 불러오지 못했습니다.</div>`; }
+    }
+    async function loadShorts() {
+      const section = document.getElementById("shorts");
+      try {
+        const r = await fetch(SHORTS_API_URL, { cache: "no-store" }); if (!r.ok) throw 0;
+        const d = await r.json(); const list = Array.isArray(d.shorts) ? d.shorts : [];
+        if (!list.length) { section.hidden = true; return; }
+        shortsGrid.innerHTML = list.map(renderShort).join("");
+        section.hidden = false;
+      } catch (e) { section.hidden = true; }
+    }
+    async function loadBoardPosts() {
+      try {
+        const r = await fetch(BOARD_API_URL, { cache: "no-store" }); if (!r.ok) throw 0;
+        const d = await r.json(); const posts = (Array.isArray(d) ? d : (Array.isArray(d.data) ? d.data : [])).slice(0, 10);
+        boardPosts.innerHTML = posts.length ? posts.map(renderBoardPost).join("") : `<div class="post-empty">표시할 새 글이 없습니다.</div>`;
+      } catch (e) { boardPosts.innerHTML = `<div class="post-empty">새 글을 불러오지 못했습니다.</div>`; }
+    }
+    async function loadRankingPreview() {
+      try {
+        const [a, b] = await Promise.all([fetch(RANK_API_URL, { cache: "no-store" }), fetch(CHAT_RANK_API_URL, { cache: "no-store" })]);
+        renderRankingPreview(a.ok ? await a.json() : [], b.ok ? await b.json() : []);
+      } catch (e) { rankingPreview.innerHTML = `<div class="empty-row">랭킹을 불러오지 못했습니다.</div>`; }
+    }
+    async function loadNoticePreview() {
+      try { const r = await fetch(NOTICE_API_URL, { cache: "no-store" }); renderNoticePreview(r.ok ? await r.json() : []); }
+      catch (e) { noticePreview.innerHTML = `<div class="notice-item"><span class="notice-title">공지를 불러오지 못했습니다.</span><span class="notice-date">!</span></div>`; }
+    }
+
+    /* 히어로 슬라이더 */
+    (function () {
+      const track = document.getElementById("heroTrack"), dots = Array.from(document.querySelectorAll(".hero-dot"));
+      if (!track || dots.length < 2) return;
+      let idx = 0, timer = null;
+      function show(i) { idx = (i + dots.length) % dots.length; track.style.transform = `translateX(-${idx * 100}%)`; dots.forEach((d, k) => d.classList.toggle("active", k === idx)); }
+      function start() { clearInterval(timer); timer = setInterval(() => show(idx + 1), 6000); }
+      dots.forEach((d, i) => d.addEventListener("click", () => { show(i); start(); }));
+      start();
+    })();
+
+    /* 가로 드래그 스크롤 */
+    function enableDragScroll(dragArea, scrollTarget) {
+      if (!dragArea || !scrollTarget) return;
+      let down = false, moved = false, block = false, startX = 0, sStart = 0, lastX = 0, lastT = 0, vel = 0, raf = null;
+      const maxL = () => Math.max(0, scrollTarget.scrollWidth - scrollTarget.clientWidth), clamp = v => Math.min(maxL(), Math.max(0, v));
+      dragArea.addEventListener("pointerdown", e => { if (e.button) return; if (raf) cancelAnimationFrame(raf); down = true; moved = false; block = false; startX = lastX = e.clientX; lastT = performance.now(); sStart = scrollTarget.scrollLeft; vel = 0; });
+      window.addEventListener("pointermove", e => { if (!down) return; const now = performance.now(), dx = e.clientX - startX, fm = e.clientX - lastX, dt = Math.max(8, now - lastT); if (Math.abs(dx) > 14) { moved = true; dragArea.classList.add("is-dragging"); } if (moved) { e.preventDefault(); scrollTarget.scrollLeft = clamp(sStart - dx); vel = fm / dt; } lastX = e.clientX; lastT = now; }, { passive: false });
+      window.addEventListener("pointerup", () => { if (!down) return; down = false; dragArea.classList.remove("is-dragging"); if (moved) { let sp = -vel * 22; (function glide() { if (Math.abs(sp) < .08) { raf = null; return; } const nx = clamp(scrollTarget.scrollLeft + sp); sp *= (nx === 0 || nx === maxL()) ? .35 : .93; scrollTarget.scrollLeft = nx; raf = requestAnimationFrame(glide); })(); block = true; setTimeout(() => block = false, 160); } });
+      dragArea.addEventListener("click", e => { if (block) { e.preventDefault(); e.stopPropagation(); } }, true);
+    }
+    enableDragScroll(document.getElementById("live"), liveGrid);
+    enableDragScroll(document.getElementById("shorts"), shortsGrid);
+    enableDragScroll(document.querySelector(".board-card"), boardPosts);
+
+    loadLiveMembers(); loadShorts(); loadBoardPosts(); loadRankingPreview(); loadNoticePreview();
+    setInterval(loadLiveMembers, 60000);
+</script>
+</body>
+</html>

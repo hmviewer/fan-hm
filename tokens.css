@@ -1,0 +1,136 @@
+/* =========================================================
+   tokens.css — 양산형 디자인 토큰 (자동 생성)
+   - 마지막 생성: 2026-06-03 08:00:47
+   - 색상 프리셋: gold
+   - 납품 페이지(/cignatureV2/_super/)에서 색상 변경 시 이 파일이 재생성됨
+   - 모든 페이지가 head 마지막에서 link → cascade로 다른 :root 정의 덮어씀
+========================================================= */
+
+:root {
+    /* ── 의미론적 토큰 (사용 권장) ───────────────────────── */
+    --brand-bg:            #f8f5ee;
+    --brand-bg-2:          #f1eee7;
+    --brand-card:          #ffffff;
+    --brand-card-2:        #faf8fc;
+    --brand-card-hover:    #f9f7fc;
+    --brand-header-bg:     rgba(244,243,248,0.92);
+
+    --brand-border:        #e4dff4;
+    --brand-border-strong: #e8c452;
+
+    --brand-text:          #1a1828;
+    --brand-text-2:        #5a5270;
+    --brand-text-3:        #9e96b8;
+
+    --brand-accent:        #b8840a;
+    --brand-accent-2:      #e8c452;
+    --brand-accent-lt:     #f5e070;
+    --brand-accent-bg:     #faecc4;
+    --brand-accent-text:   #7a5810;
+
+    --brand-shadow-sm:     0 1px 4px rgba(100,80,150,0.08);
+    --brand-shadow-md:     0 4px 18px rgba(100,80,150,0.12);
+    --brand-shadow-lg:     0 24px 64px rgba(100,80,150,0.18);
+    --brand-shadow-header: 0 2px 12px rgba(100,80,150,0.10);
+
+    --brand-error-bg:      #fdf2f2;
+    --brand-error-border:  #f5c2c2;
+    --brand-error-text:    #c0392b;
+
+    --brand-success-bg:    rgba(80,180,160,0.12);
+    --brand-success-text:  #2e8a72;
+
+    /* ── 헤더 / 레이아웃 치수 ────────────────────────────── */
+    --topbar-h:            52px;
+    --navbar-h:            36px;
+    --tabbar-h:            44px;
+    --header-h:            calc(var(--topbar-h) + var(--navbar-h) + var(--tabbar-h));
+    --header-h-noinner:    calc(var(--topbar-h) + var(--navbar-h));
+    --panel-w:             180px;
+
+    /* ── cignatureV2 / 골드 톤 페이지 호환 alias ─────────── */
+    --bg:        var(--brand-bg);
+    --bg2:       var(--brand-bg-2);
+    --bg-card:   var(--brand-card);
+    --bg-header: var(--brand-header-bg);
+    --bg-panel:  var(--brand-card);
+    --bd:        var(--brand-border);
+    --bd-s:      var(--brand-border-strong);
+    --t1:        var(--brand-text);
+    --t2:        var(--brand-text-2);
+    --t3:        var(--brand-text-3);
+    --ac:        var(--brand-accent);
+    --ac-bg:     var(--brand-accent-bg);
+    --ac-txt:    var(--brand-accent-text);
+    --lav:       var(--brand-accent);
+    --lav-lt:    var(--brand-accent-bg);
+    --lav-mid:   var(--brand-accent-2);
+    --gold:      var(--brand-accent);
+    --gold-deep: var(--brand-accent-text);
+    --gold-lt:   var(--brand-accent-lt);
+    --sh-sm:     var(--brand-shadow-sm);
+    --sh-md:     var(--brand-shadow-md);
+    --sh-lg:     var(--brand-shadow-lg);
+    --sh-header: var(--brand-shadow-header);
+
+    /* ── template.php / 메인 페이지 호환 alias ───────────── */
+    --lavender:        var(--brand-accent);
+    --lavender-mid:    var(--brand-accent-2);
+    --lavender-deep:   var(--brand-accent-text);
+    --silver:          #c8cdd6;
+    --silver-light:    #e8eaf0;
+    --silver-dark:     #8a909e;
+    --border:          var(--brand-border);
+    --border-hover:    var(--brand-border-strong);
+    --text-primary:    var(--brand-text);
+    --text-secondary:  var(--brand-text-2);
+    --text-muted:      var(--brand-text-3);
+    --bg-card2:        var(--brand-card-2);
+    --controls-bg:     var(--brand-header-bg);
+    --url-color:       var(--brand-text-2);
+    --btn-color:       var(--brand-text-2);
+
+    /* ── auth/login.css 호환 alias ───────────────────────── */
+    --accent:          var(--brand-accent);
+    --accent-lt:       var(--brand-accent-bg);
+    --border-focus:    var(--brand-accent-2);
+    --text-1:          var(--brand-text);
+    --text-2:          var(--brand-text-2);
+    --text-3:          var(--brand-text-3);
+    --error-bg:        var(--brand-error-bg);
+    --error-border:    var(--brand-error-border);
+    --error-text:      var(--brand-error-text);
+    --shadow:          var(--brand-shadow-sm);
+    --shadow-lg:       var(--brand-shadow-lg);
+}
+
+[data-theme="dark"] {
+    --brand-bg:            #0d0d10;
+    --brand-bg-2:          #141420;
+    --brand-card:          #141420;
+    --brand-card-2:        #18182a;
+    --brand-card-hover:    #1a1a2a;
+    --brand-header-bg:     rgba(13,13,16,0.92);
+
+    --brand-border:        rgba(200,205,214,0.12);
+    --brand-border-strong: #e8c452;
+
+    --brand-text:          #ffffff;
+    --brand-text-2:        #c8cdd6;
+    --brand-text-3:        #7a8090;
+
+    --brand-accent:        #e8c452;
+    --brand-accent-2:      #f5e070;
+    --brand-accent-lt:     #faecc4;
+    --brand-accent-bg:     rgba(179,157,219,0.10);
+    --brand-accent-text:   #f5e070;
+
+    --brand-shadow-sm:     0 1px 4px rgba(0,0,0,0.35);
+    --brand-shadow-md:     0 4px 18px rgba(0,0,0,0.45);
+    --brand-shadow-lg:     0 24px 64px rgba(0,0,0,0.55);
+    --brand-shadow-header: 0 2px 12px rgba(0,0,0,0.50);
+
+    --brand-error-bg:      rgba(220,38,38,0.08);
+    --brand-error-border:  rgba(220,38,38,0.25);
+    --brand-error-text:    #f87171;
+}

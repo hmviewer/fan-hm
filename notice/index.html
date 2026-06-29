@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- THE HM 로고 및 공유 이미지 -->
+    <link rel="icon" type="image/png" href="/assets/logo/the-hm-favicon.png">
+    <link rel="icon" type="image/png" href="/assets/logo/the-hm-logo.png">
+    <link rel="apple-touch-icon" href="/assets/logo/the-hm-logo.png">
+    <!-- 링크 공유 미리보기 (Open Graph · 카카오톡 · 트위터/X) -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="THE HM">
+    <meta property="og:title" content="THE HM">
+    <meta property="og:description" content="THE HM">
+    <meta property="og:image" content="/assets/logo/the-hm-logo.png">
+    <meta property="og:image:width" content="296">
+    <meta property="og:image:height" content="298">
+    <meta property="og:url" content="/notice/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="THE HM">
+    <meta name="twitter:description" content="THE HM">
+    <meta name="twitter:image" content="/assets/logo/the-hm-logo.png">
+<title>THE HM · NOTICE</title>
+<meta name="theme-color" content="#caa64a">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="../css/common.css?v=1781540178">
+<link rel="stylesheet" href="../css/notice.css?v=1781540178">
+</head>
+<body class=""><header class="navbar">
+    <div class="nav-inner">
+        <a class="logo" href="../">THE HM</a>
+        <nav class="nav-menu" aria-label="상단 메뉴">
+                            <a href="../live/">LIVE</a>
+                            <a href="../members/">MEMBER</a>
+                            <a href="../notice/" class="active">NOTICE</a>
+                            <a href="../ranking/">RANKING</a>
+                            <a href="https://hmsigfinder.vercel.app/" target="_blank" rel="noopener">SIGNATURE</a>
+                    </nav>
+        <a class="nav-live" id="onAirButton" href="../live/">ON AIR</a>
+    </div>
+</header>
+<script>
+(function () {
+    var b = document.getElementById('onAirButton');
+    if (!b) return;
+    fetch('../api/live.php', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var n = (Array.isArray(d.members) ? d.members : []).filter(function (m) { return m && m.isLive; }).length;
+            b.textContent = n > 0 ? 'ON AIR ' + n : 'ON AIR';
+        }).catch(function () {});
+})();
+</script>
+<main class="page">
+    <section class="hero" aria-label="공지사항 배너">
+        <div class="hero-content">
+            <div class="hero-kicker">THE HM OFFICIAL PORTAL</div>
+            <h1 class="hero-title">NOTICE</h1>
+            <p class="hero-sub">NOTICE · UPDATE · GUIDE</p>
+        </div>
+    </section>
+
+    <section class="notice-card">
+        <div id="listWrap">
+            <div class="topbar">
+                <div class="notice-heading">
+                    <h2>공지사항</h2>
+                    <span class="notice-count" id="noticeCount">-</span>
+                </div>
+                <input class="search-box" id="searchInput" type="search" placeholder="공지 검색" autocomplete="off">
+            </div>
+            <div class="notice-list" id="noticeList"><div class="empty">공지사항을 불러오는 중…</div></div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+
+        <div class="detail-wrap" id="detailWrap" style="display:none">
+            <div class="detail-head">
+                <div class="notice-heading"><h2>공지 상세</h2></div>
+                <button class="back-btn" type="button" id="backButton">목록으로</button>
+            </div>
+            <article class="detail-box" id="detailBox"></article>
+            <div class="related-card" id="relatedCard"></div>
+            <div class="detail-bottom-actions"><button class="back-btn" type="button" id="bottomBackButton">목록으로</button></div>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-brand">
+        <span style="font-size:15px;color:rgba(202, 166, 74, .9)"></span>
+        <span>THE HM</span>
+    </div>
+    <div class="footer-links">
+        <a href="../policy/#terms">서비스 이용약관</a>
+        <a href="../policy/#privacy">개인정보 처리방침</a>
+        <a href="../policy/#youth">청소년 보호정책</a>
+    </div>
+    <div class="footer-info">회사명: THE HM · 문의: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a2d1cbcfd2cec79a9790e2ccc3d4c7d08cc1cdcf">[email&#160;protected]</a> · © 2026 THE HM. All rights reserved.</div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    const NOTICE_DATA_URL = "../api/notices.php";
+    let noticeRows = [], currentPage = 1;
+    const PAGE_SIZE = 10;
+
+    const noticeList = document.getElementById("noticeList");
+    const noticeCount = document.getElementById("noticeCount");
+    const pagination = document.getElementById("pagination");
+    const searchInput = document.getElementById("searchInput");
+    const listWrap = document.getElementById("listWrap");
+    const detailWrap = document.getElementById("detailWrap");
+    const detailBox = document.getElementById("detailBox");
+    const relatedCard = document.getElementById("relatedCard");
+    const backButton = document.getElementById("backButton");
+    const bottomBackButton = document.getElementById("bottomBackButton");
+
+    function escapeHtml(v) { return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
+    function normalizeBoolean(v) { if (v === true) return true; const t = String(v || "").trim().toLowerCase(); return t === "true" || t === "1" || t === "yes" || t === "y" || t === "공개" || t === "표시" || t === "고정"; }
+    function parseDate(v) { const d = new Date(String(v || "").trim().replaceAll(".", "-").replace(" ", "T")); return Number.isNaN(d.getTime()) ? 0 : d.getTime(); }
+    function formatDate(v) { const t = String(v || "").trim(); const m = t.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/); return m ? `${m[1]}.${m[2].padStart(2, "0")}.${m[3].padStart(2, "0")}` : (t || "-"); }
+
+    function getSorted(rows) {
+      return [...rows].filter(i => i && normalizeBoolean(i.visible)).sort((a, b) => {
+        const pa = normalizeBoolean(a.pinned) ? 1 : 0, pb = normalizeBoolean(b.pinned) ? 1 : 0;
+        if (pa !== pb) return pb - pa;
+        const da = parseDate(a.date), db = parseDate(b.date);
+        if (da !== db) return db - da;
+        return Number(b.id || 0) - Number(a.id || 0);
+      });
+    }
+    function summary(content) { return String(content || "").replace(/\s+/g, " ").trim().slice(0, 120); }
+
+    function renderPagination(total) {
+      const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      currentPage = Math.min(Math.max(1, currentPage), totalPages);
+      const b = [], df = currentPage === 1 ? "disabled" : "", dl = currentPage === totalPages ? "disabled" : "";
+      b.push(`<button class="page-btn edge" data-page="1" ${df}>≪</button>`);
+      b.push(`<button class="page-btn edge" data-page="${currentPage - 1}" ${df}>‹</button>`);
+      const pages = [];
+      if (totalPages <= 7) { for (let p = 1; p <= totalPages; p++) pages.push(p); }
+      else { pages.push(1); const s = Math.max(2, currentPage - 1), e = Math.min(totalPages - 1, currentPage + 1); if (s > 2) pages.push("d"); for (let p = s; p <= e; p++) pages.push(p); if (e < totalPages - 1) pages.push("d"); pages.push(totalPages); }
+      pages.forEach(p => { if (p === "d") b.push(`<span class="page-ellipsis">…</span>`); else b.push(`<button class="page-btn ${p === currentPage ? "active" : ""}" data-page="${p}">${p}</button>`); });
+      b.push(`<button class="page-btn edge" data-page="${currentPage + 1}" ${dl}>›</button>`);
+      b.push(`<button class="page-btn edge" data-page="${totalPages}" ${dl}>≫</button>`);
+      pagination.innerHTML = b.join("");
+    }
+    function renderList() {
+      const kw = searchInput.value.trim().toLowerCase();
+      const sorted = getSorted(noticeRows);
+      const filtered = kw ? sorted.filter(i => `${i.category || ""} ${i.title || ""} ${i.content || ""}`.toLowerCase().includes(kw)) : sorted;
+      noticeCount.textContent = `${filtered.length}개`;
+      renderPagination(filtered.length);
+      if (!filtered.length) { noticeList.innerHTML = `<div class="empty">표시할 공지사항이 없습니다.</div>`; return; }
+      const start = (currentPage - 1) * PAGE_SIZE;
+      noticeList.innerHTML = filtered.slice(start, start + PAGE_SIZE).map(i => {
+        const id = encodeURIComponent(i.id || ""), pinned = normalizeBoolean(i.pinned);
+        const category = escapeHtml(i.category || "공지"), title = escapeHtml(i.title || "제목 없음");
+        const sm = escapeHtml(summary(i.content)), date = escapeHtml(formatDate(i.date));
+        return `<a class="notice-item" href="?id=${id}" data-id="${id}"><div class="notice-item-left"><div class="notice-meta">${pinned ? `<span class="badge pin">고정</span>` : ""}<span class="badge">${category}</span></div><div class="notice-title">${title}</div>${sm ? `<div class="notice-summary">${sm}</div>` : ""}</div><div class="notice-date">${date}</div></a>`;
+      }).join("");
+    }
+    function renderRelated(currentId) {
+      const others = getSorted(noticeRows).filter(r => String(r.id) !== String(currentId)).slice(0, 6);
+      if (!others.length) { relatedCard.innerHTML = ""; return; }
+      relatedCard.innerHTML = `<div class="related-title">다른 공지사항</div><div class="related-list">${others.map(r => {
+        const id = encodeURIComponent(r.id || ""), category = escapeHtml(r.category || "공지"), title = escapeHtml(r.title || "제목 없음"), date = escapeHtml(formatDate(r.date));
+        return `<a class="related-item" href="?id=${id}" data-id="${id}"><span class="related-category">${category}</span><span class="related-link-title">${title}</span><span class="related-date">${date}</span></a>`;
+      }).join("")}</div>`;
+    }
+    function renderDetail(id) {
+      const item = getSorted(noticeRows).find(r => String(r.id) === String(id));
+      document.body.classList.add("detail-mode");
+      listWrap.style.display = "none"; detailWrap.style.display = "block";
+      if (!item) { detailBox.innerHTML = `<div class="empty">해당 공지를 찾을 수 없습니다.</div>`; relatedCard.innerHTML = ""; return; }
+      const pinned = normalizeBoolean(item.pinned), category = escapeHtml(item.category || "공지"), date = escapeHtml(formatDate(item.date)), title = escapeHtml(item.title || "제목 없음"), content = escapeHtml(item.content || "내용이 없습니다.");
+      detailBox.innerHTML = `<div class="notice-meta">${pinned ? `<span class="badge pin">고정</span>` : ""}<span class="badge">${category}</span><span class="notice-date">${date}</span></div><h2 class="detail-title">${title}</h2><div class="detail-content">${content}</div>`;
+      renderRelated(item.id);
+    }
+    function showList(push = true) { document.body.classList.remove("detail-mode"); detailWrap.style.display = "none"; listWrap.style.display = "block"; if (push) history.pushState(null, "", location.pathname); renderList(); }
+    function applyRoute() { const id = new URLSearchParams(location.search).get("id"); if (id) renderDetail(id); else showList(false); }
+
+    async function loadNotices() {
+      try { const r = await fetch(NOTICE_DATA_URL, { cache: "no-store" }); if (!r.ok) throw new Error("notice"); const d = await r.json(); noticeRows = Array.isArray(d) ? d : []; applyRoute(); }
+      catch (e) { console.error(e); noticeRows = []; noticeCount.textContent = "0개"; noticeList.innerHTML = `<div class="empty">공지사항을 불러오지 못했습니다.</div>`; }
+    }
+    searchInput.addEventListener("input", () => { currentPage = 1; renderList(); });
+    pagination.addEventListener("click", e => { const b = e.target.closest("button.page-btn"); if (!b || b.disabled) return; currentPage = Number(b.dataset.page || 1); renderList(); window.scrollTo({ top: listWrap.offsetTop - 90, behavior: "smooth" }); });
+    noticeList.addEventListener("click", e => { const l = e.target.closest("a.notice-item"); if (!l) return; e.preventDefault(); const id = l.dataset.id; history.pushState(null, "", `?id=${encodeURIComponent(id)}`); renderDetail(id); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    relatedCard.addEventListener("click", e => { const l = e.target.closest("a.related-item"); if (!l) return; e.preventDefault(); const id = l.dataset.id; history.pushState(null, "", `?id=${encodeURIComponent(id)}`); renderDetail(id); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    backButton.addEventListener("click", () => { showList(true); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    bottomBackButton.addEventListener("click", () => { showList(true); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    window.addEventListener("popstate", applyRoute);
+    loadNotices();
+</script>
+</body>
+</html>
