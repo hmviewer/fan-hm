@@ -12,6 +12,7 @@ import time
 
 ROOT = Path(__file__).resolve().parent
 SOOP_LIVE_URL = "https://live.sooplive.co.kr/afreeca/player_live_api.php"
+SOOP_CHANNEL_API = "https://api-channel.sooplive.com/v1.1/channel"
 SSL_CONTEXT = ssl._create_unverified_context()
 DATA_TARGETS = {
     "members": ROOT / "static-api" / "members.json",
@@ -96,6 +97,9 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
 
         if path == "/api/live.php":
             return self._send_live_status()
+
+        if path == "/api/board.php":
+            return self._send_board_posts()
 
         if path in API_ROUTES:
             return self._send_file(API_ROUTES[path], "application/json; charset=utf-8")
@@ -228,6 +232,121 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
         except Exception:
             payload = {"members": [], "liveCount": 0, "total": 0, "updatedAt": int(time.time()), "error": "LIVE 정보를 불러오지 못했습니다."}
         self._send_json(payload)
+
+    def _fetch_json_url(self, url):
+        request = Request(
+            url,
+            headers={
+                "Accept": "application/json",
+                "User-Agent": "Mozilla/5.0",
+            },
+        )
+        with urlopen(request, timeout=5, context=SSL_CONTEXT) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    def _pick_boards(self, menu):
+        boards = menu.get("board") if isinstance(menu, dict) else []
+        if not isinstance(boards, list):
+            return []
+        public_boards = []
+        for board in boards:
+            if not isinstance(board, dict):
+                continue
+            auth_no = int(board.get("authNo") or 0)
+            display_type = int(board.get("displayType") or 0)
+            if auth_no == 101 and display_type in (103, 104):
+                public_boards.append(board)
+        important = [
+            board for board in public_boards
+            if any(token in str(board.get("name") or "") for token in ("공지", "오피셜", "HM", "General", "게시판"))
+        ]
+        unique = {}
+        for board in [*important, *public_boards]:
+            bbs_no = str(board.get("bbsNo") or "").strip()
+            if bbs_no and bbs_no not in unique:
+                unique[bbs_no] = board
+        return list(unique.values())[:6]
+
+    def _extract_board_thumbnail(self, post):
+        photos = post.get("photos") if isinstance(post, dict) else []
+        if isinstance(photos, list):
+            for photo in photos:
+                if isinstance(photo, dict) and photo.get("url"):
+                    return str(photo.get("url"))
+        return ""
+
+    def _normalize_board_post(self, post, member, board):
+        soop_id = str(member.get("soopId") or member.get("id") or post.get("userId") or "").strip()
+        title_no = str(post.get("titleNo") or "").strip()
+        title = str(post.get("titleName") or "").strip()
+        if not soop_id or not title_no or not title:
+            return None
+        content = post.get("content") if isinstance(post.get("content"), dict) else {}
+        count = post.get("count") if isinstance(post.get("count"), dict) else {}
+        display = post.get("display") if isinstance(post.get("display"), dict) else {}
+        return {
+            "bjName": str(member.get("name") or post.get("userNick") or soop_id),
+            "soopId": soop_id,
+            "title": title,
+            "summary": str(content.get("summary") or content.get("textContent") or "").strip(),
+            "url": f"https://www.sooplive.com/station/{soop_id}/post/{title_no}",
+            "regDate": str(post.get("regDate") or ""),
+            "commentCount": int(count.get("commentCnt") or 0),
+            "readCount": int(count.get("readCnt") or count.get("vodReadCnt") or 0),
+            "thumbnail": self._extract_board_thumbnail(post),
+            "isNotice": int(post.get("noticeYn") or 0) > 0,
+            "boardName": str(display.get("bbsName") or board.get("name") or ""),
+        }
+
+    def _fetch_member_posts(self, member):
+        soop_id = str(member.get("soopId") or member.get("id") or "").strip()
+        if not soop_id:
+            return []
+        menu = self._fetch_json_url(f"{SOOP_CHANNEL_API}/{soop_id}/menu")
+        posts = []
+        for board in self._pick_boards(menu):
+            bbs_no = str(board.get("bbsNo") or "").strip()
+            if not bbs_no:
+                continue
+            query = urlencode({"bbs_no": bbs_no, "per_page": 5, "field": "title,user_nick,user_id"})
+            try:
+                payload = self._fetch_json_url(f"{SOOP_CHANNEL_API}/{soop_id}/board?{query}")
+            except Exception:
+                continue
+            contents = payload.get("contents") if isinstance(payload, dict) else []
+            if not isinstance(contents, list):
+                continue
+            for post in contents[:5]:
+                if isinstance(post, dict):
+                    normalized = self._normalize_board_post(post, member, board)
+                    if normalized:
+                        posts.append(normalized)
+        return posts
+
+    def _send_board_posts(self):
+        try:
+            members = json.loads((ROOT / "static-api" / "members.json").read_text(encoding="utf-8"))
+            if not isinstance(members, list):
+                members = []
+            posts = []
+            for member in members:
+                try:
+                    posts.extend(self._fetch_member_posts(member))
+                except Exception:
+                    continue
+            unique = {}
+            for post in posts:
+                key = f"{post.get('soopId')}:{post.get('url')}"
+                if key not in unique:
+                    unique[key] = post
+            sorted_posts = sorted(
+                unique.values(),
+                key=lambda item: str(item.get("regDate") or ""),
+                reverse=True,
+            )[:30]
+        except Exception:
+            sorted_posts = []
+        self._send_json(sorted_posts)
 
     def _send_json(self, payload):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")

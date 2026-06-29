@@ -28,7 +28,7 @@
     },
     {
       "source": "/api/board.php",
-      "destination": "/static-api/board.json"
+      "destination": "/api/board"
     }
   ]
 }
