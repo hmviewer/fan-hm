@@ -33,8 +33,6 @@
         <nav class="nav-menu" aria-label="상단 메뉴">
                             <a href="live/">LIVE</a>
                             <a href="members/">MEMBER</a>
-                            <a href="notice/">NOTICE</a>
-                            <a href="ranking/">RANKING</a>
                             <a href="signature/">SIGNATURE</a>
                     </nav>
         <a class="nav-live" id="onAirButton" href="live/">ON AIR</a>
@@ -97,7 +95,7 @@
 
     <section class="content-grid">
         <div class="left-column">
-            <div id="notice">
+            <div id="notice" hidden>
                 <div class="section-head"><h2 class="section-title">공지사항</h2><a class="section-more" href="notice/">더보기</a></div>
                 <div class="card notice-list" id="noticePreview"></div>
             </div>
@@ -111,7 +109,7 @@
             </div>
         </div>
 
-        <aside id="ranking" class="card ranking-card">
+        <aside id="ranking" class="card ranking-card" hidden>
             <div class="section-head" style="padding:22px 22px 0; margin-bottom:0;">
                 <h2 class="section-title">랭킹</h2>
                 <a class="section-more" href="ranking/">전체 랭킹</a>
@@ -293,7 +291,7 @@
     enableDragScroll(document.getElementById("shorts"), shortsGrid);
     enableDragScroll(document.querySelector(".board-card"), boardPosts);
 
-    loadLiveMembers(); loadShorts(); loadBoardPosts(); loadRankingPreview(); loadNoticePreview();
+    loadLiveMembers(); loadShorts(); loadBoardPosts();
     setInterval(loadLiveMembers, 60000);
 </script>
 </body>

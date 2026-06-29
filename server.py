@@ -160,7 +160,15 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
             broad_no = str(channel.get("BNO") or channel.get("BROAD_NO") or "").strip()
             title = str(channel.get("TITLE") or channel.get("BROAD_TITLE") or "").strip()
             viewer = int(channel.get("VIEW_CNT") or channel.get("TOTAL_VIEW_CNT") or channel.get("PC_VIEW_CNT") or 0)
-            thumbnail = str(channel.get("BROAD_IMG") or channel.get("THUMBNAIL") or "").strip()
+            thumbnail = str(
+                channel.get("BROAD_IMG")
+                or channel.get("BROAD_THUMB")
+                or channel.get("BROAD_THUMBNAIL")
+                or channel.get("THUMBNAIL")
+                or channel.get("THUMB")
+                or channel.get("TITLE_IMG")
+                or ""
+            ).strip()
             started_at = str(channel.get("BROAD_START") or channel.get("START_TIME") or "").strip()
             return {
                 **member,

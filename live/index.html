@@ -32,8 +32,6 @@
         <nav class="nav-menu" aria-label="상단 메뉴">
                             <a href="../live/" class="active">LIVE</a>
                             <a href="../members/">MEMBER</a>
-                            <a href="../notice/">NOTICE</a>
-                            <a href="../ranking/">RANKING</a>
                             <a href="../signature/">SIGNATURE</a>
                     </nav>
         <a class="nav-live" id="onAirButton" href="../live/">ON AIR</a>
@@ -136,6 +134,10 @@
       return `https://profile.img.sooplive.co.kr/LOGO/${encodeURIComponent(id.slice(0, 2))}/${encodeURIComponent(id)}/${encodeURIComponent(id)}.jpg`;
     }
     function fallbackAvatar(img) { img.onerror = null; img.src = DEFAULT_PROFILE_IMAGE; }
+    function getDisplayThumbnail(member) {
+      const image = String(member.thumbnail || member.broadImg || member.profileImage || "").trim();
+      return image || getProfileImage(member.soopId || member.id);
+    }
 
     function isMobileDevice() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }
     function getLiveBroadNo(member) {
@@ -215,14 +217,11 @@
       const viewer = formatNumber(m.viewer || 0);
       const startedAt = escapeHtml(m.startedAt || "");
       const rank = escapeHtml(m.rank || m.group || m.role || "멤버");
-      const thumbnail = m.thumbnail ? escapeHtml(m.thumbnail) : "";
-      const thumbClass = thumbnail ? "live-thumb" : "live-thumb no-image";
-      const thumbHtml = thumbnail
-        ? `<img class="live-thumb-bg" src="${thumbnail}" alt="" aria-hidden="true" loading="lazy"><img class="live-thumb-img" src="${thumbnail}" alt="${name} 방송 썸네일" loading="lazy">`
-        : name;
+      const thumbnail = escapeHtml(getDisplayThumbnail(m));
+      const thumbHtml = `<img class="live-thumb-bg" src="${thumbnail}" alt="" aria-hidden="true" loading="lazy" referrerpolicy="no-referrer"><img class="live-thumb-img" src="${thumbnail}" alt="${name} 방송 썸네일" loading="lazy" referrerpolicy="no-referrer" onerror="fallbackAvatar(this)">`;
       return `
         <article class="broadcast-card">
-          <div class="${thumbClass}">${thumbHtml}<span class="live-badge">LIVE</span><span class="viewer-badge">VIEW ${viewer}</span></div>
+          <div class="live-thumb">${thumbHtml}<span class="live-badge">LIVE</span><span class="viewer-badge">VIEW ${viewer}</span></div>
           <div class="live-info">
             <div class="live-head"><div class="live-name">${name}</div><span class="rank-badge">${rank}</span></div>
             <div class="live-title">${title}</div>
