@@ -31,7 +31,7 @@ function pickBoards(menu) {
     const displayType = Number(board?.displayType || 0);
     return authNo === 101 && (displayType === 103 || displayType === 104);
   });
-  const important = publicBoards.filter((board) => /공지|오피셜|HM|General|게시판/i.test(String(board?.name || "")));
+  const important = publicBoards.filter((board) => /공지|HM|General|게시판/i.test(String(board?.name || "")));
   const unique = new Map();
   [...important, ...publicBoards].forEach((board) => {
     const bbsNo = String(board?.bbsNo || "").trim();

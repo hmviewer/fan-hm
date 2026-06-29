@@ -258,7 +258,7 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
                 public_boards.append(board)
         important = [
             board for board in public_boards
-            if any(token in str(board.get("name") or "") for token in ("공지", "오피셜", "HM", "General", "게시판"))
+            if any(token in str(board.get("name") or "") for token in ("공지", "HM", "General", "게시판"))
         ]
         unique = {}
         for board in [*important, *public_boards]:
