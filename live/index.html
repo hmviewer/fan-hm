@@ -293,16 +293,21 @@
       const comments = formatNumber(p.commentCount || 0);
       const reads = formatNumber(p.readCount || 0);
       const thumbnail = escapeHtml(p.thumbnail || "");
+      const boardName = escapeHtml(p.boardName || "방송국");
+      const initial = escapeHtml(String(p.bjName || p.writer || "HM").trim().slice(0, 1) || "H");
       const noticeBadge = p.isNotice ? `<span class="post-badge">공지</span>` : "";
-      const thumbHtml = thumbnail ? `<div class="post-thumb"><img src="${thumbnail}" alt="${title}" loading="lazy"></div>` : "";
+      const thumbHtml = thumbnail
+        ? `<div class="post-thumb"><img src="${thumbnail}" alt="${title}" loading="lazy" referrerpolicy="no-referrer"></div>`
+        : `<div class="post-thumb no-thumb" aria-hidden="true"><span>${initial}</span></div>`;
       return `
         <a class="post-card" href="${url}" target="_blank" rel="noopener">
+          ${thumbHtml}
           <div class="post-body">
-            <div class="post-top"><div class="post-writer">${name}</div>${noticeBadge}</div>
+            <div class="post-top"><div class="post-writer">${name}</div><div class="post-board">${boardName}</div>${noticeBadge}</div>
             <div class="post-title">${title}</div>
             ${summary ? `<div class="post-summary">${summary}</div>` : ""}
             <div class="post-meta">${date} · 댓글 ${comments} · 조회 ${reads}</div>
-          </div>${thumbHtml}
+          </div>
         </a>`;
     }
     function renderPosts() {
