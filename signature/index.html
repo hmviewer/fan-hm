@@ -3,62 +3,245 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="refresh" content="0; url=https://hmsigfinder.vercel.app/">
+<link rel="icon" type="image/png" href="/assets/logo/the-hm-favicon.png">
+<link rel="icon" type="image/png" href="/assets/logo/the-hm-logo.png">
+<link rel="apple-touch-icon" href="/assets/logo/the-hm-logo.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="THE HM">
+<meta property="og:title" content="THE HM · SIGNATURE">
+<meta property="og:description" content="THE HM signature gallery">
+<meta property="og:image" content="/assets/logo/the-hm-logo.png">
+<meta property="og:url" content="/signature/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="THE HM · SIGNATURE">
+<meta name="twitter:description" content="THE HM signature gallery">
+<meta name="twitter:image" content="/assets/logo/the-hm-logo.png">
 <title>THE HM · SIGNATURE</title>
 <meta name="theme-color" content="#caa64a">
-<link rel="icon" type="image/png" href="/assets/logo/the-hm-favicon.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="../css/common.css">
-<style>
-body {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  margin: 0;
-  font-family: "Pretendard", system-ui, sans-serif;
-  background: linear-gradient(135deg, #f7f5ef, #ebe3cf);
-  color: #24211c;
-}
-.redirect-box {
-  width: min(520px, calc(100% - 32px));
-  padding: 30px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.78);
-  border: 1px solid rgba(143, 135, 116, .24);
-  box-shadow: 0 18px 48px rgba(64, 54, 28, .14);
-  text-align: center;
-}
-.logo {
-  justify-content: center;
-  margin-bottom: 18px;
-}
-.redirect-box h1 {
-  margin: 0 0 10px;
-  font-size: 24px;
-}
-.redirect-box p {
-  margin: 0 0 20px;
-  color: #706b62;
-  font-weight: 700;
-}
-.redirect-box a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: 0 18px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #1f2424, #858781 46%, #caa64a);
-  color: #fff;
-  font-weight: 900;
-}
-</style>
+<link rel="stylesheet" href="../css/signature.css">
 </head>
 <body>
-  <main class="redirect-box">
-    <a class="logo" href="../">THE HM</a>
-    <h1>시그니처 페이지로 이동 중입니다</h1>
-    <p>시그니처 검색과 재생은 HM SIG FINDER에서 연결됩니다.</p>
-    <a href="https://hmsigfinder.vercel.app/">HM SIG FINDER 열기</a>
-  </main>
+<header class="navbar">
+    <div class="nav-inner">
+        <a class="logo" href="../">THE HM</a>
+        <nav class="nav-menu" aria-label="상단 메뉴">
+            <a href="../live/">LIVE</a>
+            <a href="../members/">MEMBER</a>
+            <a href="../notice/">NOTICE</a>
+            <a href="../ranking/">RANKING</a>
+            <a href="../signature/" class="active">SIGNATURE</a>
+        </nav>
+        <a class="nav-live" id="onAirButton" href="../live/">ON AIR</a>
+    </div>
+</header>
+<script>
+(function () {
+    var b = document.getElementById('onAirButton');
+    if (!b) return;
+    fetch('../api/live.php', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var n = (Array.isArray(d.members) ? d.members : []).filter(function (m) { return m && m.isLive; }).length;
+            b.textContent = n > 0 ? 'ON AIR ' + n : 'ON AIR';
+        }).catch(function () {});
+})();
+</script>
+
+<main class="page">
+    <section class="signature-hero" aria-label="시그니처 배너">
+        <div class="signature-hero-copy">
+            <div class="hero-kicker">THE HM ARCHIVE</div>
+            <h1 class="hero-title">SIGNATURE</h1>
+            <p class="hero-sub">번호와 이름으로 빠르게 찾는 THE HM 시그니처 이미지 목록</p>
+        </div>
+        <div class="signature-stats" aria-label="시그니처 요약">
+            <div class="stat-box"><span>TOTAL</span><strong id="totalCount">-</strong></div>
+            <div class="stat-box"><span>FILTERED</span><strong id="filteredCount">-</strong></div>
+        </div>
+    </section>
+
+    <section class="signature-toolbar" aria-label="시그니처 검색">
+        <label class="search-wrap">
+            <span>SEARCH</span>
+            <input id="searchInput" class="search-input" type="search" placeholder="번호, 제목, 멤버명 검색" autocomplete="off">
+        </label>
+        <div class="filter-wrap" id="memberFilters" aria-label="멤버 필터"></div>
+    </section>
+
+    <section class="range-tabs" id="rangeTabs" aria-label="번호 구간"></section>
+
+    <section class="signature-section">
+        <div class="section-title-row">
+            <h2 class="section-title" id="sectionTitle">전체 시그니처</h2>
+            <div class="section-note" id="sectionNote">불러오는 중...</div>
+        </div>
+        <div class="signature-grid" id="signatureGrid">
+            <div class="loading-card">시그니처 이미지를 불러오는 중...</div>
+        </div>
+    </section>
+</main>
+
+<div class="preview-modal" id="previewModal" aria-hidden="true">
+    <button class="preview-backdrop" type="button" id="previewBackdrop" aria-label="닫기"></button>
+    <section class="preview-panel" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+        <div class="preview-head">
+            <div>
+                <div class="preview-kicker" id="previewTag">SIGNATURE</div>
+                <h2 id="previewTitle">시그니처</h2>
+            </div>
+            <button class="preview-close" type="button" id="previewClose" aria-label="닫기">×</button>
+        </div>
+        <img id="previewImage" class="preview-image" src="" alt="">
+    </section>
+</div>
+
+<footer class="site-footer">
+    <div class="footer-brand">
+        <span>THE HM</span>
+    </div>
+    <div class="footer-links">
+        <a href="../policy/#terms">서비스 이용약관</a>
+        <a href="../policy/#privacy">개인정보 처리방침</a>
+        <a href="../policy/#youth">청소년 보호정책</a>
+    </div>
+    <div class="footer-info">회사명: THE HM · © 2026 THE HM. All rights reserved.</div>
+</footer>
+
+<script>
+const DATA_URL = "../static-api/signatures.json";
+const grid = document.getElementById("signatureGrid");
+const searchInput = document.getElementById("searchInput");
+const memberFilters = document.getElementById("memberFilters");
+const rangeTabs = document.getElementById("rangeTabs");
+const totalCount = document.getElementById("totalCount");
+const filteredCount = document.getElementById("filteredCount");
+const sectionTitle = document.getElementById("sectionTitle");
+const sectionNote = document.getElementById("sectionNote");
+const previewModal = document.getElementById("previewModal");
+const previewImage = document.getElementById("previewImage");
+const previewTitle = document.getElementById("previewTitle");
+const previewTag = document.getElementById("previewTag");
+const previewClose = document.getElementById("previewClose");
+const previewBackdrop = document.getElementById("previewBackdrop");
+
+const ranges = [
+  { id: "all", label: "전체", min: 0, max: Infinity },
+  { id: "under1000", label: "~999", min: 0, max: 999 },
+  { id: "1000", label: "1000대", min: 1000, max: 1999 },
+  { id: "2000", label: "2000대", min: 2000, max: 2999 },
+  { id: "3000", label: "3000대", min: 3000, max: 9999 },
+  { id: "10000", label: "10000+", min: 10000, max: Infinity },
+];
+let signatures = [];
+let selectedRange = "all";
+let selectedMember = "all";
+
+function esc(value) {
+  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
+function cardMarkup(item) {
+  const title = `${item.number ? item.number + " · " : ""}${item.title || "시그니처"}`;
+  const member = item.tag ? `<span class="member-chip">${esc(item.tag)}</span>` : "";
+  return `
+    <button class="sig-card" type="button" data-file="${esc(item.image)}" data-title="${esc(title)}" data-tag="${esc(item.tag || "SIGNATURE")}">
+      <span class="sig-thumb"><img src="${esc(item.image)}" alt="${esc(title)}" loading="lazy"></span>
+      <span class="sig-meta">
+        <span class="sig-number">${esc(item.number || "")}</span>
+        <strong>${esc(item.title || "시그니처")}</strong>
+        ${member}
+      </span>
+    </button>`;
+}
+function currentRange() {
+  return ranges.find((range) => range.id === selectedRange) || ranges[0];
+}
+function filteredItems() {
+  const q = searchInput.value.trim().toLowerCase();
+  const range = currentRange();
+  return signatures.filter((item) => {
+    const n = Number(item.number || 0);
+    const haystack = `${item.number} ${item.title || ""} ${item.tag || ""}`.toLowerCase();
+    const passSearch = !q || haystack.includes(q);
+    const passMember = selectedMember === "all" || item.tag === selectedMember;
+    const passRange = n >= range.min && n <= range.max;
+    return passSearch && passMember && passRange;
+  });
+}
+function renderRangeTabs() {
+  rangeTabs.innerHTML = ranges.map((range) => `<button class="range-btn ${range.id === selectedRange ? "active" : ""}" type="button" data-range="${range.id}">${range.label}</button>`).join("");
+}
+function renderMemberFilters() {
+  const members = [...new Set(signatures.map((item) => item.tag).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko"));
+  memberFilters.innerHTML = [`<button class="filter-btn ${selectedMember === "all" ? "active" : ""}" type="button" data-member="all">전체</button>`]
+    .concat(members.map((member) => `<button class="filter-btn ${selectedMember === member ? "active" : ""}" type="button" data-member="${esc(member)}">${esc(member)}</button>`))
+    .join("");
+}
+function render() {
+  const items = filteredItems();
+  const range = currentRange();
+  totalCount.textContent = signatures.length.toLocaleString("ko-KR");
+  filteredCount.textContent = items.length.toLocaleString("ko-KR");
+  sectionTitle.textContent = selectedMember === "all" ? "전체 시그니처" : `${selectedMember} 시그니처`;
+  sectionNote.textContent = `${range.label} · ${items.length.toLocaleString("ko-KR")}개`;
+  renderRangeTabs();
+  renderMemberFilters();
+  grid.innerHTML = items.length ? items.map(cardMarkup).join("") : `<div class="empty-card">검색 결과가 없습니다.</div>`;
+}
+function openPreview(button) {
+  const src = button.dataset.file || "";
+  const title = button.dataset.title || "시그니처";
+  const tag = button.dataset.tag || "SIGNATURE";
+  previewImage.src = src;
+  previewImage.alt = title;
+  previewTitle.textContent = title;
+  previewTag.textContent = tag;
+  previewModal.classList.add("active");
+  previewModal.setAttribute("aria-hidden", "false");
+}
+function closePreview() {
+  previewModal.classList.remove("active");
+  previewModal.setAttribute("aria-hidden", "true");
+  previewImage.src = "";
+}
+rangeTabs.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-range]");
+  if (!button) return;
+  selectedRange = button.dataset.range;
+  render();
+});
+memberFilters.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-member]");
+  if (!button) return;
+  selectedMember = button.dataset.member;
+  render();
+});
+grid.addEventListener("click", (event) => {
+  const button = event.target.closest(".sig-card");
+  if (button) openPreview(button);
+});
+searchInput.addEventListener("input", render);
+previewClose.addEventListener("click", closePreview);
+previewBackdrop.addEventListener("click", closePreview);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closePreview();
+});
+
+async function loadSignatures() {
+  try {
+    const response = await fetch(DATA_URL, { cache: "no-store" });
+    if (!response.ok) throw new Error("signature data");
+    const payload = await response.json();
+    signatures = (Array.isArray(payload.items) ? payload.items : []).sort((a, b) => Number(a.number || 0) - Number(b.number || 0));
+    render();
+  } catch (error) {
+    console.error(error);
+    grid.innerHTML = `<div class="empty-card">시그니처 데이터를 불러오지 못했습니다.</div>`;
+    sectionNote.textContent = "오류";
+  }
+}
+loadSignatures();
+</script>
 </body>
 </html>

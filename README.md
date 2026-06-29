@@ -17,9 +17,9 @@ http://127.0.0.1:4173/
 
 ## Notes
 
-- Signature search/playback is linked to `https://hmsigfinder.vercel.app/`.
+- Signature images are stored under `signature/images/` and rendered by `/signature/`.
 - Music files are intentionally not integrated or deployed here.
-- `image/` and `music/` are not included in this project.
+- Legacy `image/` and `music/` folders are not included in this project.
 - Public pages and small JSON API snapshots are stored locally.
 - `server.py` maps the original query-based API routes such as `/api/rank.php?months=1`.
 - Vercel rewrites `/api/*.php` requests to `static-api/*.json`.

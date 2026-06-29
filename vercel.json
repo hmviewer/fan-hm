@@ -1,18 +1,6 @@
 {
   "cleanUrls": false,
   "trailingSlash": true,
-  "redirects": [
-    {
-      "source": "/signature",
-      "destination": "https://hmsigfinder.vercel.app/",
-      "permanent": false
-    },
-    {
-      "source": "/signature/",
-      "destination": "https://hmsigfinder.vercel.app/",
-      "permanent": false
-    }
-  ],
   "rewrites": [
     {
       "source": "/api/live.php",

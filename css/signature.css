@@ -1,80 +1,352 @@
-/* signature.css — SIGNATURE 페이지 전용 (공통부는 common.css) */
+/* SIGNATURE */
 
-.control-panel {
-  margin-top: 18px; padding: 16px; border-radius: 13px;
-  background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow);
-  display: grid; grid-template-columns: minmax(0, 1fr) 240px auto; gap: 12px; align-items: center;
+.signature-hero {
+  position: relative;
+  min-height: 320px;
+  margin-bottom: 22px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  align-items: end;
+  gap: 24px;
+  padding: 36px;
+  background:
+    linear-gradient(110deg, rgba(18, 20, 20, .88), rgba(73, 76, 73, .54) 48%, rgba(201, 165, 73, .40)),
+    radial-gradient(circle at 18% 20%, rgba(255,255,255,.58), transparent 24%),
+    linear-gradient(135deg, #171919, #7c807b 58%, #d4b355);
+  box-shadow: 0 26px 60px rgba(31, 28, 21, 0.16);
 }
-.search-input { height: 47px; border-radius: 10px; border: 1px solid rgba(97, 92, 82,.7); background: rgba(255,255,255,.92); outline: none; padding: 13px 15px; font-size: 15px; font-weight: 850; color: #5e5a52; font-family: inherit; }
-.search-input:focus { border-color: rgba(143,143,138,.75); box-shadow: 0 0 0 4px rgba(143,143,138,.12); }
-.volume-box { height: 47px; border-radius: 10px; background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(255,244,251,.85)); border: 1px solid rgba(97, 92, 82,.72); padding: 0 12px; display: flex; align-items: center; gap: 10px; color: #8d6a1f; font-size: 13px; font-weight: 950; }
-.volume-box input { width: 100%; min-width: 80px; accent-color: var(--pink); }
-.members-link { height: 47px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; color: #fff; font-weight: 950; background: linear-gradient(135deg, #caa64a, #858781); box-shadow: 0 8px 20px rgba(64, 54, 28, .20); }
-.members-link:hover { transform: translateY(-1px); }
-
-.range-tabs { margin-top: 14px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
-.range-btn { min-height: 42px; border: 1px solid rgba(97, 92, 82,.68); border-radius: 9px; background: rgba(255,255,255,.82); color: #706b62; font-family: inherit; font-weight: 950; cursor: pointer; transition: .14s ease; }
-.range-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(64, 54, 28,.10); }
-.range-btn.active { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--pink), var(--purple)); box-shadow: 0 10px 22px rgba(64, 54, 28,.20); }
-
-.section { margin-top: 26px; }
-.section-title { position: relative; width: 100%; min-height: 50px; margin-bottom: 14px; display: flex; align-items: center; justify-content: flex-start; }
-.section-name { width: min(280px, 100%); min-height: 50px; padding: 11px 13px; border-radius: 10px; display: grid; place-items: center; text-align: center; background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(246, 241, 230,.88)); border: 1px solid rgba(97, 92, 82,.68); box-shadow: 0 10px 24px rgba(64, 54, 28,.09); color: #b88a28; font-size: 18px; font-weight: 950; white-space: nowrap; }
-.section-count { position: absolute; right: 0; top: 50%; transform: translateY(-50%); min-width: 70px; padding: 7px 10px; border-radius: 8px; text-align: center; background: rgba(255,255,255,.82); border: 1px solid rgba(97, 92, 82,.58); color: #8d6a1f; font-size: 11px; font-weight: 950; white-space: nowrap; box-shadow: 0 8px 18px rgba(64, 54, 28,.08); }
-
-.grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
-.sig-card { min-width: 0; border-radius: 12px; background: rgba(255,255,255,.80); border: 1px solid rgba(97, 92, 82,.58); box-shadow: 0 12px 30px rgba(64, 54, 28,.10); padding: 8px; cursor: pointer; overflow: hidden; transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease; }
-.sig-card:hover { transform: translateY(-3px); box-shadow: 0 16px 32px rgba(64, 54, 28,.16); border-color: rgba(202,166,74,.42); }
-.sig-card.playing { border-color: rgba(202,166,74,.78); box-shadow: 0 0 0 3px rgba(202,166,74,.18), 0 16px 32px rgba(64, 54, 28,.16); }
-.sig-card.loading { border-color: rgba(143,143,138,.74); box-shadow: 0 0 0 3px rgba(143,143,138,.16), 0 16px 32px rgba(64, 54, 28,.16); }
-.thumb, .no-image { width: 100%; aspect-ratio: 16 / 9; border-radius: 9px; background: linear-gradient(135deg, #f7f5ef, #ece8dc); }
-.thumb { display: block; object-fit: cover; }
-.no-image { display: grid; place-items: center; color: #8d6a1f; font-size: 13px; font-weight: 950; }
-.sig-info { padding: 8px 2px 0; text-align: center; }
-.sig-number { display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; padding: 4px 7px; margin: 0 auto 5px; background: linear-gradient(135deg, #efe4bd, #fffaf0); color: #8d6a1f; font-size: 11px; font-weight: 950; }
-.sig-name { min-height: 30px; color: #24211c; font-size: 13px; font-weight: 950; line-height: 1.2; text-align: center; word-break: keep-all; }
-.video-btn { width: 100%; margin-top: 2px; border: 1px solid rgba(97, 92, 82,.66); border-radius: 8px; padding: 7px 6px; cursor: pointer; background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(243,237,255,.92)); color: #8d6a1f; font-size: 12px; font-weight: 950; font-family: inherit; transition: .14s ease; }
-.video-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(64, 54, 28,.12); }
-.video-btn.no-video { cursor: default; color: #aaa; background: #f1edf4; box-shadow: none; }
-.video-btn.no-video:hover { transform: none; }
-
-.empty { margin-top: 24px; padding: 40px 18px; border-radius: 13px; text-align: center; background: rgba(255,255,255,.78); border: 1px solid var(--line); color: #8a7893; font-weight: 950; }
-
-.video-modal { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; padding: 18px; background: rgba(31,36,36,.42); backdrop-filter: blur(6px); }
-.video-modal.active { display: flex; }
-/* max-height 는 "보이는" 뷰포트 기준이어야 한다. 모바일에서 86vh 는 주소창이 숨겨진 큰 뷰포트 기준이라
-   실제 화면보다 박스가 커지고, 모달이 중앙정렬(align-items:center)이라 넘친 영상 하단이 화면 밖으로 잘린다.
-   dvh(동적 뷰포트) - 모달 상하 padding(18px*2) 로 잡아 박스가 항상 화면 안에 들어가고 내부 스크롤되게 한다. */
-.video-modal-box { width: min(1100px, 96vw); max-height: calc(100vh - 36px); max-height: calc(100dvh - 36px); overflow: auto; border-radius: 13px; background: #fff; border: 1px solid rgba(202,166,74,.65); box-shadow: 0 20px 55px rgba(31,36,36,.28); }
-.video-modal-head { position: sticky; top: 0; z-index: 1; padding: 7px 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(255,255,255,.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(97, 92, 82,.55); }
-.video-modal-title { min-width: 0; font-size: 14px; font-weight: 950; color: #24211c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.video-close { width: 28px; height: 28px; border: 0; border-radius: 8px; cursor: pointer; color: #fff; background: linear-gradient(135deg, var(--pink), var(--purple)); font-size: 18px; font-weight: 950; line-height: 1; }
-/* 영상 영역 높이를 --maxh 로 고정(영상 종류 무관 일정) + 폭은 영상 비율대로 명시 계산.
-   세로영상: 폭이 좁아져(가운데) 높이를 꽉 채움. 가로영상: 폭 100%지만 16:9라 영상이 위아래 검은 여백(letterbox)으로 들어감 — 좌우 안 잘림.
-   (구글 preview 는 폭 기준으로 영상을 그리므로, 박스 폭보다 영상이 납작하면 위아래 여백이 생긴다.) */
-.video-player-wrap { --maxh: 78vh; --maxh: 78dvh; position: relative; margin: 12px auto; border-radius: 10px; overflow: hidden; background: #111;
-  width: min(100%, calc(var(--maxh) * var(--vw, 16) / var(--vh, 9)));
-  height: var(--maxh); }
-.video-frame { width: 100%; height: 100%; border: 0; display: block; }
-.video-list { padding: 0 16px 16px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.video-link { min-width: 0; border: 1px solid rgba(97, 92, 82,.68); border-radius: 8px; padding: 9px 10px; text-align: center; cursor: pointer; background: rgba(255, 252, 245,.82); color: #5e5a52; font-size: 12px; font-weight: 950; font-family: inherit; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.video-link.active { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--pink), var(--purple)); }
-
-@media (max-width: 1100px) { .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
-@media (max-width: 900px) {
-  .control-panel { margin-top: 16px; padding: 11px; grid-template-columns: 1fr; gap: 8px; border-radius: 11px; }
-  .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .video-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.signature-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.10) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255,255,255,.10) 1px, transparent 1px);
+  background-size: 58px 58px;
+  opacity: .24;
 }
-@media (max-width: 700px) {
-  .range-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-  .range-btn { min-height: 38px; font-size: 12px; }
-  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-  .section-name { width: 100%; font-size: 15px; }
-  /* 모바일: PC와 동일한 중앙 다이얼로그, 패딩 최소화로 가로 최대 + 영상 세로 더 크게(80dvh) */
-  .video-modal { padding: 10px; }
-  .video-modal-box { width: calc(100vw - 20px); max-height: calc(100vh - 20px); max-height: calc(100dvh - 20px); }
-  .video-player-wrap { --maxh: 80vh; --maxh: 80dvh; width: min(100%, calc(var(--maxh) * var(--vw, 16) / var(--vh, 9))); }
-  .video-list { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px; }
+.signature-hero-copy,
+.signature-stats {
+  position: relative;
+  z-index: 1;
 }
-@media (max-width: 460px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.signature-hero .hero-kicker {
+  color: rgba(244, 225, 158, .92);
+}
+.signature-hero .hero-title {
+  color: #fff;
+  text-align: left;
+}
+.signature-hero .hero-sub {
+  color: rgba(255,255,255,.72);
+  max-width: 540px;
+}
+.signature-stats {
+  display: grid;
+  gap: 10px;
+}
+.stat-box {
+  min-height: 92px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.24);
+  background: rgba(255,255,255,.13);
+  backdrop-filter: blur(14px);
+  color: #fff;
+}
+.stat-box span {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: .16em;
+  color: rgba(244, 225, 158, .86);
+}
+.stat-box strong {
+  display: block;
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.signature-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 420px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 12px;
+}
+.search-wrap {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 13px;
+  border-radius: 10px;
+  border: 1px solid rgba(52, 50, 44, .14);
+  background: rgba(255, 252, 244, .78);
+  box-shadow: 0 16px 36px rgba(31, 28, 21, .08);
+}
+.search-wrap span {
+  color: #8b681f;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: .16em;
+}
+.search-input {
+  width: 100%;
+  height: 42px;
+  border: 0;
+  outline: 0;
+  border-radius: 8px;
+  padding: 0 12px;
+  background: rgba(255,255,255,.82);
+  color: #24231f;
+  font-size: 15px;
+  font-weight: 850;
+  box-shadow: inset 0 0 0 1px rgba(52, 50, 44, .13);
+}
+.search-input:focus {
+  box-shadow: inset 0 0 0 1px rgba(185, 149, 62, .74), 0 0 0 4px rgba(185, 149, 62, .12);
+}
+.filter-wrap,
+.range-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.filter-wrap {
+  padding: 13px;
+  border-radius: 10px;
+  border: 1px solid rgba(52, 50, 44, .14);
+  background: rgba(255, 252, 244, .62);
+}
+.range-tabs {
+  margin-bottom: 24px;
+}
+.filter-btn,
+.range-btn {
+  min-height: 38px;
+  border: 1px solid rgba(52, 50, 44, .14);
+  border-radius: 8px;
+  padding: 0 13px;
+  cursor: pointer;
+  color: #5c5850;
+  background: rgba(255,255,255,.72);
+  font-size: 12px;
+  font-weight: 950;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease, color .16s ease;
+}
+.filter-btn:hover,
+.range-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(185, 149, 62, .46);
+}
+.filter-btn.active,
+.range-btn.active {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #171919, #696d68 58%, #b9953e);
+}
+
+.signature-section {
+  margin-top: 6px;
+}
+.signature-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+.sig-card {
+  min-width: 0;
+  border: 1px solid rgba(52, 50, 44, .14);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  text-align: left;
+  color: #24231f;
+  background: rgba(255, 252, 244, .82);
+  box-shadow: 0 16px 34px rgba(31, 28, 21, .08);
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.sig-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(185, 149, 62, .52);
+  box-shadow: 0 22px 42px rgba(31, 28, 21, .13);
+}
+.sig-thumb {
+  display: block;
+  aspect-ratio: 16 / 9;
+  border-radius: 7px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ebe6d7, #fffaf0);
+}
+.sig-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.sig-meta {
+  display: grid;
+  gap: 5px;
+  padding: 9px 2px 2px;
+}
+.sig-number {
+  width: fit-content;
+  border-radius: 6px;
+  padding: 4px 7px;
+  color: #8b681f;
+  background: rgba(185, 149, 62, .12);
+  font-size: 11px;
+  font-weight: 950;
+}
+.sig-meta strong {
+  min-height: 34px;
+  color: #24231f;
+  font-size: 14px;
+  line-height: 1.22;
+  font-weight: 950;
+  word-break: keep-all;
+}
+.member-chip {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: #565a56;
+  background: rgba(105, 109, 104, .12);
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.preview-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+.preview-modal.active {
+  display: flex;
+}
+.preview-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(18, 20, 20, .58);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+.preview-panel {
+  position: relative;
+  z-index: 1;
+  width: min(980px, calc(100vw - 36px));
+  max-height: calc(100dvh - 36px);
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.28);
+  background: #f8f5ec;
+  box-shadow: 0 30px 80px rgba(18, 20, 20, .36);
+}
+.preview-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 15px;
+  border-bottom: 1px solid rgba(52, 50, 44, .14);
+  background: rgba(248,245,236,.92);
+  backdrop-filter: blur(14px);
+}
+.preview-kicker {
+  margin-bottom: 4px;
+  color: #8b681f;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: .16em;
+}
+.preview-head h2 {
+  margin: 0;
+  color: #24231f;
+  font-size: 18px;
+  font-weight: 950;
+}
+.preview-close {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #171919, #696d68 58%, #b9953e);
+  font-size: 24px;
+  line-height: 1;
+}
+.preview-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 76dvh;
+  object-fit: contain;
+  background: #e7e0cf;
+}
+
+@media (max-width: 1100px) {
+  .signature-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .signature-hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    padding: 28px 20px;
+  }
+  .signature-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .signature-toolbar {
+    grid-template-columns: 1fr;
+  }
+  .signature-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+@media (max-width: 620px) {
+  .signature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .sig-card {
+    padding: 6px;
+  }
+  .sig-meta strong {
+    min-height: 32px;
+    font-size: 12px;
+  }
+  .filter-wrap,
+  .range-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 3px;
+  }
+  .filter-btn,
+  .range-btn {
+    flex: 0 0 auto;
+  }
+}
+@media (max-width: 420px) {
+  .signature-stats {
+    grid-template-columns: 1fr;
+  }
+  .signature-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
