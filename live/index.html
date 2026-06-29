@@ -24,7 +24,7 @@
 <meta name="theme-color" content="#caa64a">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="../css/common.css?v=1781540179">
-<link rel="stylesheet" href="../css/live.css?v=1781540179">
+<link rel="stylesheet" href="../css/live.css?v=1781540180">
 </head>
 <body><header class="navbar">
     <div class="nav-inner">
@@ -52,9 +52,9 @@
 <main class="page">
     <section class="hero" aria-label="라이브 배너">
         <div class="hero-content">
-            <div class="hero-kicker">THE HM PORTAL</div>
+            <div class="hero-kicker">THE HM LIVE</div>
             <h1 class="hero-title">LIVE</h1>
-            <p class="hero-sub">ON AIR · MEMBER · BOARD</p>
+            <p class="hero-sub">현재 방송과 멤버 상태를 빠르게 확인하세요.</p>
         </div>
     </section>
 
@@ -68,7 +68,7 @@
 
         <div class="summary">
             <div class="summary-box"><div class="summary-label">ON AIR</div><div class="summary-value" id="summaryLive">-</div></div>
-            <div class="summary-box"><div class="summary-label">TOTAL MEMBER</div><div class="summary-value" id="summaryTotal">-</div></div>
+            <div class="summary-box"><div class="summary-label">MEMBERS</div><div class="summary-value" id="summaryTotal">-</div></div>
             <div class="summary-box"><div class="summary-label">STATUS</div><div class="summary-value" id="summaryStatus">OPEN</div></div>
         </div>
 
@@ -228,7 +228,7 @@
       const total = Number(liveData?.total ?? all.length ?? 0);
       $("#summaryLive").textContent = formatNumber(liveCount);
       $("#summaryTotal").textContent = formatNumber(total);
-      $("#summaryStatus").textContent = "OPEN";
+      $("#summaryStatus").textContent = liveCount > 0 ? "LIVE" : "READY";
       const b = $("#onAirButton");
       if (b) b.textContent = liveCount > 0 ? `ON AIR ${liveCount}` : "ON AIR";
     }
