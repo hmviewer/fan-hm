@@ -3,6 +3,7 @@ import path from "node:path";
 
 const MEMBERS_PATH = path.join(process.cwd(), "static-api", "members.json");
 const SOOP_LIVE_URL = "https://live.sooplive.co.kr/afreeca/player_live_api.php";
+const SOOP_BROAD_LIST_URL = "https://live.sooplive.co.kr/api/main_broad_list_api.php";
 
 function liveThumbnailCandidates(broadNo, direct = "") {
   const id = String(broadNo || "").trim();
@@ -16,15 +17,62 @@ function liveThumbnailCandidates(broadNo, direct = "") {
   ].filter(Boolean).filter((url, index, arr) => arr.indexOf(url) === index);
 }
 
+function numberFrom(...values) {
+  for (const value of values) {
+    const normalized = Number(String(value ?? "").replaceAll(",", "").trim());
+    if (Number.isFinite(normalized) && normalized > 0) return normalized;
+  }
+  return 0;
+}
+
+function normalizeProtocolUrl(value) {
+  const url = String(value || "").trim();
+  if (!url) return "";
+  return url.startsWith("//") ? `https:${url}` : url;
+}
+
+async function fetchBroadListInfo(channel) {
+  const broadNo = String(channel?.BNO || channel?.BROAD_NO || channel?.broad_no || "").trim();
+  const userId = String(channel?.BJID || channel?.USER_ID || "").trim().toLowerCase();
+  const category = String(channel?.CATE || "").trim();
+  if (!broadNo && !userId) return null;
+
+  const selectValue = category || "all";
+  const selectType = category ? "cate" : "action";
+  for (let pageNo = 1; pageNo <= 4; pageNo += 1) {
+    const query = new URLSearchParams({
+      selectType,
+      selectValue,
+      orderType: "view_cnt",
+      pageNo: String(pageNo),
+      lang: "ko_KR"
+    });
+    const response = await fetch(`${SOOP_BROAD_LIST_URL}?${query.toString()}`, {
+      headers: { "accept": "application/json", "user-agent": "Mozilla/5.0" }
+    });
+    if (!response.ok) continue;
+    const payload = await response.json();
+    const rows = Array.isArray(payload?.broad) ? payload.broad : [];
+    const matched = rows.find((row) => {
+      const rowBroadNo = String(row?.broad_no || row?.BNO || "").trim();
+      const rowUserId = String(row?.user_id || row?.BJID || "").trim().toLowerCase();
+      return (broadNo && rowBroadNo === broadNo) || (userId && rowUserId === userId);
+    });
+    if (matched) return matched;
+    if (rows.length < 60) break;
+  }
+  return null;
+}
+
 function normalizeChannel(member, channel) {
   const result = Number(channel?.RESULT || 0);
   const isLive = result === 1;
   const broadNo = String(channel?.BNO || channel?.BROAD_NO || channel?.broad_no || "").trim();
-  const title = String(channel?.TITLE || channel?.BROAD_TITLE || "").trim();
-  const viewer = Number(channel?.VIEW_CNT || channel?.TOTAL_VIEW_CNT || channel?.PC_VIEW_CNT || 0);
-  const thumbnail = String(channel?.BROAD_IMG || channel?.BROAD_THUMB || channel?.BROAD_THUMBNAIL || channel?.THUMBNAIL || channel?.THUMB || channel?.TITLE_IMG || "").trim();
+  const title = String(channel?.TITLE || channel?.BROAD_TITLE || channel?.broad_title || "").trim();
+  const viewer = numberFrom(channel?.TOTAL_VIEW_CNT, channel?.total_view_cnt, channel?.VIEW_CNT, channel?.CURRENT_VIEW_CNT, channel?.current_view_cnt, channel?.PC_VIEW_CNT, channel?.pc_view_cnt);
+  const thumbnail = normalizeProtocolUrl(channel?.BROAD_IMG || channel?.broad_thumb || channel?.BROAD_THUMB || channel?.BROAD_THUMBNAIL || channel?.THUMBNAIL || channel?.THUMB || channel?.TITLE_IMG || "");
   const thumbnailCandidates = liveThumbnailCandidates(broadNo, thumbnail);
-  const startedAt = String(channel?.BROAD_START || channel?.START_TIME || "").trim();
+  const startedAt = String(channel?.BROAD_START || channel?.broad_start || channel?.START_TIME || "").trim();
   const soopId = String(member.soopId || member.id || "").trim();
 
   return {
@@ -71,7 +119,12 @@ async function fetchLiveState(member) {
 
   if (!response.ok) throw new Error(`SOOP ${response.status}`);
   const payload = await response.json();
-  return normalizeChannel(member, payload?.CHANNEL || {});
+  const channel = payload?.CHANNEL || {};
+  if (Number(channel?.RESULT || 0) === 1) {
+    const broadInfo = await fetchBroadListInfo(channel).catch(() => null);
+    return normalizeChannel(member, broadInfo ? { ...channel, ...broadInfo } : channel);
+  }
+  return normalizeChannel(member, channel);
 }
 
 export default async function handler(req, res) {

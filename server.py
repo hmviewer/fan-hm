@@ -12,6 +12,7 @@ import time
 
 ROOT = Path(__file__).resolve().parent
 SOOP_LIVE_URL = "https://live.sooplive.co.kr/afreeca/player_live_api.php"
+SOOP_BROAD_LIST_URL = "https://live.sooplive.co.kr/api/main_broad_list_api.php"
 SOOP_CHANNEL_API = "https://api-channel.sooplive.com/v1.1/channel"
 YOUTUBE_SHORTS_FEED_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCUh7tcH-bz8Xj5WaSO_TWLQ"
 YOUTUBE_SHORTS_CHANNEL = "HM엑셀부"
@@ -162,6 +163,53 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
                 payload[name] = {"path": str(path.relative_to(ROOT)), "error": str(exc)}
         self._send_json(payload)
 
+    def _number_from(self, *values):
+        for value in values:
+            try:
+                normalized = int(float(str(value or "").replace(",", "").strip()))
+                if normalized > 0:
+                    return normalized
+            except Exception:
+                continue
+        return 0
+
+    def _normalize_protocol_url(self, value):
+        url = str(value or "").strip()
+        return f"https:{url}" if url.startswith("//") else url
+
+    def _fetch_broad_list_info(self, channel):
+        broad_no = str(channel.get("BNO") or channel.get("BROAD_NO") or channel.get("broad_no") or "").strip()
+        user_id = str(channel.get("BJID") or channel.get("USER_ID") or channel.get("user_id") or "").strip().lower()
+        category = str(channel.get("CATE") or "").strip()
+        if not broad_no and not user_id:
+            return None
+
+        select_type = "cate" if category else "action"
+        select_value = category or "all"
+        for page_no in range(1, 5):
+            query = urlencode({
+                "selectType": select_type,
+                "selectValue": select_value,
+                "orderType": "view_cnt",
+                "pageNo": str(page_no),
+                "lang": "ko_KR",
+            })
+            try:
+                payload = self._fetch_json_url(f"{SOOP_BROAD_LIST_URL}?{query}")
+            except Exception:
+                continue
+            rows = payload.get("broad") if isinstance(payload, dict) else []
+            if not isinstance(rows, list):
+                rows = []
+            for row in rows:
+                row_broad_no = str(row.get("broad_no") or row.get("BNO") or "").strip()
+                row_user_id = str(row.get("user_id") or row.get("BJID") or "").strip().lower()
+                if (broad_no and row_broad_no == broad_no) or (user_id and row_user_id == user_id):
+                    return row
+            if len(rows) < 60:
+                break
+        return None
+
     def _fetch_member_live_state(self, member):
         soop_id = str(member.get("soopId") or member.get("id") or "").strip()
         if not soop_id:
@@ -183,20 +231,33 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
                 payload = json.loads(response.read().decode("utf-8"))
             channel = payload.get("CHANNEL") or {}
             is_live = int(channel.get("RESULT") or 0) == 1
-            broad_no = str(channel.get("BNO") or channel.get("BROAD_NO") or "").strip()
-            title = str(channel.get("TITLE") or channel.get("BROAD_TITLE") or "").strip()
-            viewer = int(channel.get("VIEW_CNT") or channel.get("TOTAL_VIEW_CNT") or channel.get("PC_VIEW_CNT") or 0)
-            thumbnail = str(
+            if is_live:
+                broad_info = self._fetch_broad_list_info(channel) or {}
+                if broad_info:
+                    channel = {**channel, **broad_info}
+            broad_no = str(channel.get("BNO") or channel.get("BROAD_NO") or channel.get("broad_no") or "").strip()
+            title = str(channel.get("TITLE") or channel.get("BROAD_TITLE") or channel.get("broad_title") or "").strip()
+            viewer = self._number_from(
+                channel.get("TOTAL_VIEW_CNT"),
+                channel.get("total_view_cnt"),
+                channel.get("VIEW_CNT"),
+                channel.get("CURRENT_VIEW_CNT"),
+                channel.get("current_view_cnt"),
+                channel.get("PC_VIEW_CNT"),
+                channel.get("pc_view_cnt"),
+            )
+            thumbnail = self._normalize_protocol_url(
                 channel.get("BROAD_IMG")
+                or channel.get("broad_thumb")
                 or channel.get("BROAD_THUMB")
                 or channel.get("BROAD_THUMBNAIL")
                 or channel.get("THUMBNAIL")
                 or channel.get("THUMB")
                 or channel.get("TITLE_IMG")
                 or ""
-            ).strip()
+            )
             thumbnail_candidates = live_thumbnail_candidates(broad_no, thumbnail)
-            started_at = str(channel.get("BROAD_START") or channel.get("START_TIME") or "").strip()
+            started_at = str(channel.get("BROAD_START") or channel.get("broad_start") or channel.get("START_TIME") or "").strip()
             return {
                 **member,
                 "soopId": soop_id,
