@@ -202,7 +202,7 @@
     }
 
     function renderLiveCard(m) {
-      const name = esc(m.name || m.soopId || "멤버"), title = esc(m.title || "방송 중"), viewer = numberFormat(m.viewer || 0), started = esc(m.startedAt || ""), url = liveOpenUrl(m);
+      const name = esc(m.name || m.soopId || "멤버"), title = esc(m.title || "방송 중"), viewer = Number(m.viewer || 0) > 0 ? numberFormat(m.viewer) : "-", started = esc(m.startedAt || ""), url = liveOpenUrl(m);
       const candidates = liveThumbCandidates(m), thumb = candidates[0] || DEFAULT_PROFILE_IMAGE;
       return `<a class="card live-card" href="${esc(url)}" target="_blank" rel="noopener"><div class="live-thumb"><img src="${esc(thumb)}" data-candidates="${esc(candidates.join("|"))}" data-candidate-index="0" alt="${name}" loading="lazy" referrerpolicy="no-referrer" onerror="swapLiveThumb(this)"><span class="live-badge">LIVE</span></div><div class="live-info"><div class="live-name">${name}</div><div class="live-desc">${title}</div><div class="live-meta"><span>VIEW ${viewer}</span>${started ? `<span>· ${started}</span>` : ""}</div></div></a>`;
     }

@@ -113,7 +113,7 @@
   font-size: 13px; line-height: 1.38; color: #706b62;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.live-meta { margin-top: 4px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 900; color: #8d6a1f; flex-wrap: wrap; }
+.live-meta { margin-top: 4px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 900; color: #8d6a1f; flex-wrap: wrap; }
 .live-open-btn {
   margin-top: auto; width: 100%; border: 0; border-radius: var(--radius-sm);
   padding: 11px 12px; background: linear-gradient(135deg, #caa64a, #858781);
@@ -198,7 +198,7 @@
   .live-info { padding: 11px 14px 13px; }
   .live-name { font-size: 15px; }
   .live-title { font-size: 12px; line-height: 1.34; }
-  .live-meta { margin-top: 3px; font-size: 11px; }
+  .live-meta { margin-top: 3px; margin-bottom: 12px; font-size: 11px; }
   .live-open-btn { margin-top: 12px; padding: 10px; font-size: 12px; }
   .offline-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .offline-card { min-height: 76px; border-radius: var(--radius-sm); padding: 11px; gap: 10px; }

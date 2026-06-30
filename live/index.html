@@ -117,7 +117,7 @@
     const DEFAULT_PROFILE_IMAGE = "https://profile.img.sooplive.co.kr/LOGO/sy/sysdemian/sysdemian.jpg";
     const MAX_POSTS = 20;
 
-    const RANK_ORDER = { "공동 대표": 1, "대표": 1, "부장": 20, "차장": 25, "과장": 30, "팀장": 35, "대리": 40, "주임": 45, "선임사원": 50, "감찰": 80, "멤버": 100, "웨이터": 999 };
+    const RANK_ORDER = { "공동 대표": 1, "대표": 1, "부장": 20, "차장": 25, "과장": 30, "팀장": 35, "대리": 40, "주임": 45, "선임사원": 50, "사원": 55, "감찰": 80, "멤버": 100, "웨이터": 999 };
     const SPECIAL_MEMBER_ORDER = { "suhi370erw": 1, "sjm3000": 2 };
 
     let liveData = null, memberData = [], boardData = [];
@@ -240,7 +240,7 @@
     function renderBroadcastCard(m) {
       const name = escapeHtml(m.name || m.soopId || "멤버");
       const title = escapeHtml(m.title || "방송 제목이 없습니다");
-      const viewer = formatNumber(m.viewer || 0);
+      const viewer = Number(m.viewer || 0) > 0 ? formatNumber(m.viewer) : "-";
       const startedAt = escapeHtml(m.startedAt || "");
       const rank = escapeHtml(m.rank || m.group || m.role || "멤버");
       const candidates = getLiveThumbnailCandidates(m);
