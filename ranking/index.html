@@ -23,7 +23,7 @@
 <title>THE HM · RANKING</title>
 <meta name="theme-color" content="#caa64a">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="../css/common.css?v=1781540191">
+<link rel="stylesheet" href="../css/common.css?v=1781540192">
 <link rel="stylesheet" href="../css/ranking.css?v=1781540179">
 </head>
 <body><header class="navbar">
@@ -45,7 +45,8 @@
         .then(function (r) { return r.json(); })
         .then(function (d) {
             var n = (Array.isArray(d.members) ? d.members : []).filter(function (m) { return m && m.isLive; }).length;
-            b.textContent = n > 0 ? 'ON AIR ' + n : 'ON AIR';
+            b.innerHTML = n > 0 ? 'ON AIR <span class="nav-live-count">' + n + '</span>' : 'ON AIR';
+            b.setAttribute('aria-label', n > 0 ? '현재 LIVE ' + n + '명' : '현재 LIVE 없음');
         }).catch(function () {});
 })();
 </script>
