@@ -24,6 +24,7 @@
   border: 1px solid rgba(97, 92, 82, 0.66);
   border-radius: var(--radius-sm);
   padding: 12px 18px;
+  font-size: 14px;
   font-weight: 950;
   cursor: pointer;
   color: #706b62;
@@ -120,20 +121,20 @@
   box-shadow: 0 8px 20px rgba(64, 54, 28, 0.22);
 }
 
-.offline-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.offline-card { padding: 13px; display: flex; align-items: center; gap: 11px; min-width: 0; }
+.offline-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.offline-card { min-height: 86px; padding: 16px; display: flex; align-items: center; gap: 14px; min-width: 0; }
 .offline-avatar {
-  width: 46px; height: 46px; flex: 0 0 46px; border-radius: 50%; object-fit: cover;
+  width: 58px; height: 58px; flex: 0 0 58px; border-radius: 50%; object-fit: cover;
   border: 3px solid white; background: #ece8dc; box-shadow: 0 8px 18px rgba(64, 54, 28,.15);
 }
 .offline-body { min-width: 0; flex: 1; }
-.offline-name { font-size: 14px; font-weight: 950; color: #24211c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.offline-meta { margin-top: 5px; display: flex; align-items: center; gap: 6px; min-width: 0; }
-.offline-state { font-size: 11px; font-weight: 900; color: #8b857a; white-space: nowrap; }
+.offline-name { font-size: 17px; line-height: 1.15; font-weight: 950; color: #24211c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.offline-meta { margin-top: 8px; display: flex; align-items: center; gap: 7px; min-width: 0; }
+.offline-state { font-size: 12px; font-weight: 900; color: #8b857a; white-space: nowrap; }
 .station-link {
-  margin-left: auto; flex: none; width: 30px; height: 30px; border-radius: 8px;
+  margin-left: auto; flex: none; width: 36px; height: 36px; border-radius: 9px;
   display: grid; place-items: center; background: rgba(255,255,255,.86); color: #8d6a1f;
-  font-size: 14px; font-weight: 950; box-shadow: inset 0 0 0 1px rgba(202, 166, 74,.45);
+  font-size: 16px; font-weight: 950; box-shadow: inset 0 0 0 1px rgba(202, 166, 74,.45);
 }
 
 .post-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
@@ -187,7 +188,7 @@
   .live-panel { border-radius: var(--radius-md); padding: 14px 10px; }
   .topbar { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px; }
   .tabs { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
-  .tab-btn { width: 100%; min-height: 42px; padding: 8px 4px; font-size: 12px; line-height: 1.15; white-space: nowrap; }
+  .tab-btn { width: 100%; min-height: 46px; padding: 8px 4px; font-size: 13px; line-height: 1.15; white-space: nowrap; }
   .summary { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-bottom: 12px; }
   .summary-box { min-height: 44px; border-radius: 7px; padding: 5px 4px; display: flex; flex-direction: column; justify-content: center; }
   .summary-label { font-size: 9.5px; line-height: 1; letter-spacing: 0.02em; margin-bottom: 7px; white-space: nowrap; }
@@ -200,13 +201,13 @@
   .live-meta { margin-top: 3px; font-size: 11px; }
   .live-open-btn { margin-top: 12px; padding: 10px; font-size: 12px; }
   .offline-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .offline-card { border-radius: var(--radius-sm); padding: 9px; gap: 8px; }
-  .offline-avatar { width: 34px; height: 34px; flex-basis: 34px; border-width: 2px; }
-  .offline-name { font-size: 12px; }
-  .offline-meta { margin-top: 3px; gap: 4px; }
+  .offline-card { min-height: 76px; border-radius: var(--radius-sm); padding: 11px; gap: 10px; }
+  .offline-avatar { width: 48px; height: 48px; flex-basis: 48px; border-width: 2px; }
+  .offline-name { font-size: 16px; }
+  .offline-meta { margin-top: 6px; gap: 5px; }
   .offline-state { display: none; }
-  .offline-card .rank-badge { max-width: 60px; padding: 4px 5px; font-size: 9px; overflow: hidden; text-overflow: ellipsis; }
-  .station-link { width: 26px; height: 26px; border-radius: 7px; font-size: 12px; }
+  .offline-card .rank-badge { max-width: 82px; padding: 5px 7px; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+  .station-link { width: 34px; height: 34px; border-radius: 8px; font-size: 15px; }
   .post-list { grid-template-columns: 1fr; gap: 10px; }
   .post-card { grid-template-columns: 86px minmax(0, 1fr); height: 132px; min-height: 132px; border-radius: var(--radius-sm); }
   .post-body { padding: 12px; }

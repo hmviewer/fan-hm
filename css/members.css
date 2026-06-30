@@ -43,7 +43,7 @@
 .group-section-inspector .group-dot { background: #8f8f8a; }
 .group-section-waiter .group-dot { background: #25bec1; }
 
-.member-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.member-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
 
 .member-card {
   position: relative; min-width: 0; overflow: hidden; border-radius: 15px;
@@ -62,7 +62,7 @@
 .member-card.waiter { background: linear-gradient(145deg, rgba(246, 255, 251, .94), rgba(255, 246, 231, .82)); border-color: rgba(102, 190, 149, .28); }
 .member-card.waiter::before { background: radial-gradient(circle at 22% 0%, rgba(221, 255, 241, .86), transparent 36%), linear-gradient(145deg, rgba(236, 255, 247, .72), rgba(255, 244, 223, .6)); }
 
-.member-cover { position: relative; height: 112px; background: linear-gradient(135deg, #f3e3aa, #d9d5c8 58%, #fffaf0); overflow: hidden; }
+.member-cover { position: relative; height: 124px; background: linear-gradient(135deg, #f3e3aa, #d9d5c8 58%, #fffaf0); overflow: hidden; }
 .member-card.leader .member-cover { background: linear-gradient(135deg, #fff6cf, #ffe2a1 58%, #fff9ec); }
 .member-card.inspector .member-cover { background: linear-gradient(135deg, #f8f7f2, #cfd2cf 58%, #f3e2a4); }
 .member-card.waiter .member-cover { background: linear-gradient(135deg, #d8fff0, #fff0d6 58%, #f2fff9); }
@@ -76,7 +76,7 @@
 .member-card.is-live .live-badge { display: inline-flex; }
 
 .member-photo-wrap {
-  position: relative; z-index: 2; width: 98px; height: 98px; margin: -48px auto 0;
+  position: relative; z-index: 2; width: 108px; height: 108px; margin: -54px auto 0;
   padding: 5px; border-radius: 50%; background: linear-gradient(135deg, #ffb7d9, #8f8f8a);
   box-shadow: 0 12px 26px rgba(64, 54, 28, 0.20);
 }
@@ -86,20 +86,20 @@
 .member-card.is-live .member-photo-wrap { background: linear-gradient(135deg, #b88a28, #ffc54d); box-shadow: 0 12px 28px rgba(184, 138, 40, 0.22); }
 .member-photo { width: 100%; height: 100%; display: block; border-radius: 50%; object-fit: cover; background: #fff; border: 3px solid rgba(255,255,255,0.94); }
 
-.member-info { position: relative; z-index: 2; padding: 13px 15px 16px; text-align: center; }
-.member-name { min-width: 0; font-size: 16px; font-weight: 950; color: #24211c; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; letter-spacing: -0.03em; }
+.member-info { position: relative; z-index: 2; padding: 16px 16px 18px; text-align: center; }
+.member-name { min-width: 0; font-size: 18px; line-height: 1.14; font-weight: 950; color: #24211c; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; letter-spacing: -0.03em; }
 .member-card.leader .member-name { color: #8a5a00; }
 .member-card.inspector .member-name { color: #4f504d; }
 .member-card.waiter .member-name { color: #3f7f68; }
-.member-id { margin-top: 5px; font-size: 12px; font-weight: 800; color: #8b857a; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.member-role-row { margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 7px; flex-wrap: wrap; }
-.role-chip, .link-chip { display: inline-flex; align-items: center; justify-content: center; min-height: 28px; padding: 0 10px; border-radius: 8px; font-size: 11px; font-weight: 950; line-height: 1; white-space: nowrap; }
+.member-id { margin-top: 6px; font-size: 13px; font-weight: 850; color: #8b857a; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.member-role-row { margin-top: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.role-chip, .link-chip { display: inline-flex; align-items: center; justify-content: center; min-height: 31px; padding: 0 12px; border-radius: 8px; font-size: 12px; font-weight: 950; line-height: 1; white-space: nowrap; }
 .role-chip { background: rgba(246, 241, 230, 0.75); color: #8d6a1f; border: 1px solid rgba(202, 166, 74, 0.18); }
 .member-card.leader .role-chip { background: rgba(255, 248, 218, .9); color: #a96e00; border-color: rgba(214, 156, 38, .32); }
 .member-card.waiter .role-chip { background: rgba(236, 255, 247, .9); color: #4e9b7a; border-color: rgba(102, 190, 149, .28); }
 .link-chip { background: rgba(255,255,255,0.78); color: #706b62; border: 1px solid rgba(97, 92, 82, 0.55); }
 .member-card.is-live .link-chip { background: rgba(184, 138, 40, 0.10); color: #ff3f8d; border-color: rgba(184, 138, 40, 0.22); }
-.live-title { margin-top: 12px; min-height: 34px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: #706b62; font-size: 12px; font-weight: 800; line-height: 1.42; }
+.live-title { margin-top: 12px; min-height: 36px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: #706b62; font-size: 13px; font-weight: 800; line-height: 1.42; }
 .live-title:empty { display: none; }
 
 .rank-guide { margin-top: 28px; padding: 18px; border-radius: 15px; background: rgba(255,255,255,0.66); border: 1px solid rgba(97, 92, 82, 0.50); box-shadow: var(--shadow); }
@@ -165,21 +165,21 @@
   .group-dot { width: 10px; height: 10px; }
   .member-grid { grid-template-columns: 1fr; gap: 10px; }
   .member-card {
-    min-height: 124px; display: grid; grid-template-columns: 96px minmax(0, 1fr);
+    min-height: 142px; display: grid; grid-template-columns: 108px minmax(0, 1fr);
     border-radius: 14px;
   }
-  .member-cover { grid-column: 1; grid-row: 1; height: 100%; min-height: 124px; }
+  .member-cover { grid-column: 1; grid-row: 1; height: 100%; min-height: 142px; }
   .member-photo-wrap {
     grid-column: 1; grid-row: 1; align-self: center; justify-self: center;
-    width: 72px; height: 72px; margin: 0; padding: 4px;
+    width: 82px; height: 82px; margin: 0; padding: 4px;
   }
   .member-photo { border-width: 2px; }
-  .member-info { grid-column: 2; grid-row: 1; align-self: center; padding: 17px 15px 16px; text-align: left; }
-  .member-name { font-size: 18px; line-height: 1.12; }
-  .member-id { margin-top: 5px; font-size: 11px; }
+  .member-info { grid-column: 2; grid-row: 1; align-self: center; padding: 18px 16px 17px; text-align: left; }
+  .member-name { font-size: 20px; line-height: 1.1; }
+  .member-id { margin-top: 6px; font-size: 12px; }
   .member-role-row { margin-top: 12px; justify-content: flex-start; gap: 6px; }
-  .role-chip, .link-chip { min-height: 28px; padding: 0 10px; border-radius: 8px; font-size: 11px; }
-  .live-title { margin-top: 9px; min-height: 0; font-size: 11px; line-height: 1.32; }
+  .role-chip, .link-chip { min-height: 31px; padding: 0 11px; border-radius: 8px; font-size: 12px; }
+  .live-title { margin-top: 9px; min-height: 0; font-size: 12px; line-height: 1.32; }
   .live-badge { top: 8px; left: 8px; padding: 4px 7px; border-radius: 6px; font-size: 9px; }
   .rank-guide { margin-top: 18px; padding: 13px; border-radius: 12px; }
   .rank-item { padding: 5px 7px; border-radius: 7px; font-size: 10px; }
