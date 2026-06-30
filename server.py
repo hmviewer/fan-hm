@@ -186,7 +186,8 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
 
         select_type = "cate" if category else "action"
         select_value = category or "all"
-        for page_no in range(1, 13):
+        max_pages = 12 if category else 2
+        for page_no in range(1, max_pages + 1):
             query = urlencode({
                 "selectType": select_type,
                 "selectValue": select_value,
@@ -236,10 +237,11 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
                 if broad_info:
                     channel = {**channel, **broad_info}
             else:
-                broad_info = self._fetch_broad_list_info({"BJID": soop_id, "CATE": channel.get("CATE")}) or {}
-                if broad_info:
-                    channel = {**broad_info, "RESULT": 1}
-                    is_live = True
+                if channel.get("CATE"):
+                    broad_info = self._fetch_broad_list_info({"BJID": soop_id, "CATE": channel.get("CATE")}) or {}
+                    if broad_info:
+                        channel = {**broad_info, "RESULT": 1}
+                        is_live = True
             broad_no = str(channel.get("BNO") or channel.get("BROAD_NO") or channel.get("broad_no") or "").strip()
             title = str(channel.get("TITLE") or channel.get("BROAD_TITLE") or channel.get("broad_title") or "").strip()
             viewer = self._number_from(
