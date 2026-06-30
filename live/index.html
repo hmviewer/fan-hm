@@ -41,7 +41,7 @@
 (function () {
     var b = document.getElementById('onAirButton');
     if (!b) return;
-    fetch('../api/live.php', { cache: 'no-store' })
+    fetch('../api/live.php?ts=' + Date.now(), { cache: 'no-store' })
         .then(function (r) { return r.json(); })
         .then(function (d) {
             var n = (Array.isArray(d.members) ? d.members : []).filter(function (m) { return m && m.isLive; }).length;
@@ -320,7 +320,7 @@
       $("#postList").innerHTML = posts.length ? posts.map(renderPostCard).join("") : `<div class="empty-card">표시할 최근 게시물이 없습니다.</div>`;
     }
 
-    async function loadLiveData() { const r = await fetch(LIVE_API_URL, { cache: "no-store" }); if (!r.ok) throw new Error("LIVE"); liveData = await r.json(); }
+    async function loadLiveData() { const r = await fetch(`${LIVE_API_URL}?ts=${Date.now()}`, { cache: "no-store" }); if (!r.ok) throw new Error("LIVE"); liveData = await r.json(); }
     async function loadMemberData() { const r = await fetch(MEMBERS_URL, { cache: "no-store" }); if (!r.ok) throw new Error("MEMBERS"); const d = await r.json(); memberData = Array.isArray(d) ? d : []; }
     async function loadBoardData() { const r = await fetch(BOARD_API_URL, { cache: "no-store" }); if (!r.ok) throw new Error("BOARD"); const d = await r.json(); boardData = Array.isArray(d) ? d : (Array.isArray(d.data) ? d.data : []); }
 

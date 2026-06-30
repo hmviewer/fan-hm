@@ -41,7 +41,7 @@
 (function () {
     var b = document.getElementById('onAirButton');
     if (!b) return;
-    fetch('../api/live.php', { cache: 'no-store' })
+    fetch('../api/live.php?ts=' + Date.now(), { cache: 'no-store' })
         .then(function (r) { return r.json(); })
         .then(function (d) {
             var n = (Array.isArray(d.members) ? d.members : []).filter(function (m) { return m && m.isLive; }).length;
@@ -178,7 +178,7 @@
     }
     async function loadMembers() {
       try {
-        const [mr, lr] = await Promise.allSettled([fetch(MEMBERS_JSON_URL, { cache: "no-store" }), fetch(LIVE_API_URL, { cache: "no-store" })]);
+        const [mr, lr] = await Promise.allSettled([fetch(MEMBERS_JSON_URL, { cache: "no-store" }), fetch(`${LIVE_API_URL}?ts=${Date.now()}`, { cache: "no-store" })]);
         if (mr.status !== "fulfilled" || !mr.value.ok) throw new Error("members.json");
         const md = await mr.value.json();
         const raw = Array.isArray(md) ? md : (Array.isArray(md.members) ? md.members : []);
