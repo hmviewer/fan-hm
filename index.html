@@ -42,7 +42,7 @@
 (function () {
     var b = document.getElementById('onAirButton');
     if (!b) return;
-    fetch('api/live.php?ts=' + Date.now(), { cache: 'no-store' })
+    fetch('api/live.php?ts=' + Math.floor(Date.now() / 15000), { cache: 'no-store' })
         .then(function (r) { return r.json(); })
         .then(function (d) {
             var n = (Array.isArray(d.members) ? d.members : []).filter(function (m) { return m && m.isLive; }).length;
@@ -245,7 +245,7 @@
 
     async function loadLiveMembers() {
       try {
-        const r = await fetch(`${LIVE_API_URL}?ts=${Date.now()}`, { cache: "no-store" }); if (!r.ok) throw 0;
+        const r = await fetch(`${LIVE_API_URL}?ts=${Math.floor(Date.now() / 15000)}`, { cache: "no-store" }); if (!r.ok) throw 0;
         const d = await r.json(); const members = (Array.isArray(d.members) ? d.members : []).filter(m => m.isLive).sort((a, b) => Number(b.viewer || 0) - Number(a.viewer || 0)).slice(0, 10);
         const n = members.length;
         const ht = document.getElementById("heroLiveTitle"), hs = document.getElementById("heroLiveSub");

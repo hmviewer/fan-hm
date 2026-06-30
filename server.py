@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parent
 SOOP_LIVE_URL = "https://live.sooplive.co.kr/afreeca/player_live_api.php"
 SOOP_BROAD_LIST_URL = "https://live.sooplive.co.kr/api/main_broad_list_api.php"
 SOOP_CHANNEL_API = "https://api-channel.sooplive.com/v1.1/channel"
+LIVE_CACHE_TTL_SECONDS = 15
 YOUTUBE_SHORTS_FEED_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCUh7tcH-bz8Xj5WaSO_TWLQ"
 YOUTUBE_SHORTS_CHANNEL = "HM엑셀부"
 YOUTUBE_SHORTS_CHANNEL_URL = "https://www.youtube.com/@HM%EC%97%91%EC%85%80%EB%B6%80"
@@ -55,6 +56,9 @@ def live_thumbnail_candidates(broad_no, direct=""):
 
 
 class TheHMLocalHandler(SimpleHTTPRequestHandler):
+    live_cache_payload = None
+    live_cache_expires_at = 0
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
@@ -293,6 +297,10 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
 
     def _send_live_status(self):
         try:
+            now = time.time()
+            if self.__class__.live_cache_payload and self.__class__.live_cache_expires_at > now:
+                self._send_json(self.__class__.live_cache_payload)
+                return
             members = json.loads((ROOT / "static-api" / "members.json").read_text(encoding="utf-8"))
             if not isinstance(members, list):
                 members = []
@@ -303,6 +311,8 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
                 "total": len(live_members),
                 "updatedAt": int(time.time()),
             }
+            self.__class__.live_cache_payload = payload
+            self.__class__.live_cache_expires_at = time.time() + LIVE_CACHE_TTL_SECONDS
         except Exception:
             payload = {"members": [], "liveCount": 0, "total": 0, "updatedAt": int(time.time()), "error": "LIVE 정보를 불러오지 못했습니다."}
         self._send_json(payload)

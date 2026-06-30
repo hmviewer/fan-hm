@@ -4,6 +4,14 @@ import path from "node:path";
 const MEMBERS_PATH = path.join(process.cwd(), "static-api", "members.json");
 const SOOP_LIVE_URL = "https://live.sooplive.co.kr/afreeca/player_live_api.php";
 const SOOP_BROAD_LIST_URL = "https://live.sooplive.co.kr/api/main_broad_list_api.php";
+const LIVE_CACHE_TTL_MS = 15000;
+
+const liveCache = globalThis.__THE_HM_LIVE_CACHE || {
+  payload: null,
+  expiresAt: 0,
+  pending: null
+};
+globalThis.__THE_HM_LIVE_CACHE = liveCache;
 
 function liveThumbnailCandidates(broadNo, direct = "") {
   const id = String(broadNo || "").trim();
@@ -134,9 +142,56 @@ async function fetchLiveState(member) {
   return normalizeChannel(member, channel);
 }
 
+async function buildLivePayload() {
+  const members = await readMembers();
+  const settled = await Promise.allSettled(members.map(fetchLiveState));
+  const liveMembers = settled.map((item, index) => {
+    if (item.status === "fulfilled") return item.value;
+    const member = members[index] || {};
+    const soopId = String(member.soopId || member.id || "").trim();
+    return {
+      ...member,
+      soopId,
+      isLive: false,
+      viewer: 0,
+      title: "",
+      startedAt: "",
+      thumbnail: "",
+      thumbnailCandidates: [],
+      broadNo: "",
+      url: soopId ? `https://play.sooplive.co.kr/${encodeURIComponent(soopId)}` : "#"
+    };
+  });
+
+  return {
+    members: liveMembers,
+    liveCount: liveMembers.filter((member) => member.isLive).length,
+    total: liveMembers.length,
+    updatedAt: Math.floor(Date.now() / 1000)
+  };
+}
+
+async function getLivePayload() {
+  const now = Date.now();
+  if (liveCache.payload && liveCache.expiresAt > now) return liveCache.payload;
+  if (liveCache.pending) return liveCache.pending;
+
+  liveCache.pending = buildLivePayload()
+    .then((payload) => {
+      liveCache.payload = payload;
+      liveCache.expiresAt = Date.now() + LIVE_CACHE_TTL_MS;
+      return payload;
+    })
+    .finally(() => {
+      liveCache.pending = null;
+    });
+
+  return liveCache.pending;
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Cache-Control", "no-store, max-age=0");
+  res.setHeader("Cache-Control", "public, max-age=0, s-maxage=10, stale-while-revalidate=20");
 
   if (req.method === "OPTIONS") {
     res.status(204).end();
@@ -144,33 +199,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const members = await readMembers();
-    const settled = await Promise.allSettled(members.map(fetchLiveState));
-    const liveMembers = settled.map((item, index) => {
-      if (item.status === "fulfilled") return item.value;
-      const member = members[index] || {};
-      const soopId = String(member.soopId || member.id || "").trim();
-      return {
-        ...member,
-        soopId,
-        isLive: false,
-        viewer: 0,
-        title: "",
-        startedAt: "",
-        thumbnail: "",
-        thumbnailCandidates: [],
-        broadNo: "",
-        url: soopId ? `https://play.sooplive.co.kr/${encodeURIComponent(soopId)}` : "#"
-      };
-    });
-    const liveCount = liveMembers.filter((member) => member.isLive).length;
-
-    res.status(200).json({
-      members: liveMembers,
-      liveCount,
-      total: liveMembers.length,
-      updatedAt: Math.floor(Date.now() / 1000)
-    });
+    res.status(200).json(await getLivePayload());
   } catch (error) {
     res.status(500).json({
       members: [],
