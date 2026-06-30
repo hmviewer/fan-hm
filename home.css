@@ -73,7 +73,7 @@ a { color: inherit; text-decoration: none; }
   width: 42px;
   height: 42px;
   flex: 0 0 auto;
-  background: url("/assets/logo/the-hm-logo.png") center / contain no-repeat;
+  background: url("/assets/logo/the-hm-logo.gif") center / contain no-repeat;
   -webkit-text-fill-color: initial;
 }
 
@@ -258,43 +258,6 @@ section { margin-top: 28px; }
 .section-title::before { content: ""; position: absolute; left: 0; top: 0.2em; bottom: 0.2em; width: 5px; border-radius: 999px; background: var(--grad); }
 .section-more { font-size: 13px; font-weight: 900; color: #8d6a1f; white-space: nowrap; transition: color 0.15s ease; }
 .section-more:hover { color: #c44fb0; }
-
-.signature-link-card {
-  display: grid;
-  gap: 8px;
-  padding: 24px;
-  min-height: 150px;
-  align-content: center;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 222, 0.86)),
-    radial-gradient(circle at 86% 20%, rgba(202, 166, 74, 0.22), transparent 34%);
-  border: 1px solid rgba(143, 135, 116, 0.22);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-}
-
-.signature-link-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(185, 149, 62, 0.38);
-  box-shadow: 0 18px 42px rgba(64, 54, 28, 0.18);
-}
-
-.signature-link-card strong {
-  font-size: 22px;
-  line-height: 1.35;
-  color: #2d2d2a;
-}
-
-.signature-link-card span {
-  color: #746d5e;
-  font-weight: 700;
-}
-
-.signature-link-kicker {
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  color: #9b731e !important;
-  font-weight: 950 !important;
-}
 
 .card {
   border-radius: var(--radius);
@@ -602,37 +565,6 @@ section { margin-top: 28px; }
 .ranking-mini-label { font-size: 11px; color: #8b857a; font-weight: 900; margin-bottom: 3px; }
 .ranking-mini-value { font-size: 18px; color: #25bec1; font-weight: 950; }
 
-/* ── 인기 시그니처 ── */
-.signature-grid {
-  padding: 18px;
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
-}
-.sig-card {
-  min-height: 128px; padding: 16px; border-radius: 14px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(255,241,250,0.92));
-  border: 1px solid rgba(97, 92, 82, 0.75);
-  position: relative; overflow: hidden;
-  display: block; color: inherit; text-decoration: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.sig-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(64, 54, 28, 0.14); }
-.sig-thumb {
-  width: 100%; aspect-ratio: 16 / 9; border-radius: 8px;
-  object-fit: cover; display: block; margin-bottom: 12px;
-  background: linear-gradient(135deg, #f7f5ef, #ece8dc);
-}
-.sig-thumb.no-image { display: grid; place-items: center; color: #8d6a1f; font-size: 13px; font-weight: 950; }
-.sig-card::after {
-  content: "♪"; position: absolute; right: 14px; bottom: 4px;
-  font-size: 48px; color: rgba(202, 166, 74, 0.12); font-weight: 900;
-}
-.sig-number {
-  display: inline-flex; padding: 5px 9px; border-radius: 999px;
-  background: #f0dcff; color: #8d6a1f; font-size: 12px; font-weight: 950; margin-bottom: 12px;
-}
-.sig-name { font-size: 16px; font-weight: 950; margin-bottom: 8px; }
-.sig-type { font-size: 12px; color: #8b857a; font-weight: 800; }
-
 /* ── 반응형 ── */
 @media (max-width: 900px) {
   .navbar { height: auto; padding: 12px 0 10px; }
@@ -646,7 +578,6 @@ section { margin-top: 28px; }
   .nav-menu a { flex: 0 0 auto; padding: 0; border: 0; background: transparent; box-shadow: none; white-space: nowrap; }
   .nav-live { border-radius: 6px; }
   .hero { height: 310px; border-radius: 13px; }
-  .signature-grid { grid-template-columns: repeat(2, 1fr); }
   .live-card { flex-basis: 250px; }
   .post-item { flex: 0 0 320px; }
   .content-grid { grid-template-columns: 1fr; }
@@ -743,13 +674,6 @@ section { margin-top: 28px; }
   .rank-num { width: 28px; height: 28px; flex-basis: 28px; font-size: 13px; }
   .rank-name { font-size: 14px; }
   .rank-tier { min-width: 68px; padding: 5px 6px; font-size: 10px; }
-  .signature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 10px; }
-  .sig-card { min-height: 0; padding: 9px; border-radius: 9px; }
-  .sig-thumb { aspect-ratio: 16 / 7; border-radius: 6px; margin-bottom: 7px; }
-  .sig-number { padding: 3px 6px; font-size: 10px; margin-bottom: 5px; }
-  .sig-name { font-size: 12px; line-height: 1.25; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-  .sig-type { font-size: 10px; }
-  .sig-card::after { right: 8px; bottom: 0; font-size: 28px; }
 }
 
 /* Art direction pass: quieter premium metal/gold system */
@@ -855,14 +779,14 @@ body {
 .hm-brand-hero::after {
   content: "";
   position: absolute;
-  right: clamp(28px, 8vw, 110px);
+  right: clamp(36px, 10vw, 132px);
   top: 50%;
-  width: min(34vw, 360px);
+  width: min(30vw, 330px);
   aspect-ratio: 1;
   transform: translateY(-50%);
-  background: url("/assets/logo/the-hm-logo.png") center / contain no-repeat;
-  opacity: .34;
-  filter: drop-shadow(0 24px 42px rgba(0,0,0,.26));
+  background: url("/assets/logo/the-hm-logo.gif") center / contain no-repeat;
+  opacity: .52;
+  filter: drop-shadow(0 24px 42px rgba(0,0,0,.28)) saturate(.92);
   pointer-events: none;
 }
 .hero-content {
@@ -922,16 +846,10 @@ body {
 .offline-card,
 .post-card,
 .post-item,
-.signature-link-card,
 .ranking-mini-box {
   border-color: rgba(52, 50, 44, 0.16);
 }
 .card { background: rgba(255, 252, 244, 0.78); }
-.signature-link-card {
-  background:
-    linear-gradient(135deg, rgba(255, 252, 244, 0.92), rgba(235, 229, 211, 0.82)),
-    radial-gradient(circle at 86% 20%, rgba(202, 166, 74, 0.16), transparent 34%);
-}
 .live-thumb,
 .short-thumb {
   background: linear-gradient(135deg, #cfc8b6, #777c78);
@@ -957,8 +875,73 @@ body {
   .hero-content { width: 100%; max-width: 100%; }
   .hero-title { font-size: 38px; }
   .hero-sub { max-width: 300px; line-height: 1.35; white-space: normal; word-break: keep-all; }
-  .hm-brand-hero::after { right: -26px; width: 178px; opacity: .24; }
+  .hm-brand-hero::after { right: -20px; width: 158px; opacity: .25; }
   .hero-actions { margin-top: 16px; gap: 8px; }
   .hero-primary,
   .hero-secondary { min-height: 38px; padding: 0 13px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo::before,
+  .hm-brand-hero::after {
+    background-image: url("/assets/logo/the-hm-logo.png");
+  }
+}
+
+@media (max-width: 560px) {
+  .navbar {
+    height: auto;
+    padding: 11px 0 9px;
+  }
+  .nav-inner {
+    width: min(100% - 24px, 1180px);
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+  .logo {
+    order: 1;
+    font-size: 21px;
+    letter-spacing: 0.08em;
+  }
+  .logo::before {
+    width: 38px;
+    height: 38px;
+  }
+  .nav-live {
+    order: 2;
+    min-height: 36px;
+    margin-left: auto;
+    padding: 0 13px;
+    border-radius: 7px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .nav-menu {
+    order: 3;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-content: stretch;
+    align-items: center;
+    gap: 5px;
+    padding: 4px;
+    border-radius: 10px;
+    font-size: 12px;
+    letter-spacing: 0;
+    background: rgba(255, 252, 244, 0.78);
+    border: 1px solid rgba(52, 50, 44, 0.12);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.76), 0 10px 24px rgba(31, 28, 21, 0.07);
+  }
+  .nav-menu a {
+    min-width: 0;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: initial;
+    border-radius: 8px;
+    padding: 0 6px;
+    letter-spacing: 0;
+  }
 }
