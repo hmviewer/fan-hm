@@ -353,6 +353,22 @@ section { margin-top: 28px; }
 }
 .shorts-grid::-webkit-scrollbar { display: none; }
 
+.shorts-empty {
+  flex: 1 0 100%;
+  min-height: 160px;
+  display: grid;
+  place-items: center;
+  padding: 28px 18px;
+  border-radius: 13px;
+  background: rgba(255, 252, 244, 0.78);
+  border: 1px solid rgba(52, 50, 44, 0.16);
+  box-shadow: var(--shadow);
+  color: #747068;
+  font-size: 14px;
+  font-weight: 900;
+  text-align: center;
+}
+
 .short-card {
   flex: 0 0 118px;
   min-width: 118px;
@@ -858,6 +874,7 @@ body {
 .post-badge { background: #a9822a; }
 .live-empty,
 .post-empty,
+.shorts-empty,
 .empty-row { color: #747068; }
 .ranking-mini-box {
   background: linear-gradient(135deg, rgba(255,252,244,.92), rgba(238,232,215,.82));

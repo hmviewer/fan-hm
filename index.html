@@ -24,7 +24,7 @@
 <meta name="theme-color" content="#caa64a">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="css/common.css?v=1781540179">
-<link rel="stylesheet" href="home.css?v=1781540181">
+<link rel="stylesheet" href="home.css?v=1781540182">
 </head>
 <body>
 <header class="navbar">
@@ -76,10 +76,24 @@
         <div class="live-grid" id="liveGrid"><div class="live-empty">LIVE 정보를 불러오는 중…</div></div>
     </section>
 
+    <section id="shorts">
+        <div class="section-head">
+            <h2 class="section-title">SHORTS</h2>
+            <div class="section-actions">
+                <div class="scroll-controls" aria-label="쇼츠 이동">
+                    <button class="scroll-btn" type="button" data-scroll-target="shortsGrid" data-scroll-dir="-1" aria-label="이전 쇼츠">‹</button>
+                    <button class="scroll-btn" type="button" data-scroll-target="shortsGrid" data-scroll-dir="1" aria-label="다음 쇼츠">›</button>
+                </div>
+                <a class="section-more" href="https://www.youtube.com/@HM%EC%97%91%EC%85%80%EB%B6%80" target="_blank" rel="noopener">YouTube 보기</a>
+            </div>
+        </div>
+        <div class="shorts-grid" id="shortsGrid"><div class="shorts-empty">SHORTS를 불러오는 중…</div></div>
+    </section>
+
     <section id="board" class="board-section">
         <div class="card board-card">
             <div class="board-head">
-                <div><h2 class="section-title">방송국 새 글</h2></div>
+                <div><h2 class="section-title">최근 게시물</h2></div>
                 <div class="section-actions">
                     <div class="scroll-controls" aria-label="방송국 새 글 이동">
                         <button class="scroll-btn" type="button" data-scroll-target="boardPosts" data-scroll-dir="-1" aria-label="이전 게시글">‹</button>
@@ -90,17 +104,6 @@
             </div>
             <div class="post-strip" id="boardPosts"><div class="post-empty">불러오는 중…</div></div>
         </div>
-    </section>
-
-    <section id="shorts" hidden>
-        <div class="section-head">
-            <h2 class="section-title">쇼츠</h2>
-            <div class="scroll-controls" aria-label="쇼츠 이동">
-                <button class="scroll-btn" type="button" data-scroll-target="shortsGrid" data-scroll-dir="-1" aria-label="이전 쇼츠">‹</button>
-                <button class="scroll-btn" type="button" data-scroll-target="shortsGrid" data-scroll-dir="1" aria-label="다음 쇼츠">›</button>
-            </div>
-        </div>
-        <div class="shorts-grid" id="shortsGrid"></div>
     </section>
 
 </main>
@@ -252,13 +255,24 @@
     async function loadShorts() {
       const section = document.getElementById("shorts");
       try {
-        const r = await fetch(SHORTS_API_URL, { cache: "no-store" }); if (!r.ok) throw 0;
+        let r = await fetch(SHORTS_API_URL, { cache: "no-store" });
+        if (!r.ok) r = await fetch("static-api/shorts.json", { cache: "no-store" });
+        if (!r.ok) throw 0;
         const d = await r.json(); const list = Array.isArray(d.shorts) ? d.shorts : [];
-        if (!list.length) { section.hidden = true; return; }
+        if (!list.length) {
+          shortsGrid.innerHTML = `<div class="shorts-empty">표시할 SHORTS가 없습니다.</div>`;
+          section.hidden = false;
+          refreshScrollButtons();
+          return;
+        }
         shortsGrid.innerHTML = list.map(renderShort).join("");
         section.hidden = false;
         refreshScrollButtons();
-      } catch (e) { section.hidden = true; }
+      } catch (e) {
+        shortsGrid.innerHTML = `<div class="shorts-empty">SHORTS를 불러오지 못했습니다.</div>`;
+        section.hidden = false;
+        refreshScrollButtons();
+      }
     }
     async function loadBoardPosts() {
       try {
