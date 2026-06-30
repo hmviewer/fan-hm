@@ -785,8 +785,8 @@ body {
   aspect-ratio: 1;
   transform: translateY(-50%);
   background: url("/assets/logo/the-hm-logo.gif") center / contain no-repeat;
-  opacity: .52;
-  filter: drop-shadow(0 24px 42px rgba(0,0,0,.28)) saturate(.92);
+  opacity: 1;
+  filter: drop-shadow(0 24px 42px rgba(0,0,0,.22));
   pointer-events: none;
 }
 .hero-content {
@@ -875,7 +875,7 @@ body {
   .hero-content { width: 100%; max-width: 100%; }
   .hero-title { font-size: 38px; }
   .hero-sub { max-width: 300px; line-height: 1.35; white-space: normal; word-break: keep-all; }
-  .hm-brand-hero::after { right: -20px; width: 158px; opacity: .25; }
+  .hm-brand-hero::after { right: -20px; width: 158px; opacity: .34; }
   .hero-actions { margin-top: 16px; gap: 8px; }
   .hero-primary,
   .hero-secondary { min-height: 38px; padding: 0 13px; font-size: 12px; }
