@@ -39,7 +39,7 @@ async function fetchBroadListInfo(channel) {
 
   const selectValue = category || "all";
   const selectType = category ? "cate" : "action";
-  for (let pageNo = 1; pageNo <= 4; pageNo += 1) {
+  for (let pageNo = 1; pageNo <= 12; pageNo += 1) {
     const query = new URLSearchParams({
       selectType,
       selectValue,
@@ -123,6 +123,10 @@ async function fetchLiveState(member) {
   if (Number(channel?.RESULT || 0) === 1) {
     const broadInfo = await fetchBroadListInfo(channel).catch(() => null);
     return normalizeChannel(member, broadInfo ? { ...channel, ...broadInfo } : channel);
+  }
+  const broadInfo = await fetchBroadListInfo({ BJID: soopId }).catch(() => null);
+  if (broadInfo) {
+    return normalizeChannel(member, { ...broadInfo, RESULT: 1 });
   }
   return normalizeChannel(member, channel);
 }
