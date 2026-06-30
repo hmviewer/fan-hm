@@ -124,7 +124,7 @@ async function fetchLiveState(member) {
     const broadInfo = await fetchBroadListInfo(channel).catch(() => null);
     return normalizeChannel(member, broadInfo ? { ...channel, ...broadInfo } : channel);
   }
-  const broadInfo = await fetchBroadListInfo({ BJID: soopId }).catch(() => null);
+  const broadInfo = await fetchBroadListInfo({ BJID: soopId, CATE: channel?.CATE }).catch(() => null);
   if (broadInfo) {
     return normalizeChannel(member, { ...broadInfo, RESULT: 1 });
   }

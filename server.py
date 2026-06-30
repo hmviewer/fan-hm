@@ -236,7 +236,7 @@ class TheHMLocalHandler(SimpleHTTPRequestHandler):
                 if broad_info:
                     channel = {**channel, **broad_info}
             else:
-                broad_info = self._fetch_broad_list_info({"BJID": soop_id}) or {}
+                broad_info = self._fetch_broad_list_info({"BJID": soop_id, "CATE": channel.get("CATE")}) or {}
                 if broad_info:
                     channel = {**broad_info, "RESULT": 1}
                     is_live = True
