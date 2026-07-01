@@ -140,6 +140,9 @@
     const rankingPreview = document.getElementById("rankingPreview");
     const noticePreview = document.getElementById("noticePreview");
     let memberLookup = new Map();
+    let shortsLoading = false;
+    let shortsLoaded = false;
+    const SHORTS_CACHE_KEY = "theHmShortsCache";
 
     const esc = (v) => String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
     const numberFormat = (v) => Number(v || 0).toLocaleString("ko-KR");
@@ -211,6 +214,32 @@
       const thumb = th ? `<img src="${th}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" draggable="false">` : title;
       return `<a class="short-card" href="${url}" target="_blank" rel="noopener" draggable="false"><div class="short-thumb${th ? "" : " no-image"}">${thumb}<span class="short-badge">▶ Shorts</span></div><div class="short-info"><div class="short-title">${title}</div>${ch ? `<div class="short-channel">${ch}</div>` : ""}</div></a>`;
     }
+    function renderShortsList(list) {
+      const section = document.getElementById("shorts");
+      if (!Array.isArray(list) || !list.length) return false;
+      shortsGrid.innerHTML = list.map(renderShort).join("");
+      section.hidden = false;
+      shortsLoaded = true;
+      refreshScrollButtons();
+      return true;
+    }
+    function readCachedShorts() {
+      try {
+        const cached = JSON.parse(sessionStorage.getItem(SHORTS_CACHE_KEY) || "null");
+        return Array.isArray(cached?.shorts) ? cached.shorts : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    function writeCachedShorts(list) {
+      try {
+        sessionStorage.setItem(SHORTS_CACHE_KEY, JSON.stringify({ shorts: list, savedAt: Date.now() }));
+      } catch (e) {}
+    }
+    function shortsNeedsReload() {
+      const text = (shortsGrid?.textContent || "").trim();
+      return !shortsLoaded || !shortsGrid?.querySelector(".short-card") || /불러오는 중|불러오지 못했습니다|표시할 SHORTS가 없습니다/.test(text);
+    }
     function renderBoardPost(p) {
       const rawName = String(p.bjName || p.writer || "멤버");
       const member = memberLookup.get(String(p.soopId || "").toLowerCase()) || memberLookup.get(rawName);
@@ -255,6 +284,9 @@
     }
     async function loadShorts() {
       const section = document.getElementById("shorts");
+      if (shortsLoading) return;
+      shortsLoading = true;
+      renderShortsList(readCachedShorts());
       try {
         let r = await fetch(SHORTS_API_URL, { cache: "no-store" });
         if (!r.ok) r = await fetch("static-api/shorts.json", { cache: "no-store" });
@@ -273,13 +305,16 @@
           refreshScrollButtons();
           return;
         }
-        shortsGrid.innerHTML = list.map(renderShort).join("");
-        section.hidden = false;
-        refreshScrollButtons();
+        writeCachedShorts(list);
+        renderShortsList(list);
       } catch (e) {
-        shortsGrid.innerHTML = `<div class="shorts-empty">SHORTS를 불러오지 못했습니다.</div>`;
+        if (!renderShortsList(readCachedShorts())) {
+          shortsGrid.innerHTML = `<div class="shorts-empty">SHORTS를 불러오지 못했습니다.</div>`;
+        }
         section.hidden = false;
         refreshScrollButtons();
+      } finally {
+        shortsLoading = false;
       }
     }
     async function loadBoardPosts() {
@@ -365,6 +400,12 @@
 
     loadLiveMembers(); loadShorts(); loadBoardPosts();
     setInterval(loadLiveMembers, 60000);
+    window.addEventListener("pageshow", () => {
+      if (shortsNeedsReload()) loadShorts();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && shortsNeedsReload()) loadShorts();
+    });
 </script>
 </body>
 </html>
