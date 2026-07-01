@@ -259,7 +259,14 @@
         let r = await fetch(SHORTS_API_URL, { cache: "no-store" });
         if (!r.ok) r = await fetch("static-api/shorts.json", { cache: "no-store" });
         if (!r.ok) throw 0;
-        const d = await r.json(); const list = Array.isArray(d.shorts) ? d.shorts : [];
+        let d = await r.json(); let list = Array.isArray(d.shorts) ? d.shorts : [];
+        if (!list.length) {
+          r = await fetch("static-api/shorts.json", { cache: "no-store" });
+          if (r.ok) {
+            d = await r.json();
+            list = Array.isArray(d.shorts) ? d.shorts : [];
+          }
+        }
         if (!list.length) {
           shortsGrid.innerHTML = `<div class="shorts-empty">표시할 SHORTS가 없습니다.</div>`;
           section.hidden = false;
