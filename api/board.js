@@ -2,15 +2,31 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 const MEMBERS_PATH = path.join(process.cwd(), "static-api", "members.json");
+const FALLBACK_PATH = path.join(process.cwd(), "static-api", "board.json");
 const SOOP_CHANNEL_API = "https://api-channel.sooplive.com/v1.1/channel";
 const MAX_BOARDS_PER_MEMBER = 6;
 const MAX_POSTS_PER_BOARD = 5;
 const MAX_TOTAL_POSTS = 30;
+const BOARD_CACHE_TTL_MS = 5 * 60 * 1000;
+
+const boardCache = globalThis.__THE_HM_BOARD_CACHE || {
+  payload: null,
+  expiresAt: 0,
+  pending: null
+};
+globalThis.__THE_HM_BOARD_CACHE = boardCache;
 
 async function readMembers() {
   const raw = await fs.readFile(MEMBERS_PATH, "utf8");
   const data = JSON.parse(raw);
   return Array.isArray(data) ? data : [];
+}
+
+async function readFallbackPosts() {
+  const raw = await fs.readFile(FALLBACK_PATH, "utf8");
+  const data = JSON.parse(raw);
+  const rows = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+  return rows.slice(0, MAX_TOTAL_POSTS);
 }
 
 async function fetchJson(url) {
@@ -105,9 +121,34 @@ function sortPosts(posts) {
     .slice(0, MAX_TOTAL_POSTS);
 }
 
+async function buildBoardPayload() {
+  const members = await readMembers();
+  const settled = await Promise.allSettled(members.map(fetchMemberPosts));
+  const posts = sortPosts(settled.flatMap((item) => (item.status === "fulfilled" ? item.value : [])));
+  return posts.length ? posts : readFallbackPosts();
+}
+
+async function getBoardPayload() {
+  const now = Date.now();
+  if (boardCache.payload && boardCache.expiresAt > now) return boardCache.payload;
+  if (boardCache.pending) return boardCache.pending;
+
+  boardCache.pending = buildBoardPayload()
+    .then((payload) => {
+      boardCache.payload = payload;
+      boardCache.expiresAt = Date.now() + BOARD_CACHE_TTL_MS;
+      return payload;
+    })
+    .finally(() => {
+      boardCache.pending = null;
+    });
+
+  return boardCache.pending;
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Cache-Control", "no-store, max-age=0");
+  res.setHeader("Cache-Control", "public, max-age=0, s-maxage=300, stale-while-revalidate=900");
 
   if (req.method === "OPTIONS") {
     res.status(204).end();
@@ -115,11 +156,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const members = await readMembers();
-    const settled = await Promise.allSettled(members.map(fetchMemberPosts));
-    const posts = sortPosts(settled.flatMap((item) => (item.status === "fulfilled" ? item.value : [])));
-    res.status(200).json(posts);
+    res.status(200).json(await getBoardPayload());
   } catch (error) {
-    res.status(200).json([]);
+    res.status(200).json(await readFallbackPosts().catch(() => []));
   }
 }

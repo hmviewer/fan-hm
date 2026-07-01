@@ -22,7 +22,6 @@
     <meta name="twitter:image" content="/assets/logo/the-hm-logo.png">
 <title>THE HM · LIVE</title>
 <meta name="theme-color" content="#caa64a">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="../css/common.css?v=1781540193">
 <link rel="stylesheet" href="../css/live.css?v=1781540191">
 </head>
@@ -37,19 +36,6 @@
         <a class="nav-live" id="onAirButton" href="../live/">ON AIR</a>
     </div>
 </header>
-<script>
-(function () {
-    var b = document.getElementById('onAirButton');
-    if (!b) return;
-    fetch('../api/live.php?ts=' + Math.floor(Date.now() / 15000), { cache: 'no-store' })
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-            var n = (Array.isArray(d.members) ? d.members : []).filter(function (m) { return m && m.isLive; }).length;
-            b.innerHTML = n > 0 ? 'ON AIR <span class="nav-live-count">' + n + '</span>' : 'ON AIR';
-            b.setAttribute('aria-label', n > 0 ? '현재 LIVE ' + n + '명' : '현재 LIVE 없음');
-        }).catch(function () {});
-})();
-</script>
 <main class="page">
     <section class="hero" aria-label="라이브 배너">
         <div class="hero-content">
@@ -107,10 +93,10 @@
         <a href="../policy/#privacy">개인정보 처리방침</a>
         <a href="../policy/#youth">청소년 보호정책</a>
     </div>
-    <div class="footer-info">회사명: THE HM · 문의: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8af9e3e7fae6efb2bfb8cae4ebfceff8a4e9e5e7">[email&#160;protected]</a> · © 2026 THE HM. All rights reserved.</div>
+    <div class="footer-info">회사명: THE HM · 문의: <a href="mailto:simple852@naver.com">simple852@naver.com</a> · © 2026 THE HM. All rights reserved.</div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
     const LIVE_API_URL = "../api/live.php";    // 사이트 서버사이드 SOOP 조회 (워커·Access 불필요)
     const BOARD_API_URL = "../api/board.php";  // 사이트 서버사이드 SOOP 조회 (워커·Access 불필요)
     const MEMBERS_URL = "../api/members.php";  // 관리자 데이터 자동연동(없으면 시드 폴백)
