@@ -7,7 +7,7 @@ const SOOP_CHANNEL_API = "https://api-channel.sooplive.com/v1.1/channel";
 const MAX_BOARDS_PER_MEMBER = 6;
 const MAX_POSTS_PER_BOARD = 5;
 const MAX_TOTAL_POSTS = 30;
-const BOARD_CACHE_TTL_MS = 5 * 60 * 1000;
+const BOARD_CACHE_TTL_MS = 60 * 1000;
 
 const boardCache = globalThis.__THE_HM_BOARD_CACHE || {
   payload: null,
@@ -148,7 +148,7 @@ async function getBoardPayload() {
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Cache-Control", "public, max-age=0, s-maxage=300, stale-while-revalidate=900");
+  res.setHeader("Cache-Control", "public, max-age=0, s-maxage=60, stale-while-revalidate=120");
 
   if (req.method === "OPTIONS") {
     res.status(204).end();

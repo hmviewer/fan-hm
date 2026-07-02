@@ -310,7 +310,7 @@
     async function loadBoardPosts() {
       try {
         const [r, m] = await Promise.all([
-          fetch(BOARD_API_URL, { cache: "force-cache" }),
+          fetch(`${BOARD_API_URL}?ts=${Date.now()}`, { cache: "no-store" }),
           fetch(MEMBERS_API_URL, { cache: "force-cache" })
         ]);
         if (!r.ok) throw 0;

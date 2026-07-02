@@ -308,7 +308,7 @@
 
     async function loadLiveData() { const r = await fetch(`${LIVE_API_URL}?ts=${Math.floor(Date.now() / 15000)}`, { cache: "no-store" }); if (!r.ok) throw new Error("LIVE"); liveData = await r.json(); }
     async function loadMemberData() { const r = await fetch(MEMBERS_URL, { cache: "no-store" }); if (!r.ok) throw new Error("MEMBERS"); const d = await r.json(); memberData = Array.isArray(d) ? d : []; }
-    async function loadBoardData() { const r = await fetch(BOARD_API_URL, { cache: "no-store" }); if (!r.ok) throw new Error("BOARD"); const d = await r.json(); boardData = Array.isArray(d) ? d : (Array.isArray(d.data) ? d.data : []); }
+    async function loadBoardData() { const r = await fetch(`${BOARD_API_URL}?ts=${Date.now()}`, { cache: "no-store" }); if (!r.ok) throw new Error("BOARD"); const d = await r.json(); boardData = Array.isArray(d) ? d : (Array.isArray(d.data) ? d.data : []); }
 
     async function loadInitial() {
       try { await Promise.all([loadLiveData(), loadMemberData()]); renderLivePage(); }
