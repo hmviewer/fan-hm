@@ -22,19 +22,19 @@
     <meta name="twitter:image" content="/assets/logo/the-hm-logo.png">
 <title>THE HM</title>
 <meta name="theme-color" content="#caa64a">
-<link rel="stylesheet" href="css/common.css?v=1781540193">
-<link rel="stylesheet" href="home.css?v=1781540191">
+<link rel="stylesheet" href="css/common.css?v=1781540200">
+<link rel="stylesheet" href="home.css?v=1781540200">
 </head>
 <body>
 <header class="navbar">
     <div class="nav-inner">
         <a class="logo" href="./">THE HM</a>
         <nav class="nav-menu" aria-label="상단 메뉴">
-                            <a href="live/">LIVE</a>
-                            <a href="members/">MEMBERS</a>
-                            <a href="signature/">SIGNATURE</a>
+                            <a href="live/">THE SCENE</a>
+                            <a href="members/">THE ICONS</a>
+                            <a href="signature/">THE MASTERPIECE</a>
                     </nav>
-        <a class="nav-live" id="onAirButton" href="live/">ON AIR</a>
+        <a class="nav-live" id="onAirButton" href="live/">NOW SHOWING</a>
     </div>
 </header>
 
@@ -43,12 +43,12 @@
         <div class="hero-track" id="heroTrack">
                         <article class="hero-slide hero-promo-slide hm-brand-hero">
                                 <div class="hero-content">
-                                        <div class="hero-kicker">THE HM PORTAL</div>
-                                        <h1 class="hero-title">THE HM</h1>
-                                        <p class="hero-sub">LIVE STATUS · MEMBER ROSTER · SHORTS</p>
+                                        <div class="hero-kicker">THE HM EDITORIAL</div>
+                                        <h1 class="hero-title">UNFILTERED. UNTAMED.<br>THE NEW SYNDROME, HM.</h1>
+                                        <p class="hero-sub">프레임에 갇히기를 거부하는 자들의 가장 날것 그대로의 미학. 우리가 만들어내는 매 순간이 곧 장르가 된다.</p>
                                         <div class="hero-actions">
-                                            <a class="hero-primary" href="live/">LIVE 보기</a>
-                                            <a class="hero-secondary" href="members/">멤버 보기</a>
+                                            <a class="hero-primary" href="live/">ENTER THE STAGE</a>
+                                            <a class="hero-secondary" href="members/">DISCOVER ICONS</a>
                                         </div>
                                     </div>
             </article>
@@ -57,30 +57,39 @@
 
     <section id="live">
         <div class="section-head">
-            <h2 class="section-title">LIVE 방송국</h2>
+            <div>
+                <h2 class="section-title">THE SCENE : 지금 이 순간의 맥박</h2>
+                <p class="section-copy">편집되지 않은 텐션, 여과 없이 쏟아지는 에너지. 완벽하게 세팅된 스테이지 위에서 폭발하는 라이브의 순간을 목격하라. 타협 없는 시선으로 완성된 가장 뜨거운 시간.</p>
+            </div>
             <a class="section-more" href="live/">전체 보기</a>
         </div>
-        <div class="live-grid" id="liveGrid"><div class="live-empty">LIVE 정보를 불러오는 중…</div></div>
+        <div class="live-grid" id="liveGrid"><div class="live-empty">무대가 열리는 순간을 준비하고 있습니다…</div></div>
     </section>
 
     <section id="shorts">
         <div class="section-head">
-            <h2 class="section-title">SHORTS</h2>
+            <div>
+                <h2 class="section-title">THE CLIMAX : 시선이 머무는 1분</h2>
+                <p class="section-copy">긴 설명은 필요 없다. 본능을 자극하는 압도적인 순간들. 60초 안에 펼쳐지는 가장 강렬한 찰나의 서사.</p>
+            </div>
             <div class="section-actions">
                 <div class="scroll-controls" aria-label="쇼츠 이동">
                     <button class="scroll-btn" type="button" data-scroll-target="shortsGrid" data-scroll-dir="-1" aria-label="이전 쇼츠">‹</button>
                     <button class="scroll-btn" type="button" data-scroll-target="shortsGrid" data-scroll-dir="1" aria-label="다음 쇼츠">›</button>
                 </div>
-                <a class="section-more" href="https://www.youtube.com/@HM%EC%97%91%EC%85%80%EB%B6%80" target="_blank" rel="noopener">YouTube 보기</a>
+                <a class="section-more" href="https://www.youtube.com/@HM%EC%97%91%EC%85%80%EB%B6%80" target="_blank" rel="noopener">EXPLORE THE ARCHIVE</a>
             </div>
         </div>
-        <div class="shorts-grid" id="shortsGrid"><div class="shorts-empty">SHORTS를 불러오는 중…</div></div>
+        <div class="shorts-grid" id="shortsGrid"><div class="shorts-empty">압도적인 찰나를 불러오는 중…</div></div>
     </section>
 
     <section id="board" class="board-section">
         <div class="card board-card">
             <div class="board-head">
-                <div><h2 class="section-title">최근 게시물</h2></div>
+                <div>
+                    <h2 class="section-title">INSIDE HM : 에디터의 시크릿 노트</h2>
+                    <p class="section-copy">화려한 조명이 꺼진 후, 무대 뒤에서 완성되는 또 다른 이야기. 가장 사적이고도 매혹적인 그들의 일상을 엿보다.</p>
+                </div>
                 <div class="section-actions">
                     <div class="scroll-controls" aria-label="방송국 새 글 이동">
                         <button class="scroll-btn" type="button" data-scroll-target="boardPosts" data-scroll-dir="-1" aria-label="이전 게시글">‹</button>
@@ -267,9 +276,9 @@
         const n = members.length;
         updateOnAirButton(n);
         const ht = document.getElementById("heroLiveTitle"), hs = document.getElementById("heroLiveSub");
-        if (n > 0 && ht) { ht.textContent = "ON AIR"; hs.textContent = `${n}명의 멤버가 지금 방송 중입니다`; }
-        liveGrid.innerHTML = n ? members.map(renderLiveCard).join("") : `<div class="card live-empty">현재 진행 중인 LIVE 방송이 없습니다.</div>`;
-      } catch (e) { liveGrid.innerHTML = `<div class="card live-empty">LIVE 정보를 불러오지 못했습니다.</div>`; }
+        if (n > 0 && ht) { ht.textContent = "NOW SHOWING"; hs.textContent = `${n}명의 멤버가 지금 스테이지 위에 있습니다`; }
+        liveGrid.innerHTML = n ? members.map(renderLiveCard).join("") : `<div class="card live-empty">아직 조명이 켜진 스테이지가 없습니다.</div>`;
+      } catch (e) { liveGrid.innerHTML = `<div class="card live-empty">무대의 신호를 다시 불러오는 중입니다.</div>`; }
       finally { setTimeout(() => { liveRequest = null; }, 1000); }
     }
     async function loadShorts() {
@@ -290,7 +299,7 @@
           }
         }
         if (!list.length) {
-          shortsGrid.innerHTML = `<div class="shorts-empty">표시할 SHORTS가 없습니다.</div>`;
+          shortsGrid.innerHTML = `<div class="shorts-empty">아직 공개된 클라이맥스가 없습니다.</div>`;
           section.hidden = false;
           refreshScrollButtons();
           return;
@@ -299,7 +308,7 @@
         renderShortsList(list);
       } catch (e) {
         if (!renderShortsList(readCachedShorts())) {
-          shortsGrid.innerHTML = `<div class="shorts-empty">SHORTS를 불러오지 못했습니다.</div>`;
+          shortsGrid.innerHTML = `<div class="shorts-empty">아카이브를 다시 불러오는 중입니다.</div>`;
         }
         section.hidden = false;
         refreshScrollButtons();
@@ -386,7 +395,7 @@
     function updateOnAirButton(count) {
       const b = document.getElementById("onAirButton");
       if (!b) return;
-      b.innerHTML = count > 0 ? `ON AIR <span class="nav-live-count">${count}</span>` : "ON AIR";
+      b.innerHTML = count > 0 ? `NOW SHOWING <span class="nav-live-count">${count}</span>` : "NOW SHOWING";
       b.setAttribute("aria-label", count > 0 ? `현재 LIVE ${count}명` : "현재 LIVE 없음");
     }
     function runWhenIdle(fn) {

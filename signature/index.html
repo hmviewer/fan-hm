@@ -18,7 +18,7 @@
 <meta name="twitter:image" content="/assets/logo/the-hm-logo.png">
 <title>THE HM · SIGNATURE</title>
 <meta name="theme-color" content="#caa64a">
-<link rel="stylesheet" href="../css/common.css?v=1781540193">
+<link rel="stylesheet" href="../css/common.css?v=1781540200">
 <link rel="stylesheet" href="../css/signature.css?v=1781540179">
 </head>
 <body>
@@ -26,11 +26,11 @@
     <div class="nav-inner">
         <a class="logo" href="../">THE HM</a>
         <nav class="nav-menu" aria-label="상단 메뉴">
-            <a href="../live/">LIVE</a>
-            <a href="../members/">MEMBERS</a>
-            <a href="../signature/" class="active">SIGNATURE</a>
+            <a href="../live/">THE SCENE</a>
+            <a href="../members/">THE ICONS</a>
+            <a href="../signature/" class="active">THE MASTERPIECE</a>
         </nav>
-        <a class="nav-live" id="onAirButton" href="../live/">ON AIR</a>
+        <a class="nav-live" id="onAirButton" href="../live/">NOW SHOWING</a>
     </div>
 </header>
 <script>
@@ -41,7 +41,7 @@
         .then(function (r) { return r.json(); })
         .then(function (d) {
             var n = (Array.isArray(d.members) ? d.members : []).filter(function (m) { return m && m.isLive; }).length;
-            b.innerHTML = n > 0 ? 'ON AIR <span class="nav-live-count">' + n + '</span>' : 'ON AIR';
+            b.innerHTML = n > 0 ? 'NOW SHOWING <span class="nav-live-count">' + n + '</span>' : 'NOW SHOWING';
             b.setAttribute('aria-label', n > 0 ? '현재 LIVE ' + n + '명' : '현재 LIVE 없음');
         }).catch(function () {});
 })();
