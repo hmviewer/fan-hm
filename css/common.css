@@ -102,11 +102,11 @@ img { max-width: 100%; }
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: clamp(18px, 3vw, 34px);
-  font-size: 13px;
+  gap: 34px;
+  font-size: 16px;
   font-weight: 950;
   color: #5c5850;
-  letter-spacing: 0.10em;
+  letter-spacing: 0.02em;
 }
 
 .nav-menu a {
@@ -140,9 +140,8 @@ img { max-width: 100%; }
   border-radius: 7px;
   background: linear-gradient(135deg, #171919, #393d3b 58%, #b9953e);
   color: white;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 950;
-  letter-spacing: 0.07em;
   box-shadow: 0 12px 24px rgba(31, 28, 21, 0.18);
   white-space: nowrap;
 }
@@ -320,11 +319,11 @@ img { max-width: 100%; }
   .navbar { height: auto; padding: 12px 0 10px; }
   .nav-inner { width: min(1180px, calc(100% - 24px)); flex-wrap: wrap; gap: 10px 12px; }
   .logo { order: 1; font-size: 24px; letter-spacing: 0.10em; }
-  .nav-live { order: 2; margin-left: auto; min-height: 40px; padding: 0 13px 0 11px; border-radius: 6px; font-size: 12px; }
+  .nav-live { order: 2; margin-left: auto; min-height: 40px; padding: 0 13px 0 11px; border-radius: 6px; font-size: 13px; }
   .nav-menu {
     order: 3; width: 100%; gap: 18px;
     overflow-x: auto; overflow-y: hidden; padding: 4px 2px 2px;
-    font-size: 12px; white-space: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    font-size: 15px; white-space: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch;
   }
   .nav-menu::-webkit-scrollbar { display: none; }
   .nav-menu a { flex: 0 0 auto; }
@@ -336,7 +335,7 @@ img { max-width: 100%; }
   .nav-inner { width: min(100% - 20px, 1180px); gap: 10px 12px; }
   .logo { font-size: 21px; letter-spacing: 0.08em; }
   .logo::before { width: 38px; height: 38px; }
-  .nav-live { min-height: 40px; max-width: 160px; padding: 0 12px 0 9px; border-radius: 7px; font-size: 11px; display: inline-flex; align-items: center; }
+  .nav-live { min-height: 40px; padding: 0 13px 0 10px; border-radius: 7px; font-size: 13px; display: inline-flex; align-items: center; }
   .nav-live::before { width: 20px; height: 20px; flex-basis: 20px; }
   .nav-menu {
     display: grid;
@@ -344,8 +343,8 @@ img { max-width: 100%; }
     justify-content: stretch;
     align-items: center;
     gap: 6px;
-    font-size: clamp(9px, 2.45vw, 11px);
-    letter-spacing: 0.02em;
+    font-size: 14px;
+    letter-spacing: 0;
     padding: 4px;
     border-radius: 10px;
     background: rgba(255, 252, 244, 0.78);
@@ -362,10 +361,7 @@ img { max-width: 100%; }
     border-radius: 8px;
     padding: 0 6px;
     color: #5c5850;
-    letter-spacing: 0.02em;
-    line-height: 1.12;
-    text-align: center;
-    word-break: keep-all;
+    letter-spacing: 0;
   }
   .nav-menu a::after { display: none; }
   .nav-menu a:hover,

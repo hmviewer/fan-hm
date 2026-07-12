@@ -22,18 +22,18 @@
     <meta name="twitter:image" content="/assets/logo/the-hm-logo.png">
 <title>THE HM · MEMBER</title>
 <meta name="theme-color" content="#caa64a">
-<link rel="stylesheet" href="../css/common.css?v=1781540200">
+<link rel="stylesheet" href="../css/common.css?v=1781540193">
 <link rel="stylesheet" href="../css/members.css?v=1781540191">
 </head>
 <body><header class="navbar">
     <div class="nav-inner">
         <a class="logo" href="../">THE HM</a>
         <nav class="nav-menu" aria-label="상단 메뉴">
-                            <a href="../live/">THE SCENE</a>
-                            <a href="../members/" class="active">THE ICONS</a>
-                            <a href="../signature/">THE MASTERPIECE</a>
+                            <a href="../live/">LIVE</a>
+                            <a href="../members/" class="active">MEMBERS</a>
+                            <a href="../signature/">SIGNATURE</a>
                     </nav>
-        <a class="nav-live" id="onAirButton" href="../live/">NOW SHOWING</a>
+        <a class="nav-live" id="onAirButton" href="../live/">ON AIR</a>
     </div>
 </header>
 <main class="page">
@@ -154,7 +154,7 @@
       liveCount.textContent = liveMap.size;
       const b = document.getElementById("onAirButton");
       if (b) {
-        b.innerHTML = liveMap.size > 0 ? `NOW SHOWING <span class="nav-live-count">${liveMap.size}</span>` : "NOW SHOWING";
+        b.innerHTML = liveMap.size > 0 ? `ON AIR <span class="nav-live-count">${liveMap.size}</span>` : "ON AIR";
         b.setAttribute("aria-label", liveMap.size > 0 ? `현재 LIVE ${liveMap.size}명` : "현재 LIVE 없음");
       }
       if (!allMembers.length) { memberContent.innerHTML = `<section class="member-section"><div class="member-grid"><div class="empty-card">표시할 멤버가 없습니다.</div></div></section>`; return; }
