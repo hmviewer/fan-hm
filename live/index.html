@@ -204,7 +204,7 @@
       });
       return base;
     }
-    function sortOffline(a, b) {
+    function sortByRank(a, b) {
       return getRankOrder(a) - getRankOrder(b) || getSpecialOrder(a) - getSpecialOrder(b)
         || Number(a.originalIndex || 0) - Number(b.originalIndex || 0)
         || String(a.name || "").localeCompare(String(b.name || ""), "ko");
@@ -262,8 +262,8 @@
 
     function renderLivePage() {
       const all = mergeMembers();
-      const live = all.filter(m => m.isLive).sort((a, b) => Number(b.viewer || 0) - Number(a.viewer || 0));
-      const offline = all.filter(m => !m.isLive).sort(sortOffline);
+      const live = all.filter(m => m.isLive).sort(sortByRank);
+      const offline = all.filter(m => !m.isLive).sort(sortByRank);
       renderSummary(all, live);
       $("#liveNote").textContent = live.length ? `${formatNumber(live.length)}명 방송 중` : "현재 방송 없음";
       $("#liveGrid").innerHTML = live.length ? live.map(renderBroadcastCard).join("") : `<div class="empty-card">현재 진행 중인 LIVE 방송이 없습니다.</div>`;
