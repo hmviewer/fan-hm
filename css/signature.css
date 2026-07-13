@@ -490,6 +490,9 @@ body.signature-modal-open {
   line-height: 1.45;
   font-weight: 850;
 }
+.player-notice {
+  color: #8b681f;
+}
 .signature-info-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -617,12 +620,18 @@ body.signature-modal-open {
   display: none;
 }
 .primary-badge,
-.playing-badge {
+.playing-badge,
+.provider-badge,
+.timeline-action-badge {
   width: fit-content;
   border-radius: 999px;
   padding: 3px 7px;
   font-size: 10px;
   font-weight: 950;
+}
+.provider-badge {
+  color: #24231f;
+  background: rgba(105, 109, 104, .13);
 }
 .primary-badge {
   color: #8b681f;
@@ -631,6 +640,10 @@ body.signature-modal-open {
 .playing-badge {
   color: #fff;
   background: #252723;
+}
+.timeline-action-badge {
+  color: #fff;
+  background: linear-gradient(135deg, #171919, #b9953e);
 }
 .timeline-empty {
   border-radius: 9px;

@@ -131,7 +131,7 @@ function templateCsv() {
   const exampleRows = [
     CSV_COLUMNS,
     ["572", "귀여워서미안해", "달리", "귀여움|댄스|리액션", "images/572 귀여워서미안해.png", "달리 시그니처", "true", "572", "2026 HM 대회 3회차", "달리", "youtube", "https://www.youtube.com/watch?v=abc123&t=3725s", "01:02:05", "01:02:18", "true", "true", "1"],
-    ["572", "귀여워서미안해", "달리", "귀여움|댄스|리액션", "images/572 귀여워서미안해.png", "달리 시그니처", "true", "572", "달리 개인 방송", "달리|해루", "soop", "https://example.com/video/123", "02:15:42", "02:15:55", "false", "true", "2"]
+    ["572", "귀여워서미안해", "달리", "귀여움|댄스|리액션", "images/572 귀여워서미안해.png", "달리 시그니처", "true", "572", "달리 개인 방송", "달리|해루", "soop", "https://vod.sooplive.com/player/123456789", "02:15:42", "02:15:55", "false", "true", "2"]
   ];
   return `\uFEFF${buildCsv(exampleRows)}\n`;
 }

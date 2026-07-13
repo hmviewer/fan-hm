@@ -58,6 +58,35 @@ function esc(value) {
     .replaceAll("'", "&#039;");
 }
 
+function formatTimelineTime(seconds) {
+  const value = Math.max(0, Math.floor(Number(seconds || 0)));
+  const h = Math.floor(value / 3600);
+  const m = Math.floor((value % 3600) / 60);
+  const s = value % 60;
+  const pad = (n) => String(n).padStart(2, "0");
+  return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
+function providerLabel(provider) {
+  return { youtube: "YouTube", soop: "SOOP", chzzk: "CHZZK", external: "외부 영상" }[provider] || "외부 영상";
+}
+
+function timelineRange(timeline) {
+  if (!timeline) return "-";
+  const start = formatTimelineTime(timeline.startTime || 0);
+  return Number(timeline.endTime) > Number(timeline.startTime) ? `${start} ~ ${formatTimelineTime(timeline.endTime)}` : `${start}부터`;
+}
+
+function allowedSoopEmbedUrl(url) {
+  try {
+    const parsed = new URL(String(url || ""));
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    return parsed.protocol === "https:" && ["vod.sooplive.com", "vod.afreecatv.com"].includes(host) && /^\/player\/\d+\/embed\/?$/.test(parsed.pathname);
+  } catch {
+    return false;
+  }
+}
+
 function toast(message) {
   const node = document.createElement("div");
   node.className = "toast";
@@ -223,13 +252,58 @@ function formToRow(form) {
   return data;
 }
 
+function findDraftTimeline(draft, signatureNumber) {
+  const signature = (draft?.items || []).find((item) => String(item.number) === String(signatureNumber));
+  const timelines = signature?.timelines || [];
+  return timelines[timelines.length - 1] || null;
+}
+
+function renderQuickTimelinePreview(timeline, validation = []) {
+  if (!timeline) return `<p class="meta-line">등록할 타임라인이 없습니다.</p>`;
+  const issues = validation.flatMap((item) => [...(item.errors || []), ...(item.warnings || [])]);
+  const issueMarkup = issues.length
+    ? `<div class="badge-row">${issues.map((issue) => `<span class="badge ${issue.message.includes("확인") ? "warn" : "bad"}">${esc(issue.message)}</span>`).join("")}</div>`
+    : "";
+  const duration = timeline.duration ? `${timeline.duration}초` : "구간 미지정";
+  const canEmbedSoop = timeline.provider === "soop" && allowedSoopEmbedUrl(timeline.embedUrl);
+  const embedMarkup = canEmbedSoop
+    ? `<div class="quick-player"><iframe src="${esc(timeline.embedUrl)}" title="${esc(timeline.title)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`
+    : "";
+  const soopNotice = timeline.provider === "soop"
+    ? `<p class="meta-line">SOOP 플레이어는 내부 재생이 가능하지만 시작 시간 자동 이동이 제한될 수 있습니다. 공개 화면에서 ${formatTimelineTime(timeline.startTime || 0)}부터 확인하도록 안내됩니다.</p>`
+    : "";
+  const sourceLink = timeline.sourceUrl
+    ? `<a class="inline-link" href="${esc(timeline.sourceUrl)}" target="_blank" rel="noopener noreferrer">원본 VOD 보기</a>`
+    : "";
+  return `
+    <div class="quick-preview">
+      <div class="result-grid">
+        <div class="result-item"><span>플랫폼</span><strong>${esc(providerLabel(timeline.provider))}</strong></div>
+        <div class="result-item"><span>VOD ID</span><strong>${esc(timeline.videoId || "-")}</strong></div>
+        <div class="result-item"><span>재생 구간</span><strong>${esc(duration)}</strong></div>
+        <div class="result-item"><span>내부 재생</span><strong>${canEmbedSoop || timeline.provider === "youtube" ? "가능" : "확인 필요"}</strong></div>
+      </div>
+      <dl class="preview-detail">
+        <div><dt>정규화 URL</dt><dd>${esc(timeline.normalizedUrl || "-")}</dd></div>
+        <div><dt>Embed URL</dt><dd>${esc(timeline.embedUrl || "-")}</dd></div>
+        <div><dt>시작/종료</dt><dd>${esc(timelineRange(timeline))}</dd></div>
+      </dl>
+      ${embedMarkup || `<div class="empty">내부 미리보기를 표시할 수 없습니다. 공개 화면에서는 원본 VOD fallback을 제공합니다.</div>`}
+      ${soopNotice}
+      ${sourceLink}
+      ${issueMarkup}
+    </div>`;
+}
+
 async function handleQuick(event) {
   event.preventDefault();
+  const row = formToRow(quickForm);
   const result = await api("/api/quick-preview", {
     method: "POST",
-    body: JSON.stringify(formToRow(quickForm))
+    body: JSON.stringify(row)
   });
   state.quickDraft = result.draft;
+  const timeline = findDraftTimeline(result.draft, row.signature_number);
   quickResult.innerHTML = `
     <div class="result-box">
       <div class="result-grid">
@@ -237,6 +311,7 @@ async function handleQuick(event) {
         <div class="result-item"><span>오류</span><strong>${esc(result.summary.errorRows)}</strong></div>
         <div class="result-item"><span>영상 등록 시그</span><strong>${esc(result.draft.items.filter((item) => item.timelineCount > 0).length)}</strong></div>
       </div>
+      ${renderQuickTimelinePreview(timeline, result.validation || [])}
       <div class="actions">
         <button id="saveQuickDraft" ${result.summary.errorRows ? "disabled" : ""}>초안으로 저장</button>
       </div>

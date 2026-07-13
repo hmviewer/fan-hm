@@ -6,6 +6,8 @@ image/
 music/
 .vercel
 .env*
+node_modules/
+pnpm-lock.yaml
 local-admin/storage/
 local-admin/uploads/
 local-admin/backups/

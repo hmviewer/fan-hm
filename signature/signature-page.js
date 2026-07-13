@@ -40,6 +40,7 @@ const ranges = [
   { id: "3000", label: "3000대", min: 3000, max: 9999 },
   { id: "10000", label: "10000+", min: 10000, max: Infinity },
 ];
+const SOOP_VOD_HOSTS = new Set(["vod.sooplive.com", "vod.afreecatv.com"]);
 
 let signatures = [];
 let selectedRange = "all";
@@ -81,10 +82,65 @@ function detectProvider(url) {
   try {
     const host = new URL(String(url || "")).hostname.replace(/^www\./, "").toLowerCase();
     if (host === "youtube.com" || host === "youtu.be" || host === "youtube-nocookie.com") return "youtube";
-    if (host.includes("sooplive.com") || host.includes("afreecatv.com")) return "soop";
+    if (host === "vod.sooplive.com" || host === "vod.afreecatv.com" || host.includes("sooplive.com") || host.includes("afreecatv.com")) return "soop";
     if (host.includes("chzzk.naver.com")) return "chzzk";
   } catch {}
   return "external";
+}
+
+function extractSoopVodId(url) {
+  try {
+    const parsed = new URL(String(url || "").trim());
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    if (!SOOP_VOD_HOSTS.has(host)) return "";
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    const playerIndex = parts.indexOf("player");
+    const id = playerIndex >= 0 ? parts[playerIndex + 1] : "";
+    return /^\d+$/.test(id || "") ? id : "";
+  } catch {
+    return "";
+  }
+}
+
+function normalizeSoopUrl(url) {
+  try {
+    const parsed = new URL(String(url || "").trim());
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    const id = extractSoopVodId(url);
+    return id && SOOP_VOD_HOSTS.has(host) ? `https://${host}/player/${id}` : "";
+  } catch {
+    return "";
+  }
+}
+
+function buildSoopEmbedUrl(vodId, host = "vod.sooplive.com") {
+  const id = String(vodId || "").trim();
+  const cleanHost = String(host || "vod.sooplive.com").replace(/^www\./, "").toLowerCase();
+  if (!/^\d+$/.test(id) || !SOOP_VOD_HOSTS.has(cleanHost)) return "";
+  return `https://${cleanHost}/player/${id}/embed`;
+}
+
+function allowedSoopEmbedUrl(url) {
+  try {
+    const parsed = new URL(String(url || "").trim());
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    return parsed.protocol === "https:" && SOOP_VOD_HOSTS.has(host) && /^\/player\/\d+\/embed\/?$/.test(parsed.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function parseSoop(url) {
+  try {
+    const parsed = new URL(String(url || ""));
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    const videoId = extractSoopVodId(url);
+    const normalizedUrl = normalizeSoopUrl(url);
+    const embedUrl = videoId ? buildSoopEmbedUrl(videoId, host) : "";
+    return { videoId, normalizedUrl, embedUrl };
+  } catch {
+    return { videoId: "", normalizedUrl: "", embedUrl: "" };
+  }
 }
 
 function parseYouTube(url) {
@@ -114,6 +170,7 @@ function normalizeTimeline(timeline, fallbackMembers, number, index) {
   const sourceUrl = String(timeline.sourceUrl || timeline.url || "").trim();
   const provider = timeline.provider || detectProvider(sourceUrl);
   const youtube = provider === "youtube" ? parseYouTube(sourceUrl) : { videoId: "", urlTime: null, normalizedUrl: sourceUrl };
+  const soop = provider === "soop" ? parseSoop(sourceUrl || timeline.normalizedUrl || timeline.embedUrl || "") : { videoId: "", normalizedUrl: "", embedUrl: "" };
   const startTime = Number.isFinite(Number(timeline.startTime)) ? Number(timeline.startTime) : Number(youtube.urlTime || 0);
   const endTime = Number.isFinite(Number(timeline.endTime)) ? Number(timeline.endTime) : undefined;
   const members = (Array.isArray(timeline.members) && timeline.members.length ? timeline.members : fallbackMembers)
@@ -124,8 +181,9 @@ function normalizeTimeline(timeline, fallbackMembers, number, index) {
     title: String(timeline.title || "타임라인"),
     provider,
     sourceUrl,
-    normalizedUrl: timeline.normalizedUrl || youtube.normalizedUrl || sourceUrl,
-    videoId: timeline.videoId || youtube.videoId || "",
+    normalizedUrl: timeline.normalizedUrl || soop.normalizedUrl || youtube.normalizedUrl || sourceUrl,
+    videoId: timeline.videoId || soop.videoId || youtube.videoId || "",
+    embedUrl: provider === "soop" && allowedSoopEmbedUrl(timeline.embedUrl) ? timeline.embedUrl : soop.embedUrl || "",
     startTime,
     ...(endTime !== undefined ? { endTime } : {}),
     duration: endTime !== undefined && endTime > startTime ? endTime - startTime : undefined,
@@ -309,6 +367,22 @@ function buildYoutubeEmbed(timeline) {
   return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(timeline.videoId)}?${params.toString()}`;
 }
 
+function buildSoopTimelineEmbed(timeline) {
+  if (!timeline || timeline.provider !== "soop") return "";
+  if (allowedSoopEmbedUrl(timeline.embedUrl)) return timeline.embedUrl;
+  let host = "vod.sooplive.com";
+  try {
+    const parsed = new URL(timeline.normalizedUrl || timeline.sourceUrl || "");
+    const parsedHost = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    if (SOOP_VOD_HOSTS.has(parsedHost)) host = parsedHost;
+  } catch {}
+  return buildSoopEmbedUrl(timeline.videoId || extractSoopVodId(timeline.sourceUrl || timeline.normalizedUrl || ""), host);
+}
+
+function sourceLinkLabel(timeline) {
+  return timeline?.provider === "soop" ? "원본 VOD 보기" : "원본 영상 보기";
+}
+
 function renderPlayer() {
   if (!activeTimeline) {
     modalPlayer.innerHTML = `<div class="player-empty"><strong>영상 준비 중</strong><span>등록된 영상이 없습니다.</span></div>`;
@@ -316,16 +390,28 @@ function renderPlayer() {
     modalSource.hidden = true;
     return;
   }
-  const embedUrl = buildYoutubeEmbed(activeTimeline);
+  const youtubeEmbedUrl = buildYoutubeEmbed(activeTimeline);
+  const soopEmbedUrl = buildSoopTimelineEmbed(activeTimeline);
+  const embedUrl = youtubeEmbedUrl || soopEmbedUrl;
   if (embedUrl) {
-    modalPlayer.innerHTML = `<iframe class="signature-iframe" src="${esc(embedUrl)}" title="${esc(activeTimeline.title)}" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+    const allow = activeTimeline.provider === "soop"
+      ? "autoplay; fullscreen; picture-in-picture"
+      : "accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    modalPlayer.innerHTML = `<iframe class="signature-iframe" src="${esc(embedUrl)}" title="${esc(activeTimeline.title)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="${esc(allow)}" allowfullscreen></iframe>`;
   } else {
     modalPlayer.innerHTML = `<div class="player-empty"><strong>${providerLabel(activeTimeline.provider)}</strong><span>이 플랫폼은 내부 재생을 지원하지 않아 원본 영상으로 이동합니다.</span></div>`;
   }
   const duration = activeTimeline.duration ? ` · 재생 구간 ${activeTimeline.duration}초` : "";
-  modalPlayerMeta.innerHTML = `<span>${providerLabel(activeTimeline.provider)} · ${esc(activeTimeline.title)}</span><span>${timelineRange(activeTimeline)}${duration}</span>`;
+  const soopNotice = activeTimeline.provider === "soop" && activeTimeline.startTime > 0
+    ? `<span class="player-notice">${formatTime(activeTimeline.startTime)}부터 직접 이동해주세요. SOOP 공식 플레이어의 시작 시간 자동 이동은 제한될 수 있습니다.</span>`
+    : "";
+  const fallbackNotice = activeTimeline.provider === "soop" && !soopEmbedUrl
+    ? `<span class="player-notice">SOOP 플레이어를 불러오지 못했습니다. 영상이 삭제되었거나 비공개 상태일 수 있습니다.</span>`
+    : "";
+  modalPlayerMeta.innerHTML = `<span>${providerLabel(activeTimeline.provider)} · ${esc(activeTimeline.title)}</span><span>${timelineRange(activeTimeline)}${duration}</span>${soopNotice}${fallbackNotice}`;
   modalSource.hidden = !activeTimeline.sourceUrl;
   modalSource.href = activeTimeline.sourceUrl || "#";
+  modalSource.textContent = sourceLinkLabel(activeTimeline);
 }
 
 function renderTimelineList() {
@@ -338,12 +424,14 @@ function renderTimelineList() {
     const selected = activeTimeline?.id === timeline.id;
     const thumb = timeline.thumbnailUrl || activeSignature.imageUrl;
     const duration = timeline.duration ? `${timeline.duration}초` : "구간 미지정";
+    const playable = timeline.provider === "youtube" ? Boolean(buildYoutubeEmbed(timeline)) : timeline.provider === "soop" ? Boolean(buildSoopTimelineEmbed(timeline)) : false;
+    const actionLabel = timeline.provider === "soop" && !playable ? "SOOP 열기" : "재생";
     return `
       <button class="timeline-card ${selected ? "active" : ""}" type="button" data-timeline="${esc(timeline.id)}" aria-pressed="${selected ? "true" : "false"}">
         <span class="timeline-index">${index + 1}</span>
         <span class="timeline-thumb"><img src="${esc(thumb)}" alt="" loading="lazy" decoding="async"></span>
         <span class="timeline-body">
-          <span class="timeline-top">${timeline.isPrimary ? `<span class="primary-badge">대표</span>` : ""}${selected ? `<span class="playing-badge">선택됨</span>` : ""}</span>
+          <span class="timeline-top"><span class="provider-badge">${providerLabel(timeline.provider)}</span>${timeline.isPrimary ? `<span class="primary-badge">대표</span>` : ""}${selected ? `<span class="playing-badge">선택됨</span>` : ""}<span class="timeline-action-badge">${actionLabel}</span></span>
           <strong>${esc(timeline.title)}</strong>
           <span>${providerLabel(timeline.provider)} · ${timelineRange(timeline)} · ${duration}</span>
           <span class="timeline-members">${memberTags(timeline.members.length ? timeline.members : activeSignature.members)}</span>

@@ -42,6 +42,7 @@ export const COLUMN_ALIASES = {
 };
 
 const SAFE_URL_SCHEMES = new Set(["http:", "https:"]);
+const SOOP_VOD_HOSTS = new Set(["vod.sooplive.com", "vod.afreecatv.com"]);
 const TRUE_VALUES = new Set(["true", "1", "yes", "y", "공개", "예", "대표", "on"]);
 const FALSE_VALUES = new Set(["false", "0", "no", "n", "비공개", "아니오", "off"]);
 
@@ -106,9 +107,56 @@ export function detectProvider(url) {
   }
   const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
   if (host === "youtube.com" || host === "youtu.be" || host === "youtube-nocookie.com") return "youtube";
-  if (host.includes("sooplive.com") || host.includes("afreecatv.com")) return "soop";
+  if (host === "vod.sooplive.com" || host === "vod.afreecatv.com" || host.includes("sooplive.com") || host.includes("afreecatv.com")) return "soop";
   if (host.includes("chzzk.naver.com")) return "chzzk";
   return "external";
+}
+
+export function extractSoopVodId(url) {
+  let parsed;
+  try {
+    parsed = new URL(String(url || "").trim());
+  } catch {
+    return null;
+  }
+  const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+  if (!SOOP_VOD_HOSTS.has(host)) return null;
+  const parts = parsed.pathname.split("/").filter(Boolean);
+  const playerIndex = parts.indexOf("player");
+  const id = playerIndex >= 0 ? parts[playerIndex + 1] : "";
+  return /^\d+$/.test(id || "") ? id : null;
+}
+
+export function normalizeSoopUrl(url) {
+  const id = extractSoopVodId(url);
+  if (!id) return null;
+  let parsed;
+  try {
+    parsed = new URL(String(url || "").trim());
+  } catch {
+    return null;
+  }
+  const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+  if (!SOOP_VOD_HOSTS.has(host)) return null;
+  return `https://${host}/player/${id}`;
+}
+
+export function buildSoopEmbedUrl(vodId, host = "vod.sooplive.com") {
+  const id = String(vodId || "").trim();
+  const cleanHost = String(host || "vod.sooplive.com").replace(/^www\./, "").toLowerCase();
+  if (!/^\d+$/.test(id) || !SOOP_VOD_HOSTS.has(cleanHost)) return null;
+  return `https://${cleanHost}/player/${id}/embed`;
+}
+
+export function isAllowedSoopEmbedUrl(url) {
+  let parsed;
+  try {
+    parsed = new URL(String(url || "").trim());
+  } catch {
+    return false;
+  }
+  const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+  return parsed.protocol === "https:" && SOOP_VOD_HOSTS.has(host) && /^\/player\/\d+\/embed\/?$/.test(parsed.pathname);
 }
 
 export function extractTimelineFromUrl(inputUrl) {
@@ -139,6 +187,23 @@ export function extractTimelineFromUrl(inputUrl) {
     return { provider, sourceUrl, normalizedUrl, videoId, startTime, embeddable: Boolean(videoId) };
   }
 
+  if (provider === "soop") {
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    const normalizedUrl = normalizeSoopUrl(sourceUrl);
+    const soopVideoId = extractSoopVodId(sourceUrl) || "";
+    const embedUrl = soopVideoId && SOOP_VOD_HOSTS.has(host) ? buildSoopEmbedUrl(soopVideoId, host) : "";
+    return {
+      provider,
+      sourceUrl,
+      normalizedUrl: normalizedUrl || "",
+      videoId: soopVideoId,
+      embedUrl: embedUrl || "",
+      startTime,
+      embeddable: Boolean(embedUrl),
+      warning: embedUrl ? "" : "SOOP VOD ID를 확인할 수 없습니다. SOOP 플레이어 주소를 직접 입력해주세요. 권장 형식: https://vod.sooplive.com/player/영상번호"
+    };
+  }
+
   parsed.hash = "";
   parsed.searchParams.delete("t");
   parsed.searchParams.delete("start");
@@ -150,7 +215,13 @@ export function normalizeTimelineUrl(url) {
 }
 
 export function buildPlaybackUrl(timeline) {
-  if (!timeline || timeline.provider !== "youtube" || !timeline.videoId) return "";
+  if (!timeline) return "";
+  if (timeline.provider === "soop") {
+    if (isAllowedSoopEmbedUrl(timeline.embedUrl)) return timeline.embedUrl;
+    const parsed = extractTimelineFromUrl(timeline.sourceUrl || timeline.normalizedUrl || "");
+    return parsed.embedUrl || buildSoopEmbedUrl(timeline.videoId) || "";
+  }
+  if (timeline.provider !== "youtube" || !timeline.videoId) return "";
   const params = new URLSearchParams({
     rel: "0",
     modestbranding: "1",
@@ -202,8 +273,12 @@ export function normalizeTimelines(timelines, fallbackMembers = []) {
   return (Array.isArray(timelines) ? timelines : [])
     .map((timeline, index) => {
       const parsed = extractTimelineFromUrl(timeline.sourceUrl || timeline.url || "");
+      const provider = timeline.provider || parsed.provider;
       const startTime = Number.isFinite(Number(timeline.startTime)) ? Number(timeline.startTime) : parsed.startTime;
       const endTime = Number.isFinite(Number(timeline.endTime)) ? Number(timeline.endTime) : undefined;
+      const embedUrl = provider === "soop"
+        ? (isAllowedSoopEmbedUrl(timeline.embedUrl) ? timeline.embedUrl : parsed.embedUrl || buildSoopEmbedUrl(timeline.videoId))
+        : timeline.embedUrl || parsed.embedUrl || "";
       const members = Array.isArray(timeline.members) && timeline.members.length
         ? timeline.members.map((m) => memberRef(m.name || m.id, m.imageUrl)).filter(Boolean)
         : fallbackMembers;
@@ -212,10 +287,11 @@ export function normalizeTimelines(timelines, fallbackMembers = []) {
       return {
         id: String(timeline.id || `timeline-${index + 1}`),
         title: String(timeline.title || "타임라인"),
-        provider: timeline.provider || parsed.provider,
+        provider,
         sourceUrl: String(timeline.sourceUrl || timeline.url || ""),
         normalizedUrl: timeline.normalizedUrl || parsed.normalizedUrl,
         videoId: timeline.videoId || parsed.videoId,
+        ...(embedUrl ? { embedUrl } : {}),
         startTime: Number(startTime || 0),
         ...(endTime !== undefined ? { endTime } : {}),
         ...(endTime !== undefined && Number(endTime) > Number(startTime || 0) ? { duration: Number(endTime) - Number(startTime || 0) } : {}),
@@ -344,6 +420,11 @@ export function validateRows(rows, members = []) {
         errors.push({ column: "timeline_url", value: url, message: "올바른 URL이 아닙니다." });
       }
       if (!["youtube", "soop", "chzzk", "external"].includes(provider)) errors.push({ column: "timeline_provider", value: provider, message: "지원하지 않는 provider입니다." });
+      if (provider === "soop" && !parsed.videoId) warnings.push({
+        column: "timeline_url",
+        value: url,
+        message: "SOOP VOD ID를 확인할 수 없습니다. SOOP 플레이어 주소를 직접 입력해주세요. 권장 형식: https://vod.sooplive.com/player/영상번호"
+      });
       if (startTime === null) errors.push({ column: "timeline_start_time", value: row.timeline_start_time, message: "시작 시간을 확인할 수 없습니다." });
       if (endTime !== null && startTime !== null && endTime <= startTime) errors.push({ column: "timeline_end_time", value: row.timeline_end_time, message: "종료 시간은 시작 시간보다 커야 합니다." });
     }
@@ -425,6 +506,7 @@ export function buildDraftFromRows(rows, existingData, members = [], options = {
         sourceUrl,
         normalizedUrl: parsed.normalizedUrl,
         videoId: parsed.videoId,
+        ...(parsed.embedUrl ? { embedUrl: parsed.embedUrl } : {}),
         startTime: Number(item.startTime || 0),
         ...(item.endTime !== null ? { endTime: Number(item.endTime) } : {}),
         ...(item.endTime !== null && Number(item.endTime) > Number(item.startTime || 0) ? { duration: Number(item.endTime) - Number(item.startTime || 0) } : {}),
