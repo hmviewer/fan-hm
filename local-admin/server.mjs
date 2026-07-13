@@ -127,6 +127,47 @@ function summarize(data) {
   };
 }
 
+function findSignatureByNumber(data, number) {
+  const target = String(number || "").trim();
+  if (!target) return null;
+  return (Array.isArray(data.items) ? data.items : []).find((item) => String(item.number) === target) || null;
+}
+
+function hydrateQuickRow(row, data) {
+  const signature = findSignatureByNumber(data, row.signature_number);
+  if (!signature) return { row, signature: null };
+  return {
+    signature,
+    row: {
+      ...row,
+      signature_title: row.signature_title || signature.title || `시그니처 ${signature.number}`,
+      signature_members: row.signature_members || (Array.isArray(signature.memberNames) ? signature.memberNames.join("|") : ""),
+      signature_tags: row.signature_tags || (Array.isArray(signature.tags) ? signature.tags.join("|") : ""),
+      signature_image_url: row.signature_image_url || signature.imageUrl || signature.image || "",
+      signature_description: row.signature_description || signature.description || "",
+      signature_is_published: row.signature_is_published || String(signature.isPublished !== false),
+      signature_sort_order: row.signature_sort_order || String(signature.sortOrder || signature.number || "")
+    }
+  };
+}
+
+function quickError(row, message) {
+  return {
+    validation: [{
+      row: { __line: 1, ...row },
+      parsed: {},
+      provider: "external",
+      startTime: null,
+      endTime: null,
+      errors: [{ column: "signature_number", value: row.signature_number || "", message }],
+      warnings: [],
+      status: "오류"
+    }],
+    summary: { totalRows: 1, okRows: 0, warningRows: 0, errorRows: 1 },
+    draft: { total: 0, items: [] }
+  };
+}
+
 function templateCsv() {
   const exampleRows = [
     CSV_COLUMNS,
@@ -200,7 +241,12 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === "/api/quick-preview") {
     const row = await readJsonBody(req);
-    const draft = buildDraftFromRows([{ __line: 1, ...row }], getPublicData(), getMembers(), { updateSignatureInfo: true });
+    const publicData = getPublicData();
+    const quick = hydrateQuickRow(row, publicData);
+    if (String(row.signature_number || "").trim() && !quick.signature) {
+      return send(res, 200, quickError(row, "등록된 시그니처 번호를 찾을 수 없습니다."));
+    }
+    const draft = buildDraftFromRows([{ __line: 1, ...quick.row }], publicData, getMembers(), { updateSignatureInfo: true });
     return send(res, 200, { validation: draft.validation, summary: draft.summary, draft: draft.data });
   }
 

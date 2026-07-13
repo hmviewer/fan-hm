@@ -305,6 +305,14 @@ main {
   padding-top: 12px;
 }
 
+.quick-signature-number {
+  grid-column: span 1;
+}
+
+.quick-timeline-url {
+  grid-column: span 2;
+}
+
 .quick-form label {
   min-height: 44px;
   display: flex;
@@ -572,6 +580,8 @@ pre {
   }
 
   .quick-form textarea,
+  .quick-signature-number,
+  .quick-timeline-url,
   .quick-form button {
     grid-column: auto;
   }

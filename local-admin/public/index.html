@@ -53,20 +53,14 @@
     <section class="panel" id="tab-quick">
       <div class="panel-head"><h2>개별 빠른 등록</h2></div>
       <form class="quick-form" id="quickForm">
-        <input name="signature_number" placeholder="시그니처 번호" required>
-        <input name="signature_title" placeholder="시그니처 제목" required>
-        <input name="signature_members" placeholder="관련 멤버 예: 달리|해루">
-        <input name="signature_tags" placeholder="콘텐츠 태그 예: 대회|명장면">
-        <input name="signature_image_url" placeholder="시그니처 이미지 경로">
-        <textarea name="signature_description" placeholder="시그니처 설명"></textarea>
+        <input class="quick-signature-number" name="signature_number" placeholder="시그니처 번호" inputmode="numeric" autocomplete="off" required>
         <input name="timeline_title" placeholder="타임라인 제목">
         <input name="timeline_members" placeholder="타임라인 멤버">
-        <input name="timeline_url" placeholder="타임라인 URL">
+        <input class="quick-timeline-url" name="timeline_url" placeholder="SOOP VOD 또는 영상 URL" required>
         <input name="timeline_start_time" placeholder="시작 시간 예: 01:02:05">
         <input name="timeline_end_time" placeholder="종료 시간 예: 01:02:18">
         <select name="timeline_provider"><option value="">자동</option><option>youtube</option><option>soop</option><option>chzzk</option><option>external</option></select>
         <label><input name="timeline_is_primary" type="checkbox"> 대표 영상</label>
-        <label><input name="signature_is_published" type="checkbox" checked> 시그니처 공개</label>
         <label><input name="timeline_is_published" type="checkbox" checked> 타임라인 공개</label>
         <input name="timeline_sort_order" placeholder="타임라인 정렬 순서">
         <button type="submit">분석 후 초안 생성</button>

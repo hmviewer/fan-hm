@@ -259,9 +259,9 @@ async function saveDraft(data, title) {
 
 function formToRow(form) {
   const data = Object.fromEntries(new FormData(form).entries());
-  data.timeline_is_primary = form.timeline_is_primary.checked ? "true" : "false";
-  data.signature_is_published = form.signature_is_published.checked ? "true" : "false";
-  data.timeline_is_published = form.timeline_is_published.checked ? "true" : "false";
+  data.timeline_is_primary = form.timeline_is_primary?.checked ? "true" : "false";
+  data.signature_is_published = form.signature_is_published ? (form.signature_is_published.checked ? "true" : "false") : "";
+  data.timeline_is_published = form.timeline_is_published?.checked ? "true" : "false";
   return data;
 }
 
@@ -272,11 +272,17 @@ function findDraftTimeline(draft, signatureNumber) {
 }
 
 function renderQuickTimelinePreview(timeline, validation = []) {
-  if (!timeline) return `<p class="meta-line">등록할 타임라인이 없습니다.</p>`;
   const issues = validation.flatMap((item) => [...(item.errors || []), ...(item.warnings || [])]);
   const issueMarkup = issues.length
     ? `<div class="badge-row">${issues.map((issue) => `<span class="badge ${issue.message.includes("확인") ? "warn" : "bad"}">${esc(issue.message)}</span>`).join("")}</div>`
     : "";
+  if (!timeline) {
+    return `
+      <div class="quick-preview">
+        <div class="empty">등록할 타임라인이 없습니다.</div>
+        ${issueMarkup}
+      </div>`;
+  }
   const duration = timeline.duration ? `${timeline.duration}초` : "구간 미지정";
   const canEmbedSoop = timeline.provider === "soop" && allowedSoopEmbedUrl(timeline.embedUrl);
   const soopEmbedUrl = canEmbedSoop ? applySoopPlayerParams(timeline.embedUrl) : "";
