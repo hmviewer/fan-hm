@@ -117,7 +117,20 @@ function buildSoopEmbedUrl(vodId, host = "vod.sooplive.com") {
   const id = String(vodId || "").trim();
   const cleanHost = String(host || "vod.sooplive.com").replace(/^www\./, "").toLowerCase();
   if (!/^\d+$/.test(id) || !SOOP_VOD_HOSTS.has(cleanHost)) return "";
-  return `https://${cleanHost}/player/${id}/embed`;
+  return applySoopPlayerParams(`https://${cleanHost}/player/${id}/embed`);
+}
+
+function applySoopPlayerParams(embedUrl) {
+  try {
+    const parsed = new URL(String(embedUrl || "").trim());
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    if (parsed.protocol !== "https:" || !SOOP_VOD_HOSTS.has(host) || !/^\/player\/\d+\/embed\/?$/.test(parsed.pathname)) return "";
+    parsed.searchParams.set("autoPlay", "true");
+    parsed.searchParams.set("mutePlay", "true");
+    return parsed.toString();
+  } catch {
+    return "";
+  }
 }
 
 function allowedSoopEmbedUrl(url) {
@@ -183,7 +196,7 @@ function normalizeTimeline(timeline, fallbackMembers, number, index) {
     sourceUrl,
     normalizedUrl: timeline.normalizedUrl || soop.normalizedUrl || youtube.normalizedUrl || sourceUrl,
     videoId: timeline.videoId || soop.videoId || youtube.videoId || "",
-    embedUrl: provider === "soop" && allowedSoopEmbedUrl(timeline.embedUrl) ? timeline.embedUrl : soop.embedUrl || "",
+    embedUrl: provider === "soop" && allowedSoopEmbedUrl(timeline.embedUrl) ? applySoopPlayerParams(timeline.embedUrl) : soop.embedUrl || "",
     startTime,
     ...(endTime !== undefined ? { endTime } : {}),
     duration: endTime !== undefined && endTime > startTime ? endTime - startTime : undefined,
@@ -369,7 +382,7 @@ function buildYoutubeEmbed(timeline) {
 
 function buildSoopTimelineEmbed(timeline) {
   if (!timeline || timeline.provider !== "soop") return "";
-  if (allowedSoopEmbedUrl(timeline.embedUrl)) return timeline.embedUrl;
+  if (allowedSoopEmbedUrl(timeline.embedUrl)) return applySoopPlayerParams(timeline.embedUrl);
   let host = "vod.sooplive.com";
   try {
     const parsed = new URL(timeline.normalizedUrl || timeline.sourceUrl || "");
@@ -395,9 +408,10 @@ function renderPlayer() {
   const embedUrl = youtubeEmbedUrl || soopEmbedUrl;
   if (embedUrl) {
     const allow = activeTimeline.provider === "soop"
-      ? "autoplay; fullscreen; picture-in-picture"
+      ? "autoplay; encrypted-media; fullscreen; picture-in-picture"
       : "accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-    modalPlayer.innerHTML = `<iframe class="signature-iframe" src="${esc(embedUrl)}" title="${esc(activeTimeline.title)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="${esc(allow)}" allowfullscreen></iframe>`;
+    const dataVideo = activeTimeline.provider === "soop" ? ` data-video="soop"` : "";
+    modalPlayer.innerHTML = `<div class="signature-video-frame"${dataVideo}><iframe class="signature-iframe" src="${esc(embedUrl)}" title="${esc(activeTimeline.title)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="${esc(allow)}" allowfullscreen></iframe></div>`;
   } else {
     modalPlayer.innerHTML = `<div class="player-empty"><strong>${providerLabel(activeTimeline.provider)}</strong><span>이 플랫폼은 내부 재생을 지원하지 않아 원본 영상으로 이동합니다.</span></div>`;
   }

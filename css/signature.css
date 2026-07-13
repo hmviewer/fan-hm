@@ -454,6 +454,10 @@ body.signature-modal-open {
   border: 1px solid rgba(52, 50, 44, .14);
   background: linear-gradient(135deg, #1b1d1c, #62665f 62%, #b9953e);
 }
+.signature-video-frame {
+  width: 100%;
+  height: 100%;
+}
 .signature-iframe {
   width: 100%;
   height: 100%;

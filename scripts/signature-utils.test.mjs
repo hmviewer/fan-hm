@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  applySoopPlayerParams,
   buildPlaybackUrl,
   buildSoopEmbedUrl,
   buildDraftFromRows,
@@ -35,14 +36,15 @@ const soop = extractTimelineFromUrl("https://vod.sooplive.com/player/123456789/e
 assert.equal(soop.provider, "soop");
 assert.equal(soop.videoId, "123456789");
 assert.equal(soop.normalizedUrl, "https://vod.sooplive.com/player/123456789");
-assert.equal(soop.embedUrl, "https://vod.sooplive.com/player/123456789/embed");
+assert.equal(soop.embedUrl, "https://vod.sooplive.com/player/123456789/embed?autoPlay=true&mutePlay=true");
 assert.equal(extractSoopVodId("https://vod.afreecatv.com/player/987654321"), "987654321");
 assert.equal(normalizeSoopUrl("https://vod.afreecatv.com/player/987654321/embed"), "https://vod.afreecatv.com/player/987654321");
-assert.equal(buildSoopEmbedUrl("987654321", "vod.afreecatv.com"), "https://vod.afreecatv.com/player/987654321/embed");
+assert.equal(buildSoopEmbedUrl("987654321", "vod.afreecatv.com"), "https://vod.afreecatv.com/player/987654321/embed?autoPlay=true&mutePlay=true");
+assert.equal(applySoopPlayerParams("https://vod.sooplive.com/player/123456789/embed?foo=bar"), "https://vod.sooplive.com/player/123456789/embed?foo=bar&autoPlay=true&mutePlay=true");
 assert.equal(isAllowedSoopEmbedUrl("https://vod.sooplive.com/player/123456789/embed"), true);
 assert.equal(isAllowedSoopEmbedUrl("https://example.com/player/123456789/embed"), false);
 assert.equal(extractSoopVodId("https://www.sooplive.com/station/demo/post/1"), null);
-assert.equal(buildPlaybackUrl({ provider: "soop", videoId: "123456789", sourceUrl: "https://vod.sooplive.com/player/123456789" }), "https://vod.sooplive.com/player/123456789/embed");
+assert.equal(buildPlaybackUrl({ provider: "soop", videoId: "123456789", sourceUrl: "https://vod.sooplive.com/player/123456789" }), "https://vod.sooplive.com/player/123456789/embed?autoPlay=true&mutePlay=true");
 
 const table = rowsFromCsv([
   "번호,제목,멤버,태그,영상 링크,시작 시간,종료 시간,대표",
@@ -74,7 +76,7 @@ assert.equal(soopDraft.summary.errorRows, 0);
 assert.equal(soopDraft.data.items[0].timelineCount, 2);
 assert.equal(soopDraft.data.items[0].timelines[0].provider, "soop");
 assert.equal(soopDraft.data.items[0].timelines[0].videoId, "123456789");
-assert.equal(soopDraft.data.items[0].timelines[0].embedUrl, "https://vod.sooplive.com/player/123456789/embed");
+assert.equal(soopDraft.data.items[0].timelines[0].embedUrl, "https://vod.sooplive.com/player/123456789/embed?autoPlay=true&mutePlay=true");
 assert.equal(soopDraft.validation[2].warnings.some((warning) => warning.message.includes("유사한 타임라인")), true);
 
 const invalidSoopTable = rowsFromCsv([

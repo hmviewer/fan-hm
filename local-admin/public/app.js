@@ -87,6 +87,19 @@ function allowedSoopEmbedUrl(url) {
   }
 }
 
+function applySoopPlayerParams(embedUrl) {
+  try {
+    const parsed = new URL(String(embedUrl || "").trim());
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    if (parsed.protocol !== "https:" || !["vod.sooplive.com", "vod.afreecatv.com"].includes(host) || !/^\/player\/\d+\/embed\/?$/.test(parsed.pathname)) return "";
+    parsed.searchParams.set("autoPlay", "true");
+    parsed.searchParams.set("mutePlay", "true");
+    return parsed.toString();
+  } catch {
+    return "";
+  }
+}
+
 function toast(message) {
   const node = document.createElement("div");
   node.className = "toast";
@@ -266,8 +279,9 @@ function renderQuickTimelinePreview(timeline, validation = []) {
     : "";
   const duration = timeline.duration ? `${timeline.duration}초` : "구간 미지정";
   const canEmbedSoop = timeline.provider === "soop" && allowedSoopEmbedUrl(timeline.embedUrl);
+  const soopEmbedUrl = canEmbedSoop ? applySoopPlayerParams(timeline.embedUrl) : "";
   const embedMarkup = canEmbedSoop
-    ? `<div class="quick-player"><iframe src="${esc(timeline.embedUrl)}" title="${esc(timeline.title)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`
+    ? `<div class="quick-player" data-video="soop"><iframe src="${esc(soopEmbedUrl)}" title="${esc(timeline.title)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`
     : "";
   const soopNotice = timeline.provider === "soop"
     ? `<p class="meta-line">SOOP 플레이어는 내부 재생이 가능하지만 시작 시간 자동 이동이 제한될 수 있습니다. 공개 화면에서 ${formatTimelineTime(timeline.startTime || 0)}부터 확인하도록 안내됩니다.</p>`

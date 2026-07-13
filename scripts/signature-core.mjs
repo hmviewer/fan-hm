@@ -145,7 +145,21 @@ export function buildSoopEmbedUrl(vodId, host = "vod.sooplive.com") {
   const id = String(vodId || "").trim();
   const cleanHost = String(host || "vod.sooplive.com").replace(/^www\./, "").toLowerCase();
   if (!/^\d+$/.test(id) || !SOOP_VOD_HOSTS.has(cleanHost)) return null;
-  return `https://${cleanHost}/player/${id}/embed`;
+  return applySoopPlayerParams(`https://${cleanHost}/player/${id}/embed`);
+}
+
+export function applySoopPlayerParams(embedUrl) {
+  let parsed;
+  try {
+    parsed = new URL(String(embedUrl || "").trim());
+  } catch {
+    return "";
+  }
+  const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+  if (parsed.protocol !== "https:" || !SOOP_VOD_HOSTS.has(host) || !/^\/player\/\d+\/embed\/?$/.test(parsed.pathname)) return "";
+  parsed.searchParams.set("autoPlay", "true");
+  parsed.searchParams.set("mutePlay", "true");
+  return parsed.toString();
 }
 
 export function isAllowedSoopEmbedUrl(url) {
@@ -217,7 +231,7 @@ export function normalizeTimelineUrl(url) {
 export function buildPlaybackUrl(timeline) {
   if (!timeline) return "";
   if (timeline.provider === "soop") {
-    if (isAllowedSoopEmbedUrl(timeline.embedUrl)) return timeline.embedUrl;
+    if (isAllowedSoopEmbedUrl(timeline.embedUrl)) return applySoopPlayerParams(timeline.embedUrl);
     const parsed = extractTimelineFromUrl(timeline.sourceUrl || timeline.normalizedUrl || "");
     return parsed.embedUrl || buildSoopEmbedUrl(timeline.videoId) || "";
   }
@@ -277,7 +291,7 @@ export function normalizeTimelines(timelines, fallbackMembers = []) {
       const startTime = Number.isFinite(Number(timeline.startTime)) ? Number(timeline.startTime) : parsed.startTime;
       const endTime = Number.isFinite(Number(timeline.endTime)) ? Number(timeline.endTime) : undefined;
       const embedUrl = provider === "soop"
-        ? (isAllowedSoopEmbedUrl(timeline.embedUrl) ? timeline.embedUrl : parsed.embedUrl || buildSoopEmbedUrl(timeline.videoId))
+        ? (isAllowedSoopEmbedUrl(timeline.embedUrl) ? applySoopPlayerParams(timeline.embedUrl) : parsed.embedUrl || buildSoopEmbedUrl(timeline.videoId))
         : timeline.embedUrl || parsed.embedUrl || "";
       const members = Array.isArray(timeline.members) && timeline.members.length
         ? timeline.members.map((m) => memberRef(m.name || m.id, m.imageUrl)).filter(Boolean)
