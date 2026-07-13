@@ -110,7 +110,7 @@ main {
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 10px;
   margin-bottom: 12px;
 }
@@ -119,6 +119,7 @@ main {
 .panel,
 .draft-card,
 .backup-card,
+.duration-card,
 .signature-card,
 .result-box {
   border: 1px solid var(--line);
@@ -341,7 +342,8 @@ main {
 
 .signature-card,
 .draft-card,
-.backup-card {
+.backup-card,
+.duration-card {
   padding: 14px;
 }
 
@@ -494,6 +496,103 @@ main {
   border: 0;
 }
 
+.review-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.review-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
+  gap: 14px;
+}
+
+.review-main,
+.review-side {
+  min-width: 0;
+}
+
+.review-player {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  aspect-ratio: 16 / 9;
+  background: #1b1e1c;
+}
+
+.review-player iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+}
+
+.review-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.review-controls button {
+  min-height: 40px;
+  padding: 0 10px;
+}
+
+.review-progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, .62);
+}
+
+.review-progress span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.review-progress strong {
+  color: #8a6414;
+  font-size: 20px;
+}
+
+.review-time-input,
+.duration-actions input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, .8);
+  outline: none;
+}
+
+#durationList {
+  display: grid;
+  gap: 10px;
+}
+
+.duration-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, .75fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.duration-actions {
+  display: grid;
+  grid-template-columns: 90px 1fr 1fr;
+  gap: 8px;
+}
+
 .inline-link {
   width: fit-content;
   min-height: 36px;
@@ -576,6 +675,12 @@ pre {
 
   .metrics,
   .quick-form {
+    grid-template-columns: 1fr;
+  }
+
+  .review-layout,
+  .duration-card,
+  .duration-actions {
     grid-template-columns: 1fr;
   }
 

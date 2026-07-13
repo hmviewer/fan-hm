@@ -22,6 +22,8 @@
       <button class="active" data-tab="list">시그니처 목록</button>
       <button data-tab="csv">CSV 대량 등록</button>
       <button data-tab="quick">개별 빠른 등록</button>
+      <button data-tab="review">구간 검수</button>
+      <button data-tab="durations">기본 길이</button>
       <button data-tab="drafts">초안 관리</button>
       <button data-tab="preview">공개 데이터 미리보기</button>
       <button data-tab="diff">변경사항 비교</button>
@@ -71,6 +73,17 @@
     <section class="panel" id="tab-drafts">
       <div class="panel-head"><h2>초안 관리</h2><button id="loadDrafts">초안 새로고침</button></div>
       <div id="draftList"></div>
+    </section>
+
+    <section class="panel" id="tab-review">
+      <div class="panel-head"><h2>종료점 찾기</h2><button id="loadReview">검수 목록 새로고침</button></div>
+      <div class="review-stats" id="reviewStats"></div>
+      <div class="review-workbench" id="reviewWorkbench"></div>
+    </section>
+
+    <section class="panel" id="tab-durations">
+      <div class="panel-head"><h2>시그니처 기본 길이</h2><button id="loadDurations">기본 길이 새로고침</button></div>
+      <div id="durationList"></div>
     </section>
 
     <section class="panel" id="tab-preview">

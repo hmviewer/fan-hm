@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import {
   applySoopPlayerParams,
+  approveTimelineDefault,
   buildPlaybackUrl,
   buildSoopEmbedUrl,
   buildDraftFromRows,
+  confirmTimelineEnd,
   detectColumnMapping,
   extractSoopVodId,
   extractTimelineFromUrl,
@@ -12,7 +14,10 @@ import {
   normalizePublicData,
   normalizeSoopUrl,
   parseTimelineInput,
+  reviewQueue,
+  setSignatureDefaultDuration,
   rowsFromCsv,
+  signatureReviewStats,
   timelineKey
 } from "./signature-core.mjs";
 
@@ -93,5 +98,72 @@ const normalized = normalizePublicData({ items: [{ number: 1, title: "A", tag: "
 assert.equal(normalized.total, 1);
 assert.equal(normalized.items[0].timelineCount, 0);
 assert.deepEqual(normalized.items[0].memberNames, ["달리"]);
+
+const durationFixture = normalizePublicData({
+  items: [{
+    number: 1040,
+    title: "슈퍼그럼요",
+    defaultDuration: 22,
+    timelines: [
+      { id: "t1", title: "댓글 1", provider: "soop", sourceUrl: "https://vod.sooplive.com/player/111", startTime: 100, isPublished: true, sortOrder: 1 },
+      { id: "t2", title: "댓글 2", provider: "soop", sourceUrl: "https://vod.sooplive.com/player/111", startTime: 115, isPublished: true, sortOrder: 2 },
+      { id: "t3", title: "댓글 3", provider: "soop", sourceUrl: "https://vod.sooplive.com/player/111", startTime: 200, endTime: 240, isPublished: true, sortOrder: 3 }
+    ]
+  }]
+});
+const durationSignature = durationFixture.items[0];
+assert.equal(durationSignature.defaultDuration, 22);
+assert.equal(durationSignature.timelines[0].estimatedEndTime, 122);
+assert.equal(durationSignature.timelines[0].effectiveEndTime, 114);
+assert.equal(durationSignature.timelines[0].durationSource, "signature_default");
+assert.equal(durationSignature.timelines[1].effectiveEndTime, 137);
+assert.equal(durationSignature.timelines[2].effectiveEndTime, 240);
+assert.equal(durationSignature.timelines[2].durationSource, "manually_confirmed");
+assert.equal(durationSignature.timelines[2].isEndTimeConfirmed, true);
+
+const fallbackDuration = normalizePublicData({
+  items: [{
+    number: 572,
+    title: "귀여워서미안해",
+    timelines: [{ id: "fallback", title: "댓글", provider: "soop", sourceUrl: "https://vod.sooplive.com/player/222", startTime: 50, isPublished: true }]
+  }]
+});
+assert.equal(fallbackDuration.items[0].timelines[0].effectiveEndTime, 80);
+assert.equal(fallbackDuration.items[0].timelines[0].durationSource, "estimated");
+
+const noEndTable = rowsFromCsv([
+  "번호,제목,영상 링크,플랫폼,시작 시간,종료 시간",
+  "1040,슈퍼그럼요,https://vod.sooplive.com/player/333,soop,00:10,"
+].join("\n"));
+const noEndDraft = buildDraftFromRows(noEndTable.rows, {
+  items: [{ number: 1040, title: "슈퍼그럼요", defaultDuration: 22, image: "images/1040.png" }]
+}, []);
+assert.equal(noEndDraft.summary.errorRows, 0);
+assert.equal(noEndDraft.data.items[0].timelines[0].endTime, undefined);
+assert.equal(noEndDraft.data.items[0].timelines[0].effectiveEndTime, 32);
+assert.equal(noEndDraft.data.items[0].timelines[0].isEndTimeConfirmed, false);
+
+const confirmed = confirmTimelineEnd(durationFixture, 1040, "t1", 121);
+assert.equal(confirmed.items[0].timelines.find((item) => item.id === "t1").endTime, 121);
+assert.equal(confirmed.items[0].timelines.find((item) => item.id === "t1").durationSource, "manually_confirmed");
+assert.equal(reviewQueue(confirmed)[0].timelineId, "t2");
+
+const defaultApplied = setSignatureDefaultDuration(confirmed, 1040, 18, true);
+const appliedTimelines = defaultApplied.items[0].timelines;
+assert.equal(defaultApplied.items[0].defaultDuration, 18);
+assert.equal(appliedTimelines.find((item) => item.id === "t1").endTime, 121);
+assert.equal(appliedTimelines.find((item) => item.id === "t1").durationSource, "manually_confirmed");
+assert.equal(appliedTimelines.find((item) => item.id === "t2").durationSource, "signature_default");
+assert.equal(appliedTimelines.find((item) => item.id === "t2").endTime, undefined);
+
+const approvedDefault = approveTimelineDefault(defaultApplied, 1040, "t2");
+assert.equal(approvedDefault.items[0].timelines.find((item) => item.id === "t2").durationSource, "signature_default");
+assert.equal(approvedDefault.items[0].timelines.find((item) => item.id === "t2").isEndTimeConfirmed, false);
+
+const stats = signatureReviewStats(defaultApplied);
+assert.equal(stats.totalTimelines, 3);
+assert.equal(stats.confirmed, 2);
+assert.equal(stats.signatureDefault, 1);
+assert.equal(stats.unconfirmed, 0);
 
 console.log("signature utils tests passed");

@@ -45,6 +45,8 @@ const SAFE_URL_SCHEMES = new Set(["http:", "https:"]);
 const SOOP_VOD_HOSTS = new Set(["vod.sooplive.com", "vod.afreecatv.com"]);
 const TRUE_VALUES = new Set(["true", "1", "yes", "y", "공개", "예", "대표", "on"]);
 const FALSE_VALUES = new Set(["false", "0", "no", "n", "비공개", "아니오", "off"]);
+export const SYSTEM_DEFAULT_DURATION = 30;
+export const DURATION_SOURCES = new Set(["signature_default", "manually_confirmed", "estimated"]);
 
 export function slugify(value) {
   return String(value ?? "")
@@ -96,6 +98,180 @@ export function formatTimelineTime(seconds) {
   const s = value % 60;
   const pad = (n) => String(n).padStart(2, "0");
   return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
+export function normalizePositiveSeconds(value, fallback = undefined) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? Math.floor(number) : fallback;
+}
+
+export function normalizeDurationSource(value, fallback = "estimated") {
+  const clean = String(value || "").trim();
+  return DURATION_SOURCES.has(clean) ? clean : fallback;
+}
+
+export function resolveTimelineEnd(timeline, signature = {}, nextTimeline = null, systemDefaultDuration = SYSTEM_DEFAULT_DURATION) {
+  const startTime = Math.max(0, Number(timeline?.startTime || 0));
+  const manualEnd = normalizePositiveSeconds(timeline?.endTime);
+  const defaultDuration = normalizePositiveSeconds(signature?.defaultDuration);
+  const fallbackDuration = normalizePositiveSeconds(systemDefaultDuration, SYSTEM_DEFAULT_DURATION);
+  const nextStart = nextTimeline && Number(nextTimeline.startTime) > startTime ? Number(nextTimeline.startTime) : null;
+  const limit = nextStart !== null ? Math.max(startTime, Math.floor(nextStart) - 1) : Infinity;
+
+  let rawEnd;
+  let source;
+  let confirmed = false;
+  if (manualEnd !== undefined && manualEnd > startTime) {
+    rawEnd = manualEnd;
+    source = "manually_confirmed";
+    confirmed = true;
+  } else if (defaultDuration !== undefined) {
+    rawEnd = startTime + defaultDuration;
+    source = "signature_default";
+  } else {
+    rawEnd = startTime + fallbackDuration;
+    source = "estimated";
+  }
+
+  const effectiveEndTime = Math.max(startTime, Math.min(rawEnd, limit));
+  return {
+    effectiveEndTime,
+    effectiveDuration: Math.max(0, effectiveEndTime - startTime),
+    estimatedEndTime: rawEnd,
+    nextTimelineStartTime: nextStart,
+    durationSource: source,
+    isEndTimeConfirmed: confirmed
+  };
+}
+
+export function applyEffectiveTimelineEnds(signature, systemDefaultDuration = SYSTEM_DEFAULT_DURATION) {
+  const timelines = (Array.isArray(signature?.timelines) ? signature.timelines : [])
+    .map((timeline) => ({ ...timeline }))
+    .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0));
+  for (let index = 0; index < timelines.length; index += 1) {
+    const timeline = timelines[index];
+    const nextTimeline = timelines
+      .filter((entry) => Number(entry.startTime) > Number(timeline.startTime || 0))
+      .sort((a, b) => Number(a.startTime || 0) - Number(b.startTime || 0))[0] || null;
+    const resolved = resolveTimelineEnd(timeline, signature, nextTimeline, systemDefaultDuration);
+    timeline.estimatedEndTime = resolved.estimatedEndTime;
+    timeline.effectiveEndTime = resolved.effectiveEndTime;
+    timeline.effectiveDuration = resolved.effectiveDuration;
+    timeline.nextTimelineStartTime = resolved.nextTimelineStartTime;
+    timeline.durationSource = resolved.durationSource;
+    timeline.isEndTimeConfirmed = resolved.isEndTimeConfirmed;
+    if (timeline.endTime !== undefined && Number(timeline.endTime) > Number(timeline.startTime || 0)) {
+      timeline.duration = Number(timeline.endTime) - Number(timeline.startTime || 0);
+    } else {
+      delete timeline.duration;
+    }
+  }
+  return timelines;
+}
+
+export function signatureReviewStats(data) {
+  const normalized = normalizePublicData(data);
+  const timelines = normalized.items.flatMap((signature) => signature.timelines.map((timeline) => ({ signature, timeline })));
+  const totalTimelines = timelines.length;
+  const confirmed = timelines.filter(({ timeline }) => timeline.isEndTimeConfirmed === true || timeline.durationSource === "manually_confirmed").length;
+  const signatureDefault = timelines.filter(({ timeline }) => timeline.durationSource === "signature_default" && timeline.isEndTimeConfirmed !== true).length;
+  const unconfirmed = timelines.filter(({ timeline }) => timeline.isEndTimeConfirmed !== true && timeline.durationSource !== "signature_default").length;
+  const progress = totalTimelines ? ((confirmed + signatureDefault) / totalTimelines) * 100 : 100;
+  return {
+    totalTimelines,
+    confirmed,
+    signatureDefault,
+    unconfirmed,
+    progress
+  };
+}
+
+export function reviewQueue(data) {
+  const normalized = normalizePublicData(data);
+  const items = [];
+  for (const signature of normalized.items) {
+    for (const timeline of signature.timelines) {
+      const needsReview = timeline.endTime === undefined
+        || timeline.isEndTimeConfirmed === false
+        || timeline.durationSource === "signature_default"
+        || timeline.durationSource === "estimated";
+      if (!needsReview) continue;
+      items.push({
+        signatureNumber: signature.number,
+        signatureTitle: signature.title,
+        signatureMembers: signature.memberNames,
+        defaultDuration: signature.defaultDuration,
+        timelineId: timeline.id,
+        timelineTitle: timeline.title,
+        provider: timeline.provider,
+        sourceUrl: timeline.sourceUrl,
+        normalizedUrl: timeline.normalizedUrl,
+        embedUrl: timeline.embedUrl,
+        videoId: timeline.videoId,
+        startTime: timeline.startTime,
+        estimatedEndTime: timeline.estimatedEndTime,
+        effectiveEndTime: timeline.effectiveEndTime,
+        nextTimelineStartTime: timeline.nextTimelineStartTime,
+        effectiveDuration: timeline.effectiveDuration,
+        durationSource: timeline.durationSource,
+        isEndTimeConfirmed: timeline.isEndTimeConfirmed,
+        members: timeline.members
+      });
+    }
+  }
+  return items.sort((a, b) => Number(a.signatureNumber || 0) - Number(b.signatureNumber || 0) || Number(a.startTime || 0) - Number(b.startTime || 0));
+}
+
+export function confirmTimelineEnd(data, signatureNumber, timelineId, endTime) {
+  const normalized = normalizePublicData(data);
+  const signature = normalized.items.find((item) => String(item.number) === String(signatureNumber));
+  if (!signature) throw new Error("시그니처를 찾을 수 없습니다.");
+  const timeline = signature.timelines.find((item) => String(item.id) === String(timelineId));
+  if (!timeline) throw new Error("타임라인을 찾을 수 없습니다.");
+  const resolvedEnd = normalizePositiveSeconds(endTime);
+  if (resolvedEnd === undefined || resolvedEnd <= Number(timeline.startTime || 0)) throw new Error("종료 시간은 시작 시간보다 커야 합니다.");
+  timeline.endTime = resolvedEnd;
+  timeline.duration = resolvedEnd - Number(timeline.startTime || 0);
+  timeline.durationSource = "manually_confirmed";
+  timeline.isEndTimeConfirmed = true;
+  timeline.updatedAt = new Date().toISOString();
+  return normalizePublicData({ ...normalized, generatedAt: new Date().toISOString(), items: normalized.items });
+}
+
+export function approveTimelineDefault(data, signatureNumber, timelineId) {
+  const normalized = normalizePublicData(data);
+  const signature = normalized.items.find((item) => String(item.number) === String(signatureNumber));
+  if (!signature) throw new Error("시그니처를 찾을 수 없습니다.");
+  const timeline = signature.timelines.find((item) => String(item.id) === String(timelineId));
+  if (!timeline) throw new Error("타임라인을 찾을 수 없습니다.");
+  delete timeline.endTime;
+  delete timeline.duration;
+  timeline.durationSource = normalizePositiveSeconds(signature.defaultDuration) !== undefined ? "signature_default" : "estimated";
+  timeline.isEndTimeConfirmed = false;
+  timeline.updatedAt = new Date().toISOString();
+  return normalizePublicData({ ...normalized, generatedAt: new Date().toISOString(), items: normalized.items });
+}
+
+export function setSignatureDefaultDuration(data, signatureNumber, defaultDuration, applyToUnconfirmed = false) {
+  const normalized = normalizePublicData(data);
+  const signature = normalized.items.find((item) => String(item.number) === String(signatureNumber));
+  if (!signature) throw new Error("시그니처를 찾을 수 없습니다.");
+  const duration = normalizePositiveSeconds(defaultDuration);
+  if (duration === undefined) throw new Error("기본 길이는 1초 이상이어야 합니다.");
+  signature.defaultDuration = duration;
+  if (applyToUnconfirmed) {
+    signature.timelines = signature.timelines.map((timeline) => {
+      if (timeline.durationSource === "manually_confirmed" || timeline.isEndTimeConfirmed === true) return timeline;
+      const next = { ...timeline };
+      delete next.endTime;
+      delete next.duration;
+      next.durationSource = "signature_default";
+      next.isEndTimeConfirmed = false;
+      next.updatedAt = new Date().toISOString();
+      return next;
+    });
+  }
+  return normalizePublicData({ ...normalized, generatedAt: new Date().toISOString(), items: normalized.items });
 }
 
 export function detectProvider(url) {
@@ -258,7 +434,9 @@ export function normalizeLegacySignature(item, index = 0) {
   const members = Array.isArray(item.members) && item.members.length
     ? item.members.map((m) => memberRef(m.name || m.id, m.imageUrl)).filter(Boolean)
     : tagNames.map((name) => memberRef(name)).filter(Boolean);
-  const timelines = normalizeTimelines(item.timelines || [], members);
+  const defaultDuration = normalizePositiveSeconds(item.defaultDuration);
+  const baseSignature = { ...item, defaultDuration };
+  const timelines = applyEffectiveTimelineEnds({ ...baseSignature, timelines: normalizeTimelines(item.timelines || [], members) });
   const publicTimelines = timelines.filter((timeline) => timeline.isPublished);
   const primary = pickPrimaryTimeline(timelines);
   const imageUrl = item.imageUrl || item.image || "";
@@ -274,6 +452,7 @@ export function normalizeLegacySignature(item, index = 0) {
     memberNames: members.map((m) => m.name),
     tag: item.tag || (members[0]?.name || ""),
     tags: Array.isArray(item.tags) ? item.tags : splitMulti(item.tags || ""),
+    ...(defaultDuration !== undefined ? { defaultDuration } : {}),
     isPublished: item.isPublished !== false,
     sortOrder: Number(item.sortOrder ?? number ?? index),
     timelineCount: publicTimelines.length,
@@ -289,7 +468,13 @@ export function normalizeTimelines(timelines, fallbackMembers = []) {
       const parsed = extractTimelineFromUrl(timeline.sourceUrl || timeline.url || "");
       const provider = timeline.provider || parsed.provider;
       const startTime = Number.isFinite(Number(timeline.startTime)) ? Number(timeline.startTime) : parsed.startTime;
-      const endTime = Number.isFinite(Number(timeline.endTime)) ? Number(timeline.endTime) : undefined;
+      const startNumber = Math.max(0, Number(startTime || 0));
+      const parsedEndTime = normalizePositiveSeconds(timeline.endTime);
+      const endTime = parsedEndTime !== undefined && parsedEndTime > startNumber ? parsedEndTime : undefined;
+      const confirmed = timeline.isEndTimeConfirmed === true || (endTime !== undefined && normalizeDurationSource(timeline.durationSource, "manually_confirmed") === "manually_confirmed");
+      const durationSource = endTime !== undefined
+        ? normalizeDurationSource(timeline.durationSource, "manually_confirmed")
+        : normalizeDurationSource(timeline.durationSource, "estimated");
       const embedUrl = provider === "soop"
         ? (isAllowedSoopEmbedUrl(timeline.embedUrl) ? applySoopPlayerParams(timeline.embedUrl) : parsed.embedUrl || buildSoopEmbedUrl(timeline.videoId))
         : timeline.embedUrl || parsed.embedUrl || "";
@@ -306,9 +491,11 @@ export function normalizeTimelines(timelines, fallbackMembers = []) {
         normalizedUrl: timeline.normalizedUrl || parsed.normalizedUrl,
         videoId: timeline.videoId || parsed.videoId,
         ...(embedUrl ? { embedUrl } : {}),
-        startTime: Number(startTime || 0),
+        startTime: startNumber,
         ...(endTime !== undefined ? { endTime } : {}),
-        ...(endTime !== undefined && Number(endTime) > Number(startTime || 0) ? { duration: Number(endTime) - Number(startTime || 0) } : {}),
+        ...(endTime !== undefined && Number(endTime) > startNumber ? { duration: Number(endTime) - startNumber } : {}),
+        durationSource,
+        isEndTimeConfirmed: confirmed,
         thumbnailUrl: String(timeline.thumbnailUrl || ""),
         members,
         isPrimary,
@@ -497,6 +684,7 @@ export function buildDraftFromRows(rows, existingData, members = [], options = {
       isPublished: parseBool(row.signature_is_published, true),
       sortOrder: Number(row.signature_sort_order || number || byNumber.size + 1)
     }, byNumber.size);
+    const rowDefaultDuration = normalizePositiveSeconds(row.signature_default_duration);
 
     if (options.updateSignatureInfo || !original) {
       signature.title = row.signature_title || signature.title;
@@ -507,6 +695,7 @@ export function buildDraftFromRows(rows, existingData, members = [], options = {
       if (tags.length) signature.tags = tags;
       signature.isPublished = parseBool(row.signature_is_published, signature.isPublished !== false);
       signature.sortOrder = Number(row.signature_sort_order || signature.sortOrder || number || 0);
+      if (rowDefaultDuration !== undefined) signature.defaultDuration = rowDefaultDuration;
     }
 
     const sourceUrl = String(row.timeline_url || "").trim();
@@ -524,6 +713,8 @@ export function buildDraftFromRows(rows, existingData, members = [], options = {
         startTime: Number(item.startTime || 0),
         ...(item.endTime !== null ? { endTime: Number(item.endTime) } : {}),
         ...(item.endTime !== null && Number(item.endTime) > Number(item.startTime || 0) ? { duration: Number(item.endTime) - Number(item.startTime || 0) } : {}),
+        durationSource: item.endTime !== null ? "manually_confirmed" : (normalizePositiveSeconds(signature.defaultDuration) !== undefined ? "signature_default" : "estimated"),
+        isEndTimeConfirmed: item.endTime !== null,
         thumbnailUrl: "",
         members: timelineMembers.length ? timelineMembers : signature.members,
         isPrimary: parseBool(row.timeline_is_primary, false),

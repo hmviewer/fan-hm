@@ -5,11 +5,16 @@ import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import {
   CSV_COLUMNS,
+  approveTimelineDefault,
   buildCsv,
   buildDraftFromRows,
+  confirmTimelineEnd,
   normalizePublicData,
   readJson,
+  reviewQueue,
   rowsFromCsv,
+  setSignatureDefaultDuration,
+  signatureReviewStats,
   validateRows,
   writeJsonAtomic
 } from "../scripts/signature-core.mjs";
@@ -119,12 +124,30 @@ function summarize(data) {
   const items = Array.isArray(data.items) ? data.items : [];
   const totalTimelines = items.reduce((sum, item) => sum + Number(item.timelineCount || 0), 0);
   const ready = items.filter((item) => Number(item.timelineCount || 0) === 0).length;
+  const review = signatureReviewStats(data);
   return {
     total: items.length,
     withTimeline: items.length - ready,
     ready,
-    totalTimelines
+    totalTimelines,
+    review
   };
+}
+
+function durationRows(data) {
+  return (Array.isArray(data.items) ? data.items : []).map((signature) => {
+    const timelines = Array.isArray(signature.timelines) ? signature.timelines : [];
+    const confirmed = timelines.filter((timeline) => timeline.isEndTimeConfirmed || timeline.durationSource === "manually_confirmed").length;
+    const auto = timelines.filter((timeline) => timeline.durationSource === "signature_default" || timeline.durationSource === "estimated").length;
+    return {
+      number: signature.number,
+      title: signature.title,
+      defaultDuration: signature.defaultDuration || null,
+      timelineCount: timelines.length,
+      confirmed,
+      auto
+    };
+  }).filter((row) => row.timelineCount > 0 || row.defaultDuration !== null);
 }
 
 function findSignatureByNumber(data, number) {
@@ -184,6 +207,13 @@ function backupCurrent() {
   return target;
 }
 
+function savePublicDataWithBackup(data) {
+  const backup = backupCurrent();
+  const normalized = normalizePublicData(data);
+  writeJsonAtomic(signaturesPath, normalized);
+  return { backup: path.basename(backup), data: normalized };
+}
+
 function listBackups() {
   if (!fs.existsSync(backupsDir)) return [];
   return fs.readdirSync(backupsDir)
@@ -215,6 +245,14 @@ async function handleApi(req, res, pathname) {
   }
   if (pathname === "/api/signatures") return send(res, 200, getPublicData());
   if (pathname === "/api/members") return send(res, 200, getMembers());
+  if (pathname === "/api/review") {
+    const data = getPublicData();
+    return send(res, 200, { stats: signatureReviewStats(data), items: reviewQueue(data) });
+  }
+  if (pathname === "/api/default-durations") {
+    const data = getPublicData();
+    return send(res, 200, { stats: signatureReviewStats(data), items: durationRows(data) });
+  }
   if (pathname === "/api/template") return send(res, 200, templateCsv(), "text/csv; charset=utf-8");
   if (pathname === "/api/drafts") return send(res, 200, getDrafts().map(({ data, ...draft }) => ({ ...draft, summary: summarize(data) })));
   if (pathname === "/api/backups") return send(res, 200, listBackups());
@@ -265,6 +303,27 @@ async function handleApi(req, res, pathname) {
     drafts.unshift(draft);
     saveDrafts(drafts);
     return send(res, 200, { ok: true, id: draft.id });
+  }
+
+  if (pathname === "/api/review-confirm-end") {
+    const body = await readJsonBody(req);
+    const next = confirmTimelineEnd(getPublicData(), body.signatureNumber, body.timelineId, body.endTime);
+    const saved = savePublicDataWithBackup(next);
+    return send(res, 200, { ok: true, backup: saved.backup, stats: signatureReviewStats(saved.data), items: reviewQueue(saved.data) });
+  }
+
+  if (pathname === "/api/review-approve-default") {
+    const body = await readJsonBody(req);
+    const next = approveTimelineDefault(getPublicData(), body.signatureNumber, body.timelineId);
+    const saved = savePublicDataWithBackup(next);
+    return send(res, 200, { ok: true, backup: saved.backup, stats: signatureReviewStats(saved.data), items: reviewQueue(saved.data) });
+  }
+
+  if (pathname === "/api/set-default-duration") {
+    const body = await readJsonBody(req);
+    const next = setSignatureDefaultDuration(getPublicData(), body.signatureNumber, body.defaultDuration, Boolean(body.applyToUnconfirmed));
+    const saved = savePublicDataWithBackup(next);
+    return send(res, 200, { ok: true, backup: saved.backup, stats: signatureReviewStats(saved.data), items: durationRows(saved.data) });
   }
 
   if (pathname === "/api/apply-draft") {

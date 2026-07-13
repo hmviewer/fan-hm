@@ -7,7 +7,12 @@ const state = {
   csvText: "",
   csvDraft: null,
   quickDraft: null,
-  validation: []
+  validation: [],
+  reviewItems: [],
+  reviewStats: null,
+  reviewIndex: 0,
+  reviewCursor: 0,
+  durationItems: []
 };
 
 const metrics = $("#metrics");
@@ -28,6 +33,9 @@ const backupList = $("#backupList");
 const publicPreview = $("#publicPreview");
 const gitStatus = $("#gitStatus");
 const gitDiff = $("#gitDiff");
+const reviewStats = $("#reviewStats");
+const reviewWorkbench = $("#reviewWorkbench");
+const durationList = $("#durationList");
 
 const columns = {
   signature_number: "시그니처 번호",
@@ -74,7 +82,8 @@ function providerLabel(provider) {
 function timelineRange(timeline) {
   if (!timeline) return "-";
   const start = formatTimelineTime(timeline.startTime || 0);
-  return Number(timeline.endTime) > Number(timeline.startTime) ? `${start} ~ ${formatTimelineTime(timeline.endTime)}` : `${start}부터`;
+  const end = Number(timeline.effectiveEndTime || timeline.endTime || 0);
+  return end > Number(timeline.startTime) ? `${start} ~ ${formatTimelineTime(end)}` : `${start}부터`;
 }
 
 function allowedSoopEmbedUrl(url) {
@@ -128,11 +137,16 @@ function metricCard(label, value) {
 
 async function loadStatus() {
   const status = await api("/api/status");
+  const review = status.review || {};
   metrics.innerHTML = [
     metricCard("total", status.total),
     metricCard("with videos", status.withTimeline),
     metricCard("ready", status.ready),
     metricCard("timelines", status.totalTimelines),
+    metricCard("confirmed", review.confirmed || 0),
+    metricCard("default", review.signatureDefault || 0),
+    metricCard("unconfirmed", review.unconfirmed || 0),
+    metricCard("progress", `${Number(review.progress || 0).toFixed(1)}%`),
     metricCard("drafts", status.drafts)
   ].join("");
 }
@@ -283,7 +297,7 @@ function renderQuickTimelinePreview(timeline, validation = []) {
         ${issueMarkup}
       </div>`;
   }
-  const duration = timeline.duration ? `${timeline.duration}초` : "구간 미지정";
+  const duration = timeline.effectiveDuration ? `${timeline.effectiveDuration}초` : (timeline.duration ? `${timeline.duration}초` : "구간 미지정");
   const canEmbedSoop = timeline.provider === "soop" && allowedSoopEmbedUrl(timeline.embedUrl);
   const soopEmbedUrl = canEmbedSoop ? applySoopPlayerParams(timeline.embedUrl) : "";
   const embedMarkup = canEmbedSoop
@@ -386,6 +400,175 @@ async function loadGit() {
   gitDiff.textContent = git.diff || "static-api/signatures.json 변경 diff 없음";
 }
 
+function renderReviewStats(stats = {}) {
+  reviewStats.innerHTML = [
+    metricCard("전체 타임라인", stats.totalTimelines || 0),
+    metricCard("종료 시간 확정", stats.confirmed || 0),
+    metricCard("기본 길이 적용", stats.signatureDefault || 0),
+    metricCard("종료 시간 미확인", stats.unconfirmed || 0),
+    metricCard("검수 진행률", `${Number(stats.progress || 0).toFixed(1)}%`)
+  ].join("");
+}
+
+function activeReviewItem() {
+  return state.reviewItems[state.reviewIndex] || null;
+}
+
+function reviewEmbed(item) {
+  const src = item?.embedUrl && allowedSoopEmbedUrl(item.embedUrl) ? applySoopPlayerParams(item.embedUrl) : "";
+  if (!src) return `<div class="empty">SOOP 공식 플레이어 미리보기를 표시할 수 없습니다. 원본 VOD 링크로 확인해 주세요.</div>`;
+  return `<div class="review-player" data-video="soop"><iframe src="${esc(src)}" title="${esc(item.timelineTitle || item.signatureTitle)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+}
+
+function setReviewCursor(seconds) {
+  const item = activeReviewItem();
+  if (!item) return;
+  state.reviewCursor = Math.max(Number(item.startTime || 0), Math.floor(Number(seconds || 0)));
+  renderReviewWorkbench();
+}
+
+function moveReviewCursor(delta) {
+  setReviewCursor(Number(state.reviewCursor || 0) + delta);
+}
+
+function moveReviewIndex(delta) {
+  if (!state.reviewItems.length) return;
+  state.reviewIndex = Math.max(0, Math.min(state.reviewItems.length - 1, state.reviewIndex + delta));
+  const item = activeReviewItem();
+  state.reviewCursor = Number(item?.effectiveEndTime || item?.startTime || 0);
+  renderReviewWorkbench();
+}
+
+function renderReviewWorkbench() {
+  const item = activeReviewItem();
+  if (!item) {
+    reviewWorkbench.innerHTML = `<div class="empty">검수할 타임라인이 없습니다.</div>`;
+    return;
+  }
+  const progressText = `${state.reviewIndex + 1} / ${state.reviewItems.length}`;
+  const members = (item.signatureMembers || []).join(" · ") || (item.members || []).map((member) => member.name).join(" · ") || "-";
+  const current = Number(state.reviewCursor || item.effectiveEndTime || item.startTime || 0);
+  const duration = Math.max(0, current - Number(item.startTime || 0));
+  reviewWorkbench.innerHTML = `
+    <div class="review-layout">
+      <section class="review-main">
+        ${reviewEmbed(item)}
+        <div class="review-controls" aria-label="구간 검수 컨트롤">
+          <button data-review-action="start">시작점으로 이동</button>
+          <button data-review-action="estimated">예상 종료점으로 이동</button>
+          <button data-review-shift="-10">10초 전</button>
+          <button data-review-shift="-5">5초 전</button>
+          <button data-review-shift="-1">1초 전</button>
+          <button data-review-shift="1">1초 후</button>
+          <button data-review-shift="5">5초 후</button>
+          <button data-review-shift="10">10초 후</button>
+          <button data-review-action="confirm">현재 위치를 종료점으로 지정</button>
+          <button data-review-action="approve">기본 길이 그대로 승인</button>
+          <button data-review-action="skip">종료 시간 미정으로 건너뛰기</button>
+          <button data-review-action="prev">이전 항목</button>
+          <button data-review-action="next">다음 항목</button>
+        </div>
+      </section>
+      <aside class="review-side">
+        <div class="review-progress"><span>검수 진행</span><strong>${esc(progressText)}</strong></div>
+        <dl class="preview-detail">
+          <div><dt>시그니처 번호</dt><dd>${esc(item.signatureNumber)}</dd></div>
+          <div><dt>시그니처 제목</dt><dd>${esc(item.signatureTitle)}</dd></div>
+          <div><dt>관련 멤버</dt><dd>${esc(members)}</dd></div>
+          <div><dt>원본 VOD 제목</dt><dd>${esc(item.timelineTitle || "-")}</dd></div>
+          <div><dt>시작 시간</dt><dd>${formatTimelineTime(item.startTime || 0)}</dd></div>
+          <div><dt>예상 종료 시간</dt><dd>${formatTimelineTime(item.effectiveEndTime || item.estimatedEndTime || item.startTime || 0)}</dd></div>
+          <div><dt>다음 댓글 시작</dt><dd>${item.nextTimelineStartTime ? formatTimelineTime(item.nextTimelineStartTime) : "-"}</dd></div>
+          <div><dt>현재 재생 시간</dt><dd><input class="review-time-input" id="reviewCurrentTime" type="number" min="${esc(item.startTime || 0)}" value="${esc(current)}"></dd></div>
+          <div><dt>재생 구간 길이</dt><dd>${duration}초</dd></div>
+          <div><dt>상태</dt><dd>${esc(item.durationSource || "-")} · ${item.isEndTimeConfirmed ? "확정" : "미확정"}</dd></div>
+        </dl>
+        ${item.sourceUrl ? `<a class="inline-link" href="${esc(item.sourceUrl)}" target="_blank" rel="noopener noreferrer">원본 VOD 열기</a>` : ""}
+      </aside>
+    </div>`;
+  $("#reviewCurrentTime")?.addEventListener("change", (event) => setReviewCursor(event.target.value));
+}
+
+async function loadReview() {
+  const result = await api("/api/review");
+  state.reviewItems = result.items || [];
+  state.reviewStats = result.stats || {};
+  state.reviewIndex = Math.min(state.reviewIndex, Math.max(0, state.reviewItems.length - 1));
+  const item = activeReviewItem();
+  state.reviewCursor = Number(item?.effectiveEndTime || item?.startTime || 0);
+  renderReviewStats(state.reviewStats);
+  renderReviewWorkbench();
+}
+
+async function confirmReviewEnd() {
+  const item = activeReviewItem();
+  if (!item) return;
+  const result = await api("/api/review-confirm-end", {
+    method: "POST",
+    body: JSON.stringify({ signatureNumber: item.signatureNumber, timelineId: item.timelineId, endTime: state.reviewCursor })
+  });
+  state.reviewItems = result.items || [];
+  state.reviewStats = result.stats || {};
+  state.reviewIndex = Math.min(state.reviewIndex, Math.max(0, state.reviewItems.length - 1));
+  renderReviewStats(state.reviewStats);
+  renderReviewWorkbench();
+  await Promise.all([loadStatus(), loadGit(), loadSignatures()]);
+  toast("종료점 저장 완료");
+}
+
+async function approveReviewDefault() {
+  const item = activeReviewItem();
+  if (!item) return;
+  const result = await api("/api/review-approve-default", {
+    method: "POST",
+    body: JSON.stringify({ signatureNumber: item.signatureNumber, timelineId: item.timelineId })
+  });
+  state.reviewItems = result.items || [];
+  state.reviewStats = result.stats || {};
+  state.reviewIndex = Math.min(state.reviewIndex + 1, Math.max(0, state.reviewItems.length - 1));
+  renderReviewStats(state.reviewStats);
+  renderReviewWorkbench();
+  await Promise.all([loadStatus(), loadGit(), loadSignatures()]);
+  toast("기본 길이 승인 처리 완료");
+}
+
+function durationCard(row) {
+  return `
+    <article class="duration-card" data-signature-number="${esc(row.number)}">
+      <div>
+        <strong>${esc(row.number)} · ${esc(row.title)}</strong>
+        <div class="badge-row">
+          <span class="badge">현재 기본 ${row.defaultDuration ? `${esc(row.defaultDuration)}초` : "미설정"}</span>
+          <span class="badge">타임라인 ${esc(row.timelineCount)}</span>
+          <span class="badge good">확정 ${esc(row.confirmed)}</span>
+          <span class="badge warn">자동 ${esc(row.auto)}</span>
+        </div>
+      </div>
+      <div class="duration-actions">
+        <input type="number" min="1" value="${esc(row.defaultDuration || 30)}" aria-label="${esc(row.number)} 기본 길이">
+        <button data-duration-action="save">이 길이를 기본값으로 저장</button>
+        <button data-duration-action="apply">미확인 타임라인에 일괄 적용</button>
+      </div>
+    </article>`;
+}
+
+async function loadDurations() {
+  const result = await api("/api/default-durations");
+  state.durationItems = result.items || [];
+  durationList.innerHTML = state.durationItems.length ? state.durationItems.map(durationCard).join("") : `<div class="empty">기본 길이를 설정할 타임라인이 없습니다.</div>`;
+}
+
+async function saveDuration(card, applyToUnconfirmed = false) {
+  const signatureNumber = card.dataset.signatureNumber;
+  const defaultDuration = card.querySelector("input")?.value;
+  await api("/api/set-default-duration", {
+    method: "POST",
+    body: JSON.stringify({ signatureNumber, defaultDuration, applyToUnconfirmed })
+  });
+  await Promise.all([loadDurations(), loadReview(), loadStatus(), loadGit(), loadSignatures()]);
+  toast(applyToUnconfirmed ? "기본 길이 저장 및 일괄 적용 완료" : "기본 길이 저장 완료");
+}
+
 async function applyDraft(id) {
   if (!confirm("이 초안을 공개 시그니처 데이터에 적용할까요? 현재 파일은 자동 백업됩니다.")) return;
   const result = await api("/api/apply-draft", {
@@ -455,6 +638,52 @@ quickResult.addEventListener("click", (event) => {
   saveDraft(state.quickDraft, `빠른 등록 ${new Date().toLocaleString("ko-KR")}`).catch((error) => toast(error.message));
 });
 
+reviewWorkbench.addEventListener("click", (event) => {
+  const shift = event.target.closest("[data-review-shift]");
+  if (shift) return moveReviewCursor(Number(shift.dataset.reviewShift || 0));
+  const action = event.target.closest("[data-review-action]")?.dataset.reviewAction;
+  const item = activeReviewItem();
+  if (!action || !item) return;
+  if (action === "start") setReviewCursor(item.startTime || 0);
+  if (action === "estimated") setReviewCursor(item.effectiveEndTime || item.estimatedEndTime || item.startTime || 0);
+  if (action === "prev") moveReviewIndex(-1);
+  if (action === "next" || action === "skip") moveReviewIndex(1);
+  if (action === "confirm") confirmReviewEnd().catch((error) => toast(error.message));
+  if (action === "approve") approveReviewDefault().catch((error) => toast(error.message));
+});
+
+durationList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-duration-action]");
+  if (!button) return;
+  const card = button.closest("[data-signature-number]");
+  if (!card) return;
+  saveDuration(card, button.dataset.durationAction === "apply").catch((error) => toast(error.message));
+});
+
+document.addEventListener("keydown", (event) => {
+  if (!$("#tab-review").classList.contains("active")) return;
+  if (event.target.matches("input, textarea, select")) return;
+  const item = activeReviewItem();
+  if (!item) return;
+  if (event.code === "Space") {
+    event.preventDefault();
+    toast("SOOP 공식 플레이어는 보안상 외부 단축키 재생 제어가 제한될 수 있습니다.");
+  }
+  if (event.key.toLowerCase() === "s") setReviewCursor(item.startTime || 0);
+  if (event.key.toLowerCase() === "e") confirmReviewEnd().catch((error) => toast(error.message));
+  if (event.key === "Enter") approveReviewDefault().catch((error) => toast(error.message));
+  if (event.key.toLowerCase() === "n") moveReviewIndex(1);
+  if (event.key.toLowerCase() === "p") moveReviewIndex(-1);
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    moveReviewCursor(event.shiftKey ? -5 : -1);
+  }
+  if (event.key === "ArrowRight") {
+    event.preventDefault();
+    moveReviewCursor(event.shiftKey ? 5 : 1);
+  }
+});
+
 draftList.addEventListener("click", (event) => {
   const button = event.target.closest("[data-apply-draft]");
   if (button) applyDraft(button.dataset.applyDraft).catch((error) => toast(error.message));
@@ -469,6 +698,8 @@ $("#reloadData").addEventListener("click", () => Promise.all([loadStatus(), load
 $("#loadDrafts").addEventListener("click", () => loadDrafts().catch((error) => toast(error.message)));
 $("#loadBackups").addEventListener("click", () => loadBackups().catch((error) => toast(error.message)));
 $("#loadGit").addEventListener("click", () => loadGit().catch((error) => toast(error.message)));
+$("#loadReview").addEventListener("click", () => loadReview().catch((error) => toast(error.message)));
+$("#loadDurations").addEventListener("click", () => loadDurations().catch((error) => toast(error.message)));
 
-Promise.all([loadMembers(), loadStatus(), loadSignatures(), loadDrafts(), loadBackups(), loadGit()])
+Promise.all([loadMembers(), loadStatus(), loadSignatures(), loadDrafts(), loadBackups(), loadGit(), loadReview(), loadDurations()])
   .catch((error) => toast(error.message));

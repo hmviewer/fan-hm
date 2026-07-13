@@ -1,6 +1,7 @@
 const DATA_URL = "../static-api/signatures.json";
 const FAVORITE_KEY = "the-hm-signature-favorites";
 const PAGE_SIZE = 40;
+const SYSTEM_DEFAULT_DURATION = 30;
 
 const grid = document.getElementById("signatureGrid");
 const searchInput = document.getElementById("searchInput");
@@ -76,6 +77,51 @@ function formatTime(seconds) {
   const s = value % 60;
   const pad = (n) => String(n).padStart(2, "0");
   return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
+function positiveSeconds(value, fallback = undefined) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? Math.floor(number) : fallback;
+}
+
+function resolveTimelineEnd(timeline, signature, nextTimeline = null) {
+  const startTime = Math.max(0, Number(timeline?.startTime || 0));
+  const manualEnd = positiveSeconds(timeline?.endTime);
+  const defaultDuration = positiveSeconds(signature?.defaultDuration);
+  const nextStart = nextTimeline && Number(nextTimeline.startTime) > startTime ? Number(nextTimeline.startTime) : null;
+  const limit = nextStart !== null ? Math.max(startTime, Math.floor(nextStart) - 1) : Infinity;
+  let rawEnd;
+  let source;
+  let confirmed = false;
+  if (manualEnd !== undefined && manualEnd > startTime) {
+    rawEnd = manualEnd;
+    source = "manually_confirmed";
+    confirmed = true;
+  } else if (defaultDuration !== undefined) {
+    rawEnd = startTime + defaultDuration;
+    source = "signature_default";
+  } else {
+    rawEnd = startTime + SYSTEM_DEFAULT_DURATION;
+    source = "estimated";
+  }
+  const effectiveEndTime = Math.max(startTime, Math.min(rawEnd, limit));
+  return {
+    estimatedEndTime: rawEnd,
+    effectiveEndTime,
+    effectiveDuration: Math.max(0, effectiveEndTime - startTime),
+    nextTimelineStartTime: nextStart,
+    durationSource: source,
+    isEndTimeConfirmed: confirmed
+  };
+}
+
+function applyEffectiveTimelineEnds(signature, timelines) {
+  return timelines.map((timeline) => {
+    const nextTimeline = timelines
+      .filter((entry) => Number(entry.startTime) > Number(timeline.startTime || 0))
+      .sort((a, b) => Number(a.startTime || 0) - Number(b.startTime || 0))[0] || null;
+    return { ...timeline, ...resolveTimelineEnd(timeline, signature, nextTimeline) };
+  });
 }
 
 function detectProvider(url) {
@@ -184,8 +230,9 @@ function normalizeTimeline(timeline, fallbackMembers, number, index) {
   const provider = timeline.provider || detectProvider(sourceUrl);
   const youtube = provider === "youtube" ? parseYouTube(sourceUrl) : { videoId: "", urlTime: null, normalizedUrl: sourceUrl };
   const soop = provider === "soop" ? parseSoop(sourceUrl || timeline.normalizedUrl || timeline.embedUrl || "") : { videoId: "", normalizedUrl: "", embedUrl: "" };
-  const startTime = Number.isFinite(Number(timeline.startTime)) ? Number(timeline.startTime) : Number(youtube.urlTime || 0);
-  const endTime = Number.isFinite(Number(timeline.endTime)) ? Number(timeline.endTime) : undefined;
+  const startTime = Math.max(0, Number.isFinite(Number(timeline.startTime)) ? Number(timeline.startTime) : Number(youtube.urlTime || 0));
+  const parsedEndTime = positiveSeconds(timeline.endTime);
+  const endTime = parsedEndTime !== undefined && parsedEndTime > startTime ? parsedEndTime : undefined;
   const members = (Array.isArray(timeline.members) && timeline.members.length ? timeline.members : fallbackMembers)
     .map(normalizeMemberRef)
     .filter(Boolean);
@@ -211,14 +258,17 @@ function normalizeTimeline(timeline, fallbackMembers, number, index) {
 function normalizeSignature(item, index) {
   const number = item.number ?? index + 1;
   const id = String(item.id || `signature-${number}`);
+  const defaultDuration = positiveSeconds(item.defaultDuration);
   const legacyMember = item.tag ? [{ id: item.tag, name: item.tag }] : [];
   const members = (Array.isArray(item.members) && item.members.length ? item.members : (Array.isArray(item.memberNames) ? item.memberNames : legacyMember))
     .map(normalizeMemberRef)
     .filter(Boolean);
-  const timelines = (Array.isArray(item.timelines) ? item.timelines : [])
+  const baseTimelines = (Array.isArray(item.timelines) ? item.timelines : [])
     .map((timeline, timelineIndex) => normalizeTimeline(timeline, members, number, timelineIndex))
     .filter((timeline) => timeline.isPublished)
     .sort((a, b) => a.sortOrder - b.sortOrder);
+  const timelineContext = { ...item, number, defaultDuration };
+  const timelines = applyEffectiveTimelineEnds(timelineContext, baseTimelines);
   const primaryTimeline = timelines.find((timeline) => timeline.isPrimary) || timelines[0] || null;
   return {
     ...item,
@@ -230,6 +280,7 @@ function normalizeSignature(item, index) {
     members,
     memberNames: members.map((member) => member.name),
     tags: Array.isArray(item.tags) ? item.tags : [],
+    ...(defaultDuration !== undefined ? { defaultDuration } : {}),
     isPublished: item.isPublished !== false,
     sortOrder: Number(item.sortOrder ?? number ?? index),
     timelineCount: timelines.length,
@@ -365,7 +416,7 @@ function providerLabel(provider) {
 function timelineRange(timeline) {
   if (!timeline) return "";
   const start = formatTime(timeline.startTime || 0);
-  return Number(timeline.endTime) > Number(timeline.startTime) ? `${start} ~ ${formatTime(timeline.endTime)}` : `${start}부터`;
+  return Number(timeline.effectiveEndTime) > Number(timeline.startTime) ? `${start} ~ ${formatTime(timeline.effectiveEndTime)}` : `${start}부터`;
 }
 
 function buildYoutubeEmbed(timeline) {
@@ -376,7 +427,7 @@ function buildYoutubeEmbed(timeline) {
     playsinline: "1",
     start: String(Math.max(0, Number(timeline.startTime || 0)))
   });
-  if (Number(timeline.endTime) > Number(timeline.startTime)) params.set("end", String(Number(timeline.endTime)));
+  if (Number(timeline.effectiveEndTime) > Number(timeline.startTime)) params.set("end", String(Number(timeline.effectiveEndTime)));
   return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(timeline.videoId)}?${params.toString()}`;
 }
 
@@ -415,7 +466,7 @@ function renderPlayer() {
   } else {
     modalPlayer.innerHTML = `<div class="player-empty"><strong>${providerLabel(activeTimeline.provider)}</strong><span>이 플랫폼은 내부 재생을 지원하지 않아 원본 영상으로 이동합니다.</span></div>`;
   }
-  const duration = activeTimeline.duration ? ` · 재생 구간 ${activeTimeline.duration}초` : "";
+  const duration = activeTimeline.effectiveDuration ? ` · 재생 구간 ${activeTimeline.effectiveDuration}초` : "";
   const soopNotice = activeTimeline.provider === "soop" && activeTimeline.startTime > 0
     ? `<span class="player-notice">${formatTime(activeTimeline.startTime)}부터 직접 이동해주세요. SOOP 공식 플레이어의 시작 시간 자동 이동은 제한될 수 있습니다.</span>`
     : "";
@@ -437,7 +488,7 @@ function renderTimelineList() {
   timelineList.innerHTML = activeSignature.timelines.map((timeline, index) => {
     const selected = activeTimeline?.id === timeline.id;
     const thumb = timeline.thumbnailUrl || activeSignature.imageUrl;
-    const duration = timeline.duration ? `${timeline.duration}초` : "구간 미지정";
+    const duration = timeline.effectiveDuration ? `${timeline.effectiveDuration}초` : "구간 미지정";
     const playable = timeline.provider === "youtube" ? Boolean(buildYoutubeEmbed(timeline)) : timeline.provider === "soop" ? Boolean(buildSoopTimelineEmbed(timeline)) : false;
     const actionLabel = timeline.provider === "soop" && !playable ? "SOOP 열기" : "재생";
     return `
