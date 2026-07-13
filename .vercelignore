@@ -5,7 +5,10 @@ backups/**
 image/**
 music/**
 admin/**
+auth/**
 local-admin/**
 local-admin/storage/**
 local-admin/uploads/**
 local-admin/backups/**
+scripts/**
+server.py
