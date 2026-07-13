@@ -73,10 +73,13 @@
 
 .signature-toolbar {
   display: grid;
-  grid-template-columns: minmax(260px, 420px) minmax(0, 1fr);
+  grid-template-columns: minmax(260px, 380px) minmax(0, 1fr);
   gap: 12px;
   align-items: stretch;
   margin-bottom: 12px;
+}
+.video-filter-wrap {
+  grid-column: 1 / -1;
 }
 .search-wrap {
   display: grid;
@@ -195,6 +198,12 @@
   gap: 5px;
   padding: 9px 2px 2px;
 }
+.sig-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+}
 .sig-number {
   width: fit-content;
   border-radius: 6px;
@@ -203,6 +212,20 @@
   background: rgba(185, 149, 62, .12);
   font-size: 11px;
   font-weight: 950;
+}
+.sig-video-badge {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 4px 8px;
+  border: 1px solid rgba(185, 149, 62, .24);
+  color: #8b681f;
+  background: rgba(255, 248, 225, .88);
+  font-size: 10px;
+  font-weight: 950;
+  white-space: nowrap;
 }
 .sig-meta strong {
   min-height: 34px;
@@ -220,6 +243,402 @@
   background: rgba(105, 109, 104, .12);
   font-size: 11px;
   font-weight: 950;
+}
+
+.signature-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 22px;
+}
+.page-btn {
+  min-width: 40px;
+  min-height: 38px;
+  border: 1px solid rgba(52, 50, 44, .14);
+  border-radius: 8px;
+  padding: 0 11px;
+  cursor: pointer;
+  color: #5c5850;
+  background: rgba(255,255,255,.74);
+  font-size: 12px;
+  font-weight: 950;
+}
+.page-btn.active {
+  color: #fff;
+  background: linear-gradient(135deg, #171919, #696d68 58%, #b9953e);
+}
+.page-btn:disabled {
+  cursor: default;
+  opacity: .45;
+}
+
+body.signature-modal-open {
+  overflow: hidden;
+}
+
+.signature-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.signature-modal.active {
+  display: flex;
+}
+.signature-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(18, 20, 20, .62);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+.signature-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(1180px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.28);
+  background: #f8f5ec;
+  box-shadow: 0 30px 80px rgba(18, 20, 20, .36);
+}
+.signature-dialog-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px 16px;
+  border-bottom: 1px solid rgba(52, 50, 44, .14);
+  background: rgba(248,245,236,.94);
+  backdrop-filter: blur(14px);
+}
+.signature-dialog-title {
+  min-width: 0;
+}
+.signature-dialog-title h2 {
+  margin: 0;
+  color: #24231f;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 950;
+  word-break: keep-all;
+}
+.signature-dialog-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.modal-action,
+.modal-link-button {
+  min-height: 38px;
+  border: 1px solid rgba(52, 50, 44, .16);
+  border-radius: 8px;
+  padding: 0 12px;
+  cursor: pointer;
+  color: #4d4940;
+  background: rgba(255,255,255,.74);
+  font-size: 12px;
+  font-weight: 950;
+}
+.modal-action.active {
+  border-color: rgba(185, 149, 62, .4);
+  color: #8b681f;
+  background: rgba(255, 245, 210, .96);
+}
+.signature-dialog-body {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 32%);
+  gap: 0;
+  overflow: hidden;
+}
+.signature-main-pane,
+.timeline-pane {
+  min-height: 0;
+  overflow: auto;
+}
+.signature-main-pane {
+  padding: 18px;
+  border-right: 1px solid rgba(52, 50, 44, .12);
+}
+.timeline-pane {
+  display: flex;
+  flex-direction: column;
+  background: rgba(244, 239, 225, .56);
+}
+.timeline-pane-head {
+  flex: 0 0 auto;
+  padding: 18px 16px 12px;
+  border-bottom: 1px solid rgba(52, 50, 44, .12);
+}
+.timeline-pane-head h3 {
+  margin: 0 0 6px;
+  color: #24231f;
+  font-size: 17px;
+  font-weight: 950;
+}
+.timeline-pane-head p {
+  margin: 0;
+  color: #6d675d;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 750;
+}
+.modal-member-list,
+.modal-tag-list,
+.signature-bottom-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.modal-member-list {
+  margin-bottom: 10px;
+}
+.modal-tag-list {
+  margin-bottom: 14px;
+}
+.modal-member-chip,
+.content-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 900;
+}
+.modal-member-chip {
+  color: #24231f;
+  border: 1px solid rgba(185, 149, 62, .22);
+  background: rgba(255, 248, 225, .86);
+}
+.member-dot {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(135deg, #171919, #b9953e);
+  font-size: 11px;
+  font-weight: 950;
+}
+.content-chip {
+  color: #5f5b52;
+  border: 1px solid rgba(52, 50, 44, .12);
+  background: rgba(255,255,255,.72);
+}
+.modal-member-chip.muted,
+.content-chip.muted {
+  color: #80786c;
+}
+.signature-player {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(52, 50, 44, .14);
+  background: linear-gradient(135deg, #1b1d1c, #62665f 62%, #b9953e);
+}
+.signature-iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  background: #111;
+}
+.player-empty {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 28px;
+  color: #fff;
+  text-align: center;
+}
+.player-empty strong {
+  font-size: 24px;
+  font-weight: 950;
+}
+.player-empty span {
+  color: rgba(255,255,255,.78);
+  font-size: 14px;
+  font-weight: 800;
+}
+.player-meta {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0 16px;
+  color: #6d675d;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 850;
+}
+.signature-info-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0;
+}
+.signature-info-list div {
+  min-width: 0;
+  border-radius: 8px;
+  padding: 10px;
+  border: 1px solid rgba(52, 50, 44, .12);
+  background: rgba(255,255,255,.62);
+}
+.signature-info-list dt {
+  margin-bottom: 5px;
+  color: #8b681f;
+  font-size: 11px;
+  font-weight: 950;
+}
+.signature-info-list dd {
+  color: #24231f;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 850;
+}
+.modal-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  text-decoration: none;
+}
+.share-feedback {
+  color: #8b681f;
+  font-size: 12px;
+  font-weight: 900;
+}
+.timeline-list {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 12px;
+}
+.timeline-card {
+  width: 100%;
+  min-height: 94px;
+  display: grid;
+  grid-template-columns: 28px 78px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(52, 50, 44, .14);
+  border-radius: 9px;
+  padding: 9px;
+  cursor: pointer;
+  text-align: left;
+  color: #24231f;
+  background: rgba(255,255,255,.68);
+}
+.timeline-card.active {
+  border-color: rgba(185, 149, 62, .72);
+  background: rgba(255, 246, 215, .92);
+  box-shadow: 0 0 0 3px rgba(185, 149, 62, .12);
+}
+.timeline-index {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: #8b681f;
+  background: rgba(185, 149, 62, .12);
+  font-size: 12px;
+  font-weight: 950;
+}
+.timeline-thumb {
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #e5dece;
+}
+.timeline-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.timeline-body {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+.timeline-body strong {
+  overflow: hidden;
+  color: #24231f;
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 950;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.timeline-body > span {
+  color: #6b655c;
+  font-size: 11px;
+  line-height: 1.35;
+  font-weight: 800;
+}
+.timeline-top,
+.timeline-members {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.timeline-members .modal-member-chip {
+  min-height: 24px;
+  padding: 2px 7px;
+  font-size: 10px;
+}
+.timeline-members .member-dot {
+  display: none;
+}
+.primary-badge,
+.playing-badge {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-size: 10px;
+  font-weight: 950;
+}
+.primary-badge {
+  color: #8b681f;
+  background: rgba(185,149,62,.16);
+}
+.playing-badge {
+  color: #fff;
+  background: #252723;
+}
+.timeline-empty {
+  border-radius: 9px;
+  padding: 20px;
+  color: #6d675d;
+  background: rgba(255,255,255,.68);
+  font-size: 13px;
+  font-weight: 850;
 }
 
 .preview-modal {
@@ -314,12 +733,79 @@
   .signature-toolbar {
     grid-template-columns: 1fr;
   }
+  .video-filter-wrap {
+    grid-column: auto;
+  }
   .signature-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
   }
 }
 @media (max-width: 620px) {
+  .signature-modal {
+    align-items: stretch;
+    padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+  }
+  .signature-dialog {
+    width: 100%;
+    max-height: calc(100dvh - 16px);
+    border-radius: 12px;
+  }
+  .signature-dialog-head {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    align-items: flex-start;
+    padding: 12px;
+  }
+  .signature-dialog-title h2 {
+    font-size: 17px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .signature-dialog-actions {
+    gap: 5px;
+  }
+  .modal-action {
+    min-height: 36px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+  .preview-close {
+    width: 38px;
+    height: 38px;
+  }
+  .signature-dialog-body {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+  }
+  .signature-main-pane,
+  .timeline-pane {
+    overflow: visible;
+  }
+  .signature-main-pane {
+    order: 1;
+    padding: 12px;
+    border-right: 0;
+  }
+  .timeline-pane {
+    order: 2;
+    background: transparent;
+  }
+  .timeline-list {
+    overflow: visible;
+    padding: 12px;
+  }
+  .signature-info-list {
+    grid-template-columns: 1fr;
+  }
+  .timeline-card {
+    min-height: 100px;
+    grid-template-columns: 28px 92px minmax(0, 1fr);
+  }
   .signature-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;

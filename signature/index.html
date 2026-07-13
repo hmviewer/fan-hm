@@ -19,7 +19,7 @@
 <title>THE HM · SIGNATURE</title>
 <meta name="theme-color" content="#caa64a">
 <link rel="stylesheet" href="../css/common.css?v=1781540193">
-<link rel="stylesheet" href="../css/signature.css?v=1781540179">
+<link rel="stylesheet" href="../css/signature.css?v=1781540180">
 </head>
 <body>
 <header class="navbar">
@@ -66,6 +66,7 @@
             <input id="searchInput" class="search-input" type="search" placeholder="번호, 제목, 멤버명 검색" autocomplete="off">
         </label>
         <div class="filter-wrap" id="memberFilters" aria-label="멤버 필터"></div>
+        <div class="filter-wrap video-filter-wrap" id="videoFilters" aria-label="영상 필터"></div>
     </section>
 
     <section class="range-tabs" id="rangeTabs" aria-label="번호 구간"></section>
@@ -78,20 +79,45 @@
         <div class="signature-grid" id="signatureGrid">
             <div class="loading-card">시그니처 이미지를 불러오는 중...</div>
         </div>
+        <nav class="signature-pagination" id="signaturePagination" aria-label="시그니처 페이지"></nav>
     </section>
 </main>
 
-<div class="preview-modal" id="previewModal" aria-hidden="true">
-    <button class="preview-backdrop" type="button" id="previewBackdrop" aria-label="닫기"></button>
-    <section class="preview-panel" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
-        <div class="preview-head">
-            <div>
-                <div class="preview-kicker" id="previewTag">SIGNATURE</div>
-                <h2 id="previewTitle">시그니처</h2>
+<div class="signature-modal" id="signatureModal" aria-hidden="true">
+    <button class="signature-backdrop" type="button" id="signatureBackdrop" aria-label="닫기"></button>
+    <section class="signature-dialog" id="signatureDialog" role="dialog" aria-modal="true" aria-labelledby="signatureModalTitle">
+        <div class="signature-dialog-head">
+            <div class="signature-dialog-title">
+                <div class="preview-kicker" id="signatureModalKicker">SIGNATURE</div>
+                <h2 id="signatureModalTitle">시그니처</h2>
             </div>
-            <button class="preview-close" type="button" id="previewClose" aria-label="닫기">×</button>
+            <div class="signature-dialog-actions">
+                <button class="modal-action" type="button" id="signatureFavorite" aria-pressed="false">즐겨찾기</button>
+                <button class="modal-action" type="button" id="signatureShare">공유</button>
+                <button class="preview-close" type="button" id="signatureClose" aria-label="닫기">×</button>
+            </div>
         </div>
-        <img id="previewImage" class="preview-image" src="" alt="">
+        <div class="signature-dialog-body">
+            <section class="signature-main-pane" aria-label="시그니처 상세">
+                <div class="modal-member-list" id="signatureModalMembers"></div>
+                <div class="modal-tag-list" id="signatureTags"></div>
+                <div class="signature-player" id="signaturePlayer"></div>
+                <div class="player-meta" id="signaturePlayerMeta"></div>
+                <dl class="signature-info-list" id="signatureInfo"></dl>
+                <div class="signature-bottom-actions">
+                    <a class="modal-link-button" id="signatureSource" href="#" target="_blank" rel="noopener noreferrer" hidden>원본 영상 보기</a>
+                    <button class="modal-link-button" id="signatureShareBottom" type="button">공유하기</button>
+                    <span class="share-feedback" id="signatureFeedback" role="status" aria-live="polite"></span>
+                </div>
+            </section>
+            <aside class="timeline-pane" aria-label="등록된 타임라인">
+                <div class="timeline-pane-head">
+                    <h3 id="timelineTitle">등록된 타임라인 (0)</h3>
+                    <p>목록에서 타임라인을 선택하면 해당 구간부터 재생됩니다.</p>
+                </div>
+                <div class="timeline-list" id="timelineList" role="list"></div>
+            </aside>
+        </div>
     </section>
 </div>
 
@@ -107,139 +133,6 @@
     <div class="footer-info">회사명: THE HM · © 2026 THE HM. All rights reserved.</div>
 </footer>
 
-<script>
-const DATA_URL = "../static-api/signatures.json";
-const grid = document.getElementById("signatureGrid");
-const searchInput = document.getElementById("searchInput");
-const memberFilters = document.getElementById("memberFilters");
-const rangeTabs = document.getElementById("rangeTabs");
-const totalCount = document.getElementById("totalCount");
-const filteredCount = document.getElementById("filteredCount");
-const sectionTitle = document.getElementById("sectionTitle");
-const sectionNote = document.getElementById("sectionNote");
-const previewModal = document.getElementById("previewModal");
-const previewImage = document.getElementById("previewImage");
-const previewTitle = document.getElementById("previewTitle");
-const previewTag = document.getElementById("previewTag");
-const previewClose = document.getElementById("previewClose");
-const previewBackdrop = document.getElementById("previewBackdrop");
-
-const ranges = [
-  { id: "all", label: "전체", min: 0, max: Infinity },
-  { id: "under1000", label: "~999", min: 0, max: 999 },
-  { id: "1000", label: "1000대", min: 1000, max: 1999 },
-  { id: "2000", label: "2000대", min: 2000, max: 2999 },
-  { id: "3000", label: "3000대", min: 3000, max: 9999 },
-  { id: "10000", label: "10000+", min: 10000, max: Infinity },
-];
-let signatures = [];
-let selectedRange = "all";
-let selectedMember = "all";
-
-function esc(value) {
-  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
-}
-function cardMarkup(item) {
-  const title = `${item.number ? item.number + " · " : ""}${item.title || "시그니처"}`;
-  const member = item.tag ? `<span class="member-chip">${esc(item.tag)}</span>` : "";
-  return `
-    <button class="sig-card" type="button" data-file="${esc(item.image)}" data-title="${esc(title)}" data-tag="${esc(item.tag || "SIGNATURE")}">
-      <span class="sig-thumb"><img src="${esc(item.image)}" alt="${esc(title)}" loading="lazy"></span>
-      <span class="sig-meta">
-        <span class="sig-number">${esc(item.number || "")}</span>
-        <strong>${esc(item.title || "시그니처")}</strong>
-        ${member}
-      </span>
-    </button>`;
-}
-function currentRange() {
-  return ranges.find((range) => range.id === selectedRange) || ranges[0];
-}
-function filteredItems() {
-  const q = searchInput.value.trim().toLowerCase();
-  const range = currentRange();
-  return signatures.filter((item) => {
-    const n = Number(item.number || 0);
-    const haystack = `${item.number} ${item.title || ""} ${item.tag || ""}`.toLowerCase();
-    const passSearch = !q || haystack.includes(q);
-    const passMember = selectedMember === "all" || item.tag === selectedMember;
-    const passRange = n >= range.min && n <= range.max;
-    return passSearch && passMember && passRange;
-  });
-}
-function renderRangeTabs() {
-  rangeTabs.innerHTML = ranges.map((range) => `<button class="range-btn ${range.id === selectedRange ? "active" : ""}" type="button" data-range="${range.id}">${range.label}</button>`).join("");
-}
-function renderMemberFilters() {
-  const members = [...new Set(signatures.map((item) => item.tag).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko"));
-  memberFilters.innerHTML = [`<button class="filter-btn ${selectedMember === "all" ? "active" : ""}" type="button" data-member="all">전체</button>`]
-    .concat(members.map((member) => `<button class="filter-btn ${selectedMember === member ? "active" : ""}" type="button" data-member="${esc(member)}">${esc(member)}</button>`))
-    .join("");
-}
-function render() {
-  const items = filteredItems();
-  const range = currentRange();
-  totalCount.textContent = signatures.length.toLocaleString("ko-KR");
-  filteredCount.textContent = items.length.toLocaleString("ko-KR");
-  sectionTitle.textContent = selectedMember === "all" ? "전체 시그니처" : `${selectedMember} 시그니처`;
-  sectionNote.textContent = `${range.label} · ${items.length.toLocaleString("ko-KR")}개`;
-  renderRangeTabs();
-  renderMemberFilters();
-  grid.innerHTML = items.length ? items.map(cardMarkup).join("") : `<div class="empty-card">검색 결과가 없습니다.</div>`;
-}
-function openPreview(button) {
-  const src = button.dataset.file || "";
-  const title = button.dataset.title || "시그니처";
-  const tag = button.dataset.tag || "SIGNATURE";
-  previewImage.src = src;
-  previewImage.alt = title;
-  previewTitle.textContent = title;
-  previewTag.textContent = tag;
-  previewModal.classList.add("active");
-  previewModal.setAttribute("aria-hidden", "false");
-}
-function closePreview() {
-  previewModal.classList.remove("active");
-  previewModal.setAttribute("aria-hidden", "true");
-  previewImage.src = "";
-}
-rangeTabs.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-range]");
-  if (!button) return;
-  selectedRange = button.dataset.range;
-  render();
-});
-memberFilters.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-member]");
-  if (!button) return;
-  selectedMember = button.dataset.member;
-  render();
-});
-grid.addEventListener("click", (event) => {
-  const button = event.target.closest(".sig-card");
-  if (button) openPreview(button);
-});
-searchInput.addEventListener("input", render);
-previewClose.addEventListener("click", closePreview);
-previewBackdrop.addEventListener("click", closePreview);
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closePreview();
-});
-
-async function loadSignatures() {
-  try {
-    const response = await fetch(DATA_URL, { cache: "no-store" });
-    if (!response.ok) throw new Error("signature data");
-    const payload = await response.json();
-    signatures = (Array.isArray(payload.items) ? payload.items : []).sort((a, b) => Number(a.number || 0) - Number(b.number || 0));
-    render();
-  } catch (error) {
-    console.error(error);
-    grid.innerHTML = `<div class="empty-card">시그니처 데이터를 불러오지 못했습니다.</div>`;
-    sectionNote.textContent = "오류";
-  }
-}
-loadSignatures();
-</script>
+<script src="signature-page.js?v=1781540180"></script>
 </body>
 </html>

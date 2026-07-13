@@ -1,0 +1,13 @@
+{
+  "name": "the-hm-static",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "signature-admin": "node local-admin/server.mjs",
+    "signature:normalize": "node scripts/normalize-signatures.mjs",
+    "test": "node scripts/signature-utils.test.mjs",
+    "lint": "node scripts/signature-utils.test.mjs",
+    "typecheck": "node scripts/signature-utils.test.mjs",
+    "build": "node scripts/signature-utils.test.mjs"
+  }
+}

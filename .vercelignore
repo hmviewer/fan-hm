@@ -4,3 +4,8 @@ __pycache__/**
 backups/**
 image/**
 music/**
+admin/**
+local-admin/**
+local-admin/storage/**
+local-admin/uploads/**
+local-admin/backups/**
