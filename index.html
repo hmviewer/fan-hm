@@ -22,8 +22,17 @@
     <meta name="twitter:image" content="/assets/logo/the-hm-logo.png">
 <title>THE HM</title>
 <meta name="theme-color" content="#caa64a">
+<script>
+    (function () {
+        try {
+            if (localStorage.getItem("theHmHomeHeroSeen") === "1") {
+                document.documentElement.classList.add("home-hero-seen");
+            }
+        } catch (e) {}
+    })();
+</script>
 <link rel="stylesheet" href="css/common.css?v=1781540193">
-<link rel="stylesheet" href="home.css?v=1781540191">
+<link rel="stylesheet" href="home.css?v=1781540194">
 </head>
 <body>
 <header class="navbar">
@@ -39,7 +48,7 @@
 </header>
 
 <main>
-    <section class="hero" aria-label="메인 배너">
+    <section class="hero" id="homeHero" aria-label="메인 배너">
         <div class="hero-track" id="heroTrack">
                         <article class="hero-slide hero-promo-slide hm-brand-hero">
                                 <div class="hero-content">
@@ -130,6 +139,7 @@
     let shortsLoaded = false;
     let liveRequest = null;
     const SHORTS_CACHE_KEY = "theHmShortsCache";
+    const HOME_HERO_SEEN_KEY = "theHmHomeHeroSeen";
 
     const esc = (v) => String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
     const numberFormat = (v) => Number(v || 0).toLocaleString("ko-KR");
@@ -383,6 +393,11 @@
         btn.disabled = max <= 2 || (dir < 0 ? target.scrollLeft <= 2 : target.scrollLeft >= max - 2);
       });
     }
+    function markHomeHeroSeen() {
+      const hero = document.getElementById("homeHero");
+      if (!hero || document.documentElement.classList.contains("home-hero-seen")) return;
+      try { localStorage.setItem(HOME_HERO_SEEN_KEY, "1"); } catch (e) {}
+    }
     function updateOnAirButton(count) {
       const b = document.getElementById("onAirButton");
       if (!b) return;
@@ -400,10 +415,11 @@
     enableDragScroll(document.getElementById("shorts"), shortsGrid);
     enableDragScroll(document.querySelector(".board-card"), boardPosts);
     setupScrollButtons();
+    markHomeHeroSeen();
 
     loadLiveMembers();
-    renderShortsList(readCachedShorts());
-    runWhenIdle(() => { loadShorts(); loadBoardPosts(); });
+    loadShorts();
+    runWhenIdle(loadBoardPosts);
     setInterval(loadLiveMembers, 60000);
     window.addEventListener("pageshow", () => {
       if (shortsNeedsReload()) loadShorts();

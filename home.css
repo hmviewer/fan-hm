@@ -244,6 +244,18 @@ main {
 
 .hero-dot.active { width: 28px; background: #9c62c5; }
 
+html.home-hero-seen .hero {
+  display: none;
+}
+
+html.home-hero-seen main {
+  padding-top: 18px;
+}
+
+html.home-hero-seen main > section:first-child + section {
+  margin-top: 0;
+}
+
 /* ── 섹션 공통 ── */
 section { margin-top: 28px; }
 
