@@ -996,3 +996,26 @@ body {
     letter-spacing: 0;
   }
 }
+
+/* 스타 대학 정보 전환 섹션 */
+.college-tier-grid, .fa-status-grid, .about-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.tier-card, .fa-card, .about-grid article, .fa-summary-card { border-radius: 14px; background: rgba(255,252,245,.84); border: 1px solid rgba(97,92,82,.42); box-shadow: var(--shadow); }
+.tier-card { min-height: 170px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.tier-label { font-size: 12px; font-weight: 950; color: #8d6a1f; letter-spacing: .16em; }
+.tier-card h3 { font-size: 21px; font-weight: 950; color: #24211c; }
+.tier-card p { color: #706b62; font-size: 14px; line-height: 1.5; font-weight: 750; }
+.tier-card span { margin-top: auto; width: fit-content; padding: 7px 10px; border-radius: 8px; background: rgba(202,166,74,.14); color: #8d6a1f; font-size: 12px; font-weight: 950; }
+.fa-summary-card { margin-bottom: 14px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; }
+.fa-summary-card span { color: #706b62; font-weight: 900; }
+.fa-summary-card strong { color: #8d6a1f; font-size: 28px; font-weight: 950; }
+.fa-card { min-height: 92px; padding: 13px; display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.fa-card img { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(202,166,74,.42); }
+.fa-card strong { display: block; font-size: 17px; font-weight: 950; color: #24211c; }
+.fa-card span { display: block; margin-top: 4px; color: #706b62; font-size: 12px; font-weight: 850; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fa-card em { font-style: normal; padding: 7px 10px; border-radius: 8px; background: linear-gradient(135deg,#171919,#b9953e); color: #fff; font-size: 12px; font-weight: 950; }
+.about-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.about-grid article { padding: 20px; }
+.about-grid h3 { font-size: 18px; font-weight: 950; margin-bottom: 9px; }
+.about-grid p { color: #706b62; font-size: 14px; line-height: 1.58; font-weight: 750; }
+@media (max-width: 900px) { .college-tier-grid, .fa-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .about-grid { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .college-tier-grid, .fa-status-grid { grid-template-columns: 1fr; } .fa-card { grid-template-columns: 50px minmax(0,1fr) auto; } }
