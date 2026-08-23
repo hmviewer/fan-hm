@@ -4,15 +4,142 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="/assets/logo/the-hm-favicon.png">
+<link rel="icon" type="image/png" href="/assets/logo/the-hm-logo.png">
+<link rel="apple-touch-icon" href="/assets/logo/the-hm-logo.png">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="스타 대학 정보">
-<meta property="og:title" content="스타 대학 정보 · 안내">
-<meta property="og:description" content="스타 대학 정보 개편 안내입니다.">
+<meta property="og:site_name" content="THE HM">
+<meta property="og:title" content="THE HM · SIGNATURE">
+<meta property="og:description" content="THE HM signature gallery">
 <meta property="og:image" content="/assets/logo/the-hm-logo.png">
 <meta property="og:url" content="/signature/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="THE HM · SIGNATURE">
+<meta name="twitter:description" content="THE HM signature gallery">
+<meta name="twitter:image" content="/assets/logo/the-hm-logo.png">
+<title>THE HM · SIGNATURE</title>
 <meta name="theme-color" content="#caa64a">
-<title>스타 대학 정보 · 안내</title>
 <link rel="stylesheet" href="../css/common.css?v=1781540193">
+<link rel="stylesheet" href="../css/signature.css?v=1781540194">
 </head>
-<style>.info-panel{margin:28px auto 80px;width:min(980px,calc(100% - 32px));padding:34px;border-radius:16px;background:rgba(255,252,245,.84);border:1px solid rgba(97,92,82,.35);box-shadow:var(--shadow)}.info-panel h1{font-size:clamp(34px,5vw,58px);font-weight:950;margin-bottom:14px}.info-panel p{font-size:16px;line-height:1.65;color:#68645c;font-weight:750}.info-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.info-actions a{padding:12px 16px;border-radius:9px;background:linear-gradient(135deg,#171919,#b9953e);color:white;font-weight:950}.info-actions a.secondary{background:rgba(255,252,245,.8);color:#8d6a1f;border:1px solid rgba(97,92,82,.35)}</style>
-<body><header class="navbar"><div class="nav-inner"><a class="logo" href="../">스타 대학 정보</a><nav class="nav-menu" aria-label="상단 메뉴"><a href="../live/">대학티어</a><a href="../members/">FA현황</a></nav><a class="nav-live" href="../members/">FA현황</a></div></header><main class="info-panel"><h1>스타 대학 정보</h1><p>현재 공개 사이트는 스타 대학 정보 중심으로 개편되었습니다. 시그니처 갤러리는 공개 메뉴에서 제외하고, 대학티어와 FA현황만 제공합니다.</p><div class="info-actions"><a href="../live/">대학티어 보기</a><a class="secondary" href="../members/">FA현황 보기</a></div></main><footer class="site-footer"><div class="footer-brand"><span>스타 대학 정보</span></div><div class="footer-info">스타크래프트 대학 정보 정리 페이지 · 문의: <a href="mailto:simple852@naver.com">simple852@naver.com</a> · © 2026 스타 대학 정보. All rights reserved.</div></footer></body></html>
+<body>
+<header class="navbar">
+    <div class="nav-inner">
+        <a class="logo" href="../">THE HM</a>
+        <nav class="nav-menu" aria-label="상단 메뉴">
+            <a href="../live/">LIVE</a>
+            <a href="../members/">MEMBERS</a>
+            <a href="../signature/" class="active">SIGNATURE</a>
+        </nav>
+        <a class="nav-live" id="onAirButton" href="../live/">ON AIR</a>
+    </div>
+</header>
+<script>
+(function () {
+    var b = document.getElementById('onAirButton');
+    if (!b) return;
+    fetch('../api/live.php?ts=' + Math.floor(Date.now() / 15000), { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var n = (Array.isArray(d.members) ? d.members : []).filter(function (m) { return m && m.isLive; }).length;
+            b.innerHTML = n > 0 ? 'ON AIR <span class="nav-live-count">' + n + '</span>' : 'ON AIR';
+            b.setAttribute('aria-label', n > 0 ? '현재 LIVE ' + n + '명' : '현재 LIVE 없음');
+        }).catch(function () {});
+})();
+</script>
+
+
+<main class="page">
+    <section class="signature-hero" aria-label="시그니처 배너">
+        <div class="signature-hero-copy">
+            <div class="hero-kicker">THE HM ARCHIVE</div>
+            <h1 class="hero-title">SIGNATURE</h1>
+            <p class="hero-sub">번호와 이름으로 빠르게 찾는 THE HM 시그니처 이미지 목록</p>
+        </div>
+        <div class="signature-stats" aria-label="시그니처 요약">
+            <div class="stat-box"><span>TOTAL</span><strong id="totalCount">-</strong></div>
+            <div class="stat-box"><span>FILTERED</span><strong id="filteredCount">-</strong></div>
+        </div>
+    </section>
+
+
+    <section class="signature-toolbar" aria-label="시그니처 검색">
+        <label class="search-wrap">
+            <span>SEARCH</span>
+            <input id="searchInput" class="search-input" type="search" placeholder="번호, 제목, 멤버명 검색" autocomplete="off">
+        </label>
+        <div class="filter-wrap" id="memberFilters" aria-label="멤버 필터"></div>
+        <div class="filter-wrap video-filter-wrap" id="videoFilters" aria-label="영상 필터"></div>
+    </section>
+
+
+    <section class="range-tabs" id="rangeTabs" aria-label="번호 구간"></section>
+
+
+    <section class="signature-section">
+        <div class="section-title-row">
+            <h2 class="section-title" id="sectionTitle">전체 시그니처</h2>
+            <div class="section-note" id="sectionNote">불러오는 중...</div>
+        </div>
+        <div class="signature-grid" id="signatureGrid">
+            <div class="loading-card">시그니처 이미지를 불러오는 중...</div>
+        </div>
+        <nav class="signature-pagination" id="signaturePagination" aria-label="시그니처 페이지"></nav>
+    </section>
+</main>
+
+
+<div class="signature-modal" id="signatureModal" aria-hidden="true">
+    <button class="signature-backdrop" type="button" id="signatureBackdrop" aria-label="닫기"></button>
+    <section class="signature-dialog" id="signatureDialog" role="dialog" aria-modal="true" aria-labelledby="signatureModalTitle">
+        <div class="signature-dialog-head">
+            <div class="signature-dialog-title">
+                <div class="preview-kicker" id="signatureModalKicker">SIGNATURE</div>
+                <h2 id="signatureModalTitle">시그니처</h2>
+            </div>
+            <div class="signature-dialog-actions">
+                <button class="modal-action" type="button" id="signatureFavorite" aria-pressed="false">즐겨찾기</button>
+                <button class="modal-action" type="button" id="signatureShare">공유</button>
+                <button class="preview-close" type="button" id="signatureClose" aria-label="닫기">×</button>
+            </div>
+        </div>
+        <div class="signature-dialog-body">
+            <section class="signature-main-pane" aria-label="시그니처 상세">
+                <div class="modal-member-list" id="signatureModalMembers"></div>
+                <div class="modal-tag-list" id="signatureTags"></div>
+                <div class="signature-player" id="signaturePlayer"></div>
+                <div class="player-meta" id="signaturePlayerMeta"></div>
+                <dl class="signature-info-list" id="signatureInfo"></dl>
+                <div class="signature-bottom-actions">
+                    <a class="modal-link-button" id="signatureSource" href="#" target="_blank" rel="noopener noreferrer" hidden>원본 영상 보기</a>
+                    <button class="modal-link-button" id="signatureShareBottom" type="button">공유하기</button>
+                    <span class="share-feedback" id="signatureFeedback" role="status" aria-live="polite"></span>
+                </div>
+            </section>
+            <aside class="timeline-pane" aria-label="등록된 타임라인">
+                <div class="timeline-pane-head">
+                    <h3 id="timelineTitle">등록된 타임라인 (0)</h3>
+                    <p>목록에서 타임라인을 선택하면 해당 구간부터 재생됩니다.</p>
+                </div>
+                <div class="timeline-list" id="timelineList" role="list"></div>
+            </aside>
+        </div>
+    </section>
+</div>
+
+
+<footer class="site-footer">
+    <div class="footer-brand">
+        <span>THE HM</span>
+    </div>
+    <div class="footer-links">
+        <a href="../policy/#terms">서비스 이용약관</a>
+        <a href="../policy/#privacy">개인정보 처리방침</a>
+        <a href="../policy/#youth">청소년 보호정책</a>
+    </div>
+    <div class="footer-info">회사명: THE HM · © 2026 THE HM. All rights reserved.</div>
+</footer>
+
+
+<script src="signature-page.js?v=1781540196"></script>
+</body>
+</html>
