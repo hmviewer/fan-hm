@@ -3,342 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- THE HM 로고 및 공유 이미지 -->
-    <link rel="icon" type="image/png" href="/assets/logo/the-hm-favicon.png">
-    <link rel="icon" type="image/png" href="/assets/logo/the-hm-logo.png">
-    <link rel="apple-touch-icon" href="/assets/logo/the-hm-logo.png">
-    <!-- 링크 공유 미리보기 (Open Graph · 카카오톡 · 트위터/X) -->
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="THE HM">
-    <meta property="og:title" content="THE HM">
-    <meta property="og:description" content="THE HM">
-    <meta property="og:image" content="/assets/logo/the-hm-logo.png">
-    <meta property="og:image:width" content="296">
-    <meta property="og:image:height" content="298">
-    <meta property="og:url" content="/live/">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="THE HM">
-    <meta name="twitter:description" content="THE HM">
-    <meta name="twitter:image" content="/assets/logo/the-hm-logo.png">
-<title>THE HM · LIVE</title>
+<link rel="icon" type="image/png" href="/assets/logo/the-hm-favicon.png">
+<link rel="apple-touch-icon" href="/assets/logo/the-hm-logo.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="스타 대학 정보">
+<meta property="og:title" content="스타 대학 정보 · 대학티어">
+<meta property="og:description" content="스타크래프트 대학 티어와 FA현황을 확인하세요.">
+<meta property="og:image" content="/assets/logo/the-hm-logo.png">
+<meta property="og:url" content="/live/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="스타 대학 정보 · 대학티어">
+<meta name="twitter:description" content="스타크래프트 대학 티어와 FA현황을 확인하세요.">
 <meta name="theme-color" content="#caa64a">
+<title>스타 대학 정보 · 대학티어</title>
 <link rel="stylesheet" href="../css/common.css?v=1781540193">
 <link rel="stylesheet" href="../css/live.css?v=1781540191">
 </head>
-<body><header class="navbar">
-    <div class="nav-inner">
-        <a class="logo" href="../">THE HM</a>
-        <nav class="nav-menu" aria-label="상단 메뉴">
-                            <a href="../live/" class="active">LIVE</a>
-                            <a href="../members/">MEMBERS</a>
-                            <a href="../signature/">SIGNATURE</a>
-                    </nav>
-        <a class="nav-live" id="onAirButton" href="../live/">ON AIR</a>
-    </div>
-</header>
+<body>
+<header class="navbar"><div class="nav-inner"><a class="logo" href="../">스타 대학 정보</a><nav class="nav-menu" aria-label="상단 메뉴"><a href="../live/" class="active">대학티어</a><a href="../members/">FA현황</a></nav><a class="nav-live" href="../members/">FA현황</a></div></header>
 <main class="page">
-    <section class="hero" aria-label="라이브 배너">
-        <div class="hero-content">
-            <div class="hero-kicker">THE HM LIVE</div>
-            <h1 class="hero-title">LIVE</h1>
-            <p class="hero-sub">현재 방송과 멤버 상태를 빠르게 확인하세요.</p>
-        </div>
-    </section>
-
-    <section class="live-panel">
-        <div class="topbar">
-            <div class="tabs">
-                <button class="tab-btn active" type="button" data-tab="live">LIVE</button>
-                <button class="tab-btn" type="button" data-tab="posts">최근 게시물</button>
-            </div>
-        </div>
-
-        <div class="summary">
-            <div class="summary-box"><div class="summary-label">ON AIR</div><div class="summary-value" id="summaryLive">-</div></div>
-            <div class="summary-box"><div class="summary-label">MEMBERS</div><div class="summary-value" id="summaryTotal">-</div></div>
-            <div class="summary-box"><div class="summary-label">STATUS</div><div class="summary-value" id="summaryStatus">OPEN</div></div>
-        </div>
-
-        <div class="tab-panel active" id="livePanel">
-            <div class="section-title-row">
-                <h2 class="section-title">현재 LIVE</h2>
-                <div class="section-note" id="liveNote">불러오는 중…</div>
-            </div>
-            <div class="live-grid" id="liveGrid"><div class="loading-card">LIVE 정보를 불러오는 중입니다…</div></div>
-
-            <div class="section-title-row">
-                <h2 class="section-title">오프라인 멤버</h2>
-                <div class="section-note">대표부터 직급순</div>
-            </div>
-            <div class="offline-grid" id="offlineGrid"></div>
-        </div>
-
-        <div class="tab-panel" id="postsPanel">
-            <div class="section-title-row">
-                <h2 class="section-title">방송국 최근 게시물</h2>
-                <div class="section-note" id="postNote">최신 20개</div>
-            </div>
-            <div class="post-list" id="postList"><div class="loading-card">최근 게시물을 불러오는 중입니다…</div></div>
-        </div>
-    </section>
+  <section class="hero" aria-label="대학티어 배너"><div class="hero-content"><div class="hero-kicker">STAR UNIVERSITY INFO</div><h1 class="hero-title">대학티어</h1><p class="hero-sub">스타 대학 티어와 FA 현황을 빠르게 확인하세요.</p></div></section>
+  <section class="live-panel"><div class="summary"><div class="summary-box"><div class="summary-label">S/A/B/C</div><div class="summary-value">4</div></div><div class="summary-box"><div class="summary-label">FA</div><div class="summary-value" id="faTotal">-</div></div><div class="summary-box"><div class="summary-label">STATUS</div><div class="summary-value">READY</div></div></div><div class="section-title-row"><h2 class="section-title">대학티어</h2><div class="section-note">스타 대학 정보 전용</div></div><div class="college-tier-grid">
+      <article class="tier-card tier-s"><div class="tier-label">S TIER</div><h3>최상위 대학</h3><p>공식 집계 확정 전입니다. 검증된 티어 데이터만 등록합니다.</p><span>업데이트 대기</span></article>
+      <article class="tier-card tier-a"><div class="tier-label">A TIER</div><h3>상위 대학</h3><p>대회 성적, 전력, 로스터 안정성을 기준으로 정리 예정입니다.</p><span>업데이트 대기</span></article>
+      <article class="tier-card tier-b"><div class="tier-label">B TIER</div><h3>중위 대학</h3><p>최근 경기력과 FA 이동 현황을 반영해 업데이트합니다.</p><span>업데이트 대기</span></article>
+      <article class="tier-card tier-c"><div class="tier-label">C TIER</div><h3>관찰 대학</h3><p>검증된 스타 대학 정보만 선별해 정리합니다.</p><span>스타 정보 전용</span></article></div><div class="section-title-row"><h2 class="section-title">FA현황</h2><div class="section-note">현재 멤버 전원 FA</div></div><div class="fa-status-grid" id="faRoster"><div class="empty-card">FA현황을 불러오는 중…</div></div></section>
 </main>
-
-<footer class="site-footer">
-    <div class="footer-brand">
-        <span style="font-size:15px;color:rgba(202, 166, 74, .9)"></span>
-        <span>THE HM</span>
-    </div>
-    <div class="footer-links">
-        <a href="../policy/#terms">서비스 이용약관</a>
-        <a href="../policy/#privacy">개인정보 처리방침</a>
-        <a href="../policy/#youth">청소년 보호정책</a>
-    </div>
-    <div class="footer-info">회사명: THE HM · 문의: <a href="mailto:simple852@naver.com">simple852@naver.com</a> · © 2026 THE HM. All rights reserved.</div>
-</footer>
-
+<footer class="site-footer"><div class="footer-brand"><span>스타 대학 정보</span></div><div class="footer-links"><a href="../policy/#terms">서비스 이용약관</a><a href="../policy/#privacy">개인정보 처리방침</a><a href="../policy/#youth">청소년 보호정책</a></div><div class="footer-info">스타크래프트 대학 정보 정리 페이지 · 문의: <a href="mailto:simple852@naver.com">simple852@naver.com</a> · © 2026 스타 대학 정보. All rights reserved.</div></footer>
 <script>
-    const LIVE_API_URL = "../api/live.php";    // 사이트 서버사이드 SOOP 조회 (워커·Access 불필요)
-    const BOARD_API_URL = "../api/board.php";  // 사이트 서버사이드 SOOP 조회 (워커·Access 불필요)
-    const MEMBERS_URL = "../api/members.php";  // 관리자 데이터 자동연동(없으면 시드 폴백)
-    const DEFAULT_PROFILE_IMAGE = "https://profile.img.sooplive.co.kr/LOGO/sy/sysdemian/sysdemian.jpg";
-    const MAX_POSTS = 20;
-
-    const RANK_ORDER = { "공동 대표": 1, "대표": 1, "부장": 20, "차장": 25, "과장": 30, "팀장": 35, "대리": 40, "주임": 45, "선임사원": 50, "사원": 55, "신입": 60, "감찰": 80, "멤버": 100, "웨이터": 999 };
-    const SPECIAL_MEMBER_ORDER = { "suhi370erw": 1, "sjm3000": 2 };
-
-    let liveData = null, memberData = [], boardData = [];
-    const $ = (s) => document.querySelector(s);
-    const $$ = (s) => document.querySelectorAll(s);
-
-    function escapeHtml(v) {
-      return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
-    }
-    function formatNumber(v) { return Number(v || 0).toLocaleString("ko-KR"); }
-
-    function getProfileImage(userId) {
-      const id = String(userId || "").trim();
-      if (!id) return DEFAULT_PROFILE_IMAGE;
-      return `https://profile.img.sooplive.co.kr/LOGO/${encodeURIComponent(id.slice(0, 2))}/${encodeURIComponent(id)}/${encodeURIComponent(id)}.jpg`;
-    }
-    function fallbackAvatar(img) { img.onerror = null; img.src = DEFAULT_PROFILE_IMAGE; }
-    function getDisplayThumbnail(member) {
-      return getLiveThumbnailCandidates(member)[0] || getProfileImage(member.soopId || member.id);
-    }
-    function getLiveThumbnailCandidates(member) {
-      const broadNo = getLiveBroadNo(member);
-      const direct = String(member.thumbnail || member.broadImg || member.profileImage || "").trim();
-      const list = Array.isArray(member.thumbnailCandidates) ? member.thumbnailCandidates : [];
-      return [direct, ...list,
-        broadNo ? `https://liveimg.sooplive.co.kr/m/${encodeURIComponent(broadNo)}` : "",
-        broadNo ? `https://liveimg.afreecatv.com/m/${encodeURIComponent(broadNo)}` : "",
-        broadNo ? `https://liveimg.sooplive.co.kr/h/${encodeURIComponent(broadNo)}` : "",
-        broadNo ? `https://liveimg.afreecatv.com/h/${encodeURIComponent(broadNo)}` : "",
-        getProfileImage(member.soopId || member.id)
-      ].filter(Boolean).filter((url, index, arr) => arr.indexOf(url) === index);
-    }
-    function swapLiveThumbnail(img) {
-      const candidates = String(img.dataset.candidates || "").split("|").filter(Boolean);
-      const nextIndex = Number(img.dataset.candidateIndex || 0) + 1;
-      const next = candidates[nextIndex];
-      if (!next) return;
-      img.dataset.candidateIndex = String(nextIndex);
-      img.onerror = function () { swapLiveThumbnail(img); };
-      img.src = next;
-      const bg = img.parentElement?.querySelector(".live-thumb-bg");
-      if (bg) bg.src = next;
-    }
-
-    function isMobileDevice() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }
-    function getLiveBroadNo(member) {
-      const direct = member.broadNo || member.broad_no || member.broadno || member.broadcastNo || member.broadcast_no;
-      if (direct) return String(direct).trim();
-      const url = String(member.url || "");
-      const match = url.match(/\/(\d+)(?:[?#].*)?$/);
-      return match ? match[1] : "";
-    }
-    function getLiveOpenUrl(member) {
-      const webUrl = member.url || "#";
-      const userId = String(member.soopId || member.id || "").trim();
-      const broadNo = getLiveBroadNo(member);
-      if (isMobileDevice() && userId && broadNo) return `sooplive://player/live?user_id=${encodeURIComponent(userId)}&broad_no=${encodeURIComponent(broadNo)}`;
-      return webUrl;
-    }
-    function openLive(member) {
-      const url = getLiveOpenUrl(member);
-      if (!url || url === "#") return;
-      window.open(url, "_blank", "noopener");
-    }
-    function getStationUrl(member) {
-      const id = String(member.soopId || member.id || "").trim();
-      return id ? `https://www.sooplive.com/station/${encodeURIComponent(id)}` : "#";
-    }
-    function formatPostDate(dateText) {
-      if (!dateText) return "";
-      const date = new Date(String(dateText).replace(" ", "T"));
-      if (Number.isNaN(date.getTime())) return String(dateText).slice(5, 16);
-      const diff = Date.now() - date.getTime();
-      const min = Math.floor(diff / 60000), hour = Math.floor(min / 60), day = Math.floor(hour / 24);
-      if (min < 1) return "방금 전";
-      if (min < 60) return `${min}분 전`;
-      if (hour < 24) return `${hour}시간 전`;
-      if (day < 7) return `${day}일 전`;
-      return `${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-    }
-    function getRankOrder(m) { return RANK_ORDER[String(m.rank || m.group || m.role || "멤버").trim()] ?? 500; }
-    function getSpecialOrder(m) { return SPECIAL_MEMBER_ORDER[String(m.soopId || m.id || "").trim()] ?? 500; }
-
-    function mergeMembers() {
-      const apiMembers = Array.isArray(liveData?.members) ? liveData.members : [];
-      const apiMap = new Map(apiMembers.map(m => [String(m.soopId || m.id || "").trim(), m]));
-      const mergedIds = new Set();
-      const base = memberData.map((m, index) => {
-        const id = String(m.soopId || m.id || "").trim();
-        const api = apiMap.get(id) || {};
-        mergedIds.add(id);
-        return { ...m, ...api, name: api.name || m.name, soopId: id, group: m.group || api.group || api.role || "멤버", rank: m.rank || api.rank || api.role || "멤버", originalIndex: index };
-      });
-      apiMembers.forEach((m, index) => {
-        const id = String(m.soopId || m.id || "").trim();
-        if (!id || mergedIds.has(id)) return;
-        base.push({ ...m, soopId: id, group: m.group || m.role || "멤버", rank: m.rank || m.role || "멤버", originalIndex: memberData.length + index });
-      });
-      return base;
-    }
-    function sortByRank(a, b) {
-      return getRankOrder(a) - getRankOrder(b) || getSpecialOrder(a) - getSpecialOrder(b)
-        || Number(a.originalIndex || 0) - Number(b.originalIndex || 0)
-        || String(a.name || "").localeCompare(String(b.name || ""), "ko");
-    }
-
-    function renderSummary(all, live) {
-      const liveCount = Number(liveData?.liveCount ?? live.length ?? 0);
-      const total = Number(liveData?.total ?? all.length ?? 0);
-      $("#summaryLive").textContent = formatNumber(liveCount);
-      $("#summaryTotal").textContent = formatNumber(total);
-      $("#summaryStatus").textContent = liveCount > 0 ? "LIVE" : "READY";
-      const b = $("#onAirButton");
-      if (b) {
-        b.innerHTML = liveCount > 0 ? `ON AIR <span class="nav-live-count">${liveCount}</span>` : "ON AIR";
-        b.setAttribute("aria-label", liveCount > 0 ? `현재 LIVE ${liveCount}명` : "현재 LIVE 없음");
-      }
-    }
-
-    function renderBroadcastCard(m) {
-      const name = escapeHtml(m.name || m.soopId || "멤버");
-      const title = escapeHtml(m.title || "방송 제목이 없습니다");
-      const viewer = Number(m.viewer || 0) > 0 ? formatNumber(m.viewer) : "-";
-      const startedAt = escapeHtml(m.startedAt || "");
-      const rank = escapeHtml(m.rank || m.group || m.role || "멤버");
-      const candidates = getLiveThumbnailCandidates(m);
-      const thumbnail = escapeHtml(candidates[0] || getProfileImage(m.soopId || m.id));
-      const candidateAttr = escapeHtml(candidates.join("|"));
-      const thumbHtml = `<img class="live-thumb-bg" src="${thumbnail}" alt="" aria-hidden="true" loading="lazy" referrerpolicy="no-referrer"><img class="live-thumb-img" src="${thumbnail}" data-candidates="${candidateAttr}" data-candidate-index="0" alt="${name} 방송 썸네일" loading="lazy" referrerpolicy="no-referrer" onerror="swapLiveThumbnail(this)">`;
-      return `
-        <article class="broadcast-card">
-          <div class="live-thumb">${thumbHtml}<span class="live-badge">LIVE</span><span class="viewer-badge">VIEW ${viewer}</span></div>
-          <div class="live-info">
-            <div class="live-head"><div class="live-name">${name}</div><span class="rank-badge">${rank}</span></div>
-            <div class="live-title">${title}</div>
-            <div class="live-meta">${startedAt ? `<span>시작 ${startedAt}</span>` : ""}</div>
-            <button class="live-open-btn" type="button" data-live-id="${escapeHtml(m.soopId || "")}">LIVE 보러가기</button>
-          </div>
-        </article>`;
-    }
-    function renderOfflineCard(m) {
-      const id = String(m.soopId || m.id || "").trim();
-      const name = escapeHtml(m.name || id || "멤버");
-      const rank = escapeHtml(m.rank || m.group || m.role || "멤버");
-      const stationUrl = escapeHtml(getStationUrl(m));
-      return `
-        <article class="offline-card">
-          <img class="offline-avatar" src="${getProfileImage(id)}" onerror="fallbackAvatar(this)" alt="${name}" loading="lazy">
-          <div class="offline-body">
-            <div class="offline-name">${name}</div>
-            <div class="offline-meta"><span class="rank-badge">${rank}</span><span class="offline-state">오프라인</span></div>
-          </div>
-          <a class="station-link" href="${stationUrl}" target="_blank" rel="noopener" aria-label="${name} 방송국 열기">↗</a>
-        </article>`;
-    }
-
-    function renderLivePage() {
-      const all = mergeMembers();
-      const live = all.filter(m => m.isLive).sort(sortByRank);
-      const offline = all.filter(m => !m.isLive).sort(sortByRank);
-      renderSummary(all, live);
-      $("#liveNote").textContent = live.length ? `${formatNumber(live.length)}명 방송 중` : "현재 방송 없음";
-      $("#liveGrid").innerHTML = live.length ? live.map(renderBroadcastCard).join("") : `<div class="empty-card">현재 진행 중인 LIVE 방송이 없습니다.</div>`;
-      $("#offlineGrid").innerHTML = offline.length ? offline.map(renderOfflineCard).join("") : `<div class="empty-card">표시할 오프라인 멤버가 없습니다.</div>`;
-      $$(".live-open-btn").forEach(btn => btn.addEventListener("click", () => {
-        const m = live.find(x => String(x.soopId || "") === btn.dataset.liveId);
-        if (m) openLive(m);
-      }));
-    }
-
-    function renderPostCard(p) {
-      const name = escapeHtml(p.bjName || p.writer || "멤버");
-      const title = escapeHtml(p.title || "제목 없음");
-      const summary = escapeHtml(p.summary || "");
-      const url = escapeHtml(p.url || "#");
-      const date = escapeHtml(formatPostDate(p.regDate));
-      const comments = formatNumber(p.commentCount || 0);
-      const reads = formatNumber(p.readCount || 0);
-      const thumbnail = escapeHtml(p.thumbnail || "");
-      const boardName = escapeHtml(p.boardName || "방송국");
-      const initial = escapeHtml(String(p.bjName || p.writer || "HM").trim().slice(0, 1) || "H");
-      const noticeBadge = p.isNotice ? `<span class="post-badge">공지</span>` : "";
-      const thumbHtml = thumbnail
-        ? `<div class="post-thumb"><img src="${thumbnail}" alt="${title}" loading="lazy" referrerpolicy="no-referrer"></div>`
-        : `<div class="post-thumb no-thumb" aria-hidden="true"><span>${initial}</span></div>`;
-      return `
-        <a class="post-card" href="${url}" target="_blank" rel="noopener">
-          ${thumbHtml}
-          <div class="post-body">
-            <div class="post-top"><div class="post-writer">${name}</div><div class="post-board">${boardName}</div>${noticeBadge}</div>
-            <div class="post-title">${title}</div>
-            ${summary ? `<div class="post-summary">${summary}</div>` : ""}
-            <div class="post-meta">${date} · 댓글 ${comments} · 조회 ${reads}</div>
-          </div>
-        </a>`;
-    }
-    function renderPosts() {
-      const posts = Array.isArray(boardData) ? boardData.slice(0, MAX_POSTS) : [];
-      $("#postNote").textContent = `최신 ${posts.length}개`;
-      $("#postList").innerHTML = posts.length ? posts.map(renderPostCard).join("") : `<div class="empty-card">표시할 최근 게시물이 없습니다.</div>`;
-    }
-
-    async function loadLiveData() { const r = await fetch(`${LIVE_API_URL}?ts=${Math.floor(Date.now() / 15000)}`, { cache: "no-store" }); if (!r.ok) throw new Error("LIVE"); liveData = await r.json(); }
-    async function loadMemberData() { const r = await fetch(MEMBERS_URL, { cache: "no-store" }); if (!r.ok) throw new Error("MEMBERS"); const d = await r.json(); memberData = Array.isArray(d) ? d : []; }
-    async function loadBoardData() { const r = await fetch(`${BOARD_API_URL}?ts=${Date.now()}`, { cache: "no-store" }); if (!r.ok) throw new Error("BOARD"); const d = await r.json(); boardData = Array.isArray(d) ? d : (Array.isArray(d.data) ? d.data : []); }
-
-    async function loadInitial() {
-      try { await Promise.all([loadLiveData(), loadMemberData()]); renderLivePage(); }
-      catch (e) {
-        console.error(e);
-        $("#liveGrid").innerHTML = `<div class="empty-card">LIVE 정보를 불러오지 못했습니다.</div>`;
-        $("#offlineGrid").innerHTML = `<div class="empty-card">멤버 정보를 불러오지 못했습니다.</div>`;
-      }
-    }
-    async function ensurePosts() {
-      if (boardData.length) { renderPosts(); return; }
-      try { await loadBoardData(); renderPosts(); }
-      catch (e) { console.error(e); $("#postList").innerHTML = `<div class="empty-card">최근 게시물을 불러오지 못했습니다.</div>`; }
-    }
-    function setActiveTab(tabName, replaceUrl = true) {
-      const safe = tabName === "posts" ? "posts" : "live";
-      $$(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === safe));
-      $("#livePanel").classList.toggle("active", safe === "live");
-      $("#postsPanel").classList.toggle("active", safe === "posts");
-      if (replaceUrl) {
-        const url = new URL(location.href);
-        if (safe === "posts") url.searchParams.set("tab", "posts"); else url.searchParams.delete("tab");
-        history.replaceState(null, "", url.toString());
-      }
-    }
-    $$(".tab-btn").forEach(b => b.addEventListener("click", () => { setActiveTab(b.dataset.tab); if (b.dataset.tab === "posts") ensurePosts(); }));
-    const initialTab = new URLSearchParams(location.search).get("tab");
-    setActiveTab(initialTab, false);
-    loadInitial();
-    if (initialTab === "posts") ensurePosts();
+const MEMBERS_URL = "../api/members.php";
+const DEFAULT_PROFILE_IMAGE = "https://profile.img.sooplive.co.kr/LOGO/sy/sysdemian/sysdemian.jpg";
+const esc = (v) => String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+function getProfileImage(id) { id = String(id || "").trim(); return id ? `https://profile.img.sooplive.co.kr/LOGO/${encodeURIComponent(id.slice(0, 2))}/${encodeURIComponent(id)}/${encodeURIComponent(id)}.jpg` : DEFAULT_PROFILE_IMAGE; }
+function fallbackAvatar(img) { img.onerror = null; img.src = DEFAULT_PROFILE_IMAGE; }
+function stationUrl(id) { return `https://www.sooplive.com/station/${encodeURIComponent(id)}`; }
+function renderFaCard(m) { const id = String(m.soopId || m.id || "").trim(); const name = esc(m.name || id || "-"); return `<a class="fa-card" href="${stationUrl(id)}" target="_blank" rel="noopener"><img src="${getProfileImage(id)}" onerror="fallbackAvatar(this)" alt="${name}" loading="lazy"><div><strong>${name}</strong><span>${esc(id)}</span></div><em>FA</em></a>`; }
+async function loadFaRoster() { const target = document.getElementById("faRoster"); const total = document.getElementById("faTotal"); try { const r = await fetch(MEMBERS_URL, { cache: "no-store" }); if (!r.ok) throw new Error("members"); const data = await r.json(); const rows = (Array.isArray(data) ? data : []).filter(Boolean); if (total) total.textContent = rows.length.toLocaleString("ko-KR"); target.innerHTML = rows.length ? rows.map(renderFaCard).join("") : '<div class="empty-card">등록된 FA가 없습니다.</div>'; } catch (e) { if (total) total.textContent = "-"; target.innerHTML = '<div class="empty-card">FA현황을 불러오지 못했습니다.</div>'; } }
+loadFaRoster();
 </script>
 </body>
 </html>
