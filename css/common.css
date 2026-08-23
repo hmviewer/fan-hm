@@ -389,3 +389,19 @@ img { max-width: 100%; }
   .site-footer .footer-links a { padding: 0 8px; }
   .site-footer .footer-info { max-width: 320px; margin-left: auto; margin-right: auto; }
 }
+
+/* 스타 대학 정보 공통 카드 */
+.college-tier-grid, .fa-status-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.tier-card, .fa-card { border-radius: 14px; background: rgba(255,252,245,.84); border: 1px solid rgba(97,92,82,.42); box-shadow: var(--shadow); }
+.tier-card { min-height: 170px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.tier-label { font-size: 12px; font-weight: 950; color: #8d6a1f; letter-spacing: .16em; }
+.tier-card h3 { font-size: 21px; font-weight: 950; color: #24211c; }
+.tier-card p { color: #706b62; font-size: 14px; line-height: 1.5; font-weight: 750; }
+.tier-card span { margin-top: auto; width: fit-content; padding: 7px 10px; border-radius: 8px; background: rgba(202,166,74,.14); color: #8d6a1f; font-size: 12px; font-weight: 950; }
+.fa-card { min-height: 92px; padding: 13px; display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.fa-card img { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(202,166,74,.42); }
+.fa-card strong { display: block; font-size: 17px; font-weight: 950; color: #24211c; }
+.fa-card span { display: block; margin-top: 4px; color: #706b62; font-size: 12px; font-weight: 850; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fa-card em { font-style: normal; padding: 7px 10px; border-radius: 8px; background: linear-gradient(135deg,#171919,#b9953e); color: #fff; font-size: 12px; font-weight: 950; }
+@media (max-width: 900px) { .college-tier-grid, .fa-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .college-tier-grid, .fa-status-grid { grid-template-columns: 1fr; } }
